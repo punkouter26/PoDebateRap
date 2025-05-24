@@ -1,22 +1,9 @@
 param location string = resourceGroup().location
-param appServicePlanName string = 'PoDebateRapAppServicePlan'
 param webAppName string = 'PoDebateRapWebApp'
 param storageAccountName string = 'podebaterapstorage'
 param applicationInsightsConnectionString string // New parameter for App Insights connection string
 
 // Updated on May 24, 2025 - Testing CI/CD pipeline
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: appServicePlanName
-  location: location
-  sku: {
-    name: 'B1' // Basic tier, 1 core, 1.75 GB memory
-    tier: 'Basic'
-  }
-  properties: {
-    reserved: true // For Linux plans
-  }
-}
 
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
   name: webAppName
