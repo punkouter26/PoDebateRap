@@ -1,0 +1,115 @@
+html, body {
+    font-family: 'Roboto', sans-serif; /* Modern, clean font */
+    background-color: #121212; /* Dark background for a sleek look */
+    color: #e0e0e0; /* Light text for contrast */
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif; /* Stronger font for headings */
+    color: #FFD700; /* Gold color for headings */
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+a {
+    color: #00aaff; /* Brighter blue for links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.content {
+    padding: 1.5rem; /* More generous padding */
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: #dc3545; /* Red background for errors */
+    color: white;
+    bottom: 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.8rem 1.5rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    font-size: 0.9em;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 1rem;
+        top: 0.8rem;
+        font-size: 1.2em;
+    }
+
+.blazor-error-boundary {
+    background: #dc3545; /* Red background for errors */
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
+}
+
+    .loading-progress circle {
+        fill: none;
+        stroke: #444; /* Darker stroke for loading circle */
+        stroke-width: 0.6rem;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
+
+        .loading-progress circle:last-child {
+            stroke: #FFD700; /* Gold for loading progress */
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    color: #e0e0e0; /* Light text for loading */
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+code {
+    color: #FFD700; /* Gold for code snippets */
+    background-color: #222;
+    padding: 2px 4px;
+    border-radius: 3px;
+}

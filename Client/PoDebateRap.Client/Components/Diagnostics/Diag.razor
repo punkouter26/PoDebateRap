@@ -1,0 +1,448 @@
+@page "/diag"
+@using PoDebateRap.Shared.Models // For DiagnosticResult
+@inject HttpClient Http
+@inject ILogger<Diag> Logger
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div class="diagnostics-page">
+    <div class="diagnostics-header">
+        <h5>System Diagnostics</h5>
+    </div>
+    <div class="diagnostics-body">
+        @if (_isLoading)
+        {
+            <div class="loading-indicator">
+                <p>Running diagnostic checks...</p>
+                <div class="spinner"></div>
+            </div>
+        }
+        else if (_results == null || !_results.Any())
+        {
+            <p class="no-results">No diagnostic results available.</p>
+        }
+        else
+        {
+            <table class="diagnostics-table">
+                <thead>
+                    <tr>
+                        <th>Check</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var result in _results)
+                    {
+                        <tr>
+                            <td>@result.CheckName</td>
+                            <td class="status-cell">
+                                @if (result.Success)
+                                {
+                                    <span class="status-icon success" title="Success">✔</span>
+                                }
+                                else
+                                {
+                                    <span class="status-icon failed" title="Failed">✖</span>
+                                }
+                            </td>
+                            <td>@result.Message</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    <div class="diagnostics-footer">
+        <button class="btn-test-audio" @onclick="TestTextToSpeech" disabled="@_isTestingAudio">
+            @if (_isTestingAudio)
+            {
+                <span>Testing Audio...</span>
+            }
+            else
+            {
+                <span>Test Text-to-Speech</span>
+            }
+        </button>
+        <a href="/" class="btn-home-link">Back to Home</a>
+    </div>
+</div>
+
+<!-- JavaScript for Audio Playback -->
+<script>
+    window.currentAudio = null; // Global variable to hold the current audio object
+    window.playAudio = (dotnetHelper, base64String) => {
+        // Accept dotnetHelper
+        console.log("playAudio called with base64 length:", base64String ? base64String.length : 0);
+        
+        // Inspect the audio data to help diagnose issues
+        if (typeof window.inspectAudioData === 'function') {
+            window.inspectAudioData(base64String);
+        }
+        
+        try {
+            // Stop any currently playing audio first
+            if (window.currentAudio) {
+                window.currentAudio.pause();
+                window.currentAudio.currentTime = 0;
+                console.log("Stopped previous audio.");
+            }
+            // Use only WAV format which matches what the server returns
+            const audioDataUrl = `data:audio/wav;base64,${base64String}`;
+            
+            console.log("Creating audio with WAV format");
+            try {
+                window.currentAudio = new Audio(audioDataUrl);
+                console.log("Audio object created successfully");
+            } catch (error) {
+                console.error("Failed to create audio object:", error);
+                throw error;
+            }
+            
+            // Add debugging to check if the audio is valid
+            if (window.currentAudio.error) {
+                console.error("Audio has error immediately after creation:", window.currentAudio.error);
+                throw new Error("Audio object created with error");
+            }
+
+            // Set volume to ensure it's audible
+            window.currentAudio.volume = 0.8;
+
+            window.currentAudio.addEventListener('loadstart', () => {
+                console.log("Audio loading started");
+            });
+
+            window.currentAudio.addEventListener('canplay', () => {
+                console.log("Audio can start playing");
+            });
+
+            window.currentAudio.addEventListener('ended', () => {
+                console.log("Audio playback finished.");
+                window.currentAudio = null; // Clear reference on end
+                if (dotnetHelper) {
+                    dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
+                        .catch(e => console.error("Error invoking .NET method:", e));
+                }
+            });
+
+            window.currentAudio.addEventListener('error', (e) => {
+                console.error("Error during audio playback:", e);
+                console.error("Audio error details:", window.currentAudio.error);
+                window.currentAudio = null; // Clear reference on error
+                if (dotnetHelper) {
+                    dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
+                        .catch(e => console.error("Error invoking .NET method after playback error:", e));
+                }
+            });
+
+            // Attempt to play with user interaction handling
+            const playPromise = window.currentAudio.play();
+            
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log("Audio playback started successfully");
+                    })
+                    .catch(e => {
+                        console.error("Error starting audio playback:", e);
+                        
+                        // If autoplay failed, try to enable audio on next user interaction
+                        if (e.name === 'NotAllowedError') {
+                            console.warn("Autoplay prevented by browser. Audio will play on next user interaction.");
+                            
+                            // Create a one-time click handler to enable audio
+                            const enableAudio = () => {
+                                console.log("User interaction detected, attempting to play audio");
+                                window.currentAudio.play()
+                                    .then(() => console.log("Audio started after user interaction"))
+                                    .catch(err => console.error("Still failed to play audio:", err));
+                                document.removeEventListener('click', enableAudio);
+                            };
+                            
+                            document.addEventListener('click', enableAudio);
+                        }
+                        
+                        window.currentAudio = null; // Clear reference on start error
+                        if (dotnetHelper) {
+                            dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
+                                .catch(e => console.error("Error invoking .NET method after playback start error:", e));
+                        }
+                    });
+            }
+            
+            console.log("Audio setup completed");
+        } catch (e) {
+            console.error("Error creating or playing audio:", e);
+            window.currentAudio = null; // Clear reference on creation error
+            if (dotnetHelper) {
+                dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
+                    .catch(e => console.error("Error invoking .NET method after audio creation error:", e));
+            }
+        }
+    };
+
+    window.stopAudio = () => {
+        if (window.currentAudio) {
+            window.currentAudio.pause();
+            window.currentAudio.currentTime = 0;
+            window.currentAudio = null; // Clear the reference
+            console.log("Audio stopped via JS call.");
+            return true; // Indicate audio was stopped
+        }
+        console.log("No audio playing to stop.");
+        return false; // Indicate no audio was playing
+    };
+    // Test function to verify audio capability
+    window.testAudio = () => {
+        console.log("Testing audio capability...");
+        const testAudio = new Audio();
+        console.log("Audio object created:", testAudio);
+        console.log("Can play WAV:", testAudio.canPlayType('audio/wav'));
+        console.log("Can play MP3:", testAudio.canPlayType('audio/mpeg'));
+        console.log("Can play OGG:", testAudio.canPlayType('audio/ogg'));
+    };
+    
+    // Function to inspect the base64 data to help diagnose issues
+    window.inspectAudioData = (base64String) => {
+        if (!base64String || base64String.length === 0) {
+            console.error("Empty base64 string provided");
+            return;
+        }
+        
+        // Log the first 50 characters
+        console.log("Base64 data starts with:", base64String.substring(0, 50));
+        
+        // Try to decode a small sample of the base64 to check if it's valid
+        try {
+            const sampleBytes = atob(base64String.substring(0, 100));
+            console.log("First bytes decoded successfully, length:", sampleBytes.length);
+            
+            // Check for RIFF header (common in WAV files)
+            const header = sampleBytes.substring(0, 4);
+            console.log("First 4 chars:", Array.from(header).map(c => c.charCodeAt(0)));
+            
+            if (header === 'RIFF') {
+                console.log("Valid RIFF header detected");
+            } else {
+                console.warn("No RIFF header found, might not be a standard WAV file");
+            }
+        } catch (e) {
+            console.error("Error decoding base64:", e);
+        }
+    };
+
+    // Call test on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        window.testAudio();
+    });
+</script>
+
+@code {
+    private DotNetObjectReference<Diag>? objRef;
+    private List<DiagnosticResult>? _results;
+    private bool _isLoading = true;
+    private bool _isTestingAudio = false;
+    private CancellationTokenSource _cts = new CancellationTokenSource();
+
+    protected override async Task OnInitializedAsync()
+    {
+        objRef = DotNetObjectReference.Create(this);
+        await RunDiagnostics();
+        
+        // Test TTS automatically when page loads
+        _ = Task.Run(async () => 
+        {
+            await Task.Delay(2000); // Wait 2 seconds for page to fully load
+            await TestTextToSpeech();
+        });
+    }
+
+    private async Task RunDiagnostics()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        _results = new List<DiagnosticResult>();
+
+        try
+        {
+            // Check API Health
+            var apiHealth = await Http.GetStringAsync("Diagnostics/api-health");
+            _results.Add(ParseDiagnosticResult("API Health", apiHealth));
+
+            // Check Data Connection
+            var dataConnection = await Http.GetStringAsync("Diagnostics/data-connection");
+            _results.Add(ParseDiagnosticResult("Data Connection", dataConnection));
+
+            // Check Internet Connection
+            var internetConnection = await Http.GetStringAsync("Diagnostics/internet-connection");
+            _results.Add(ParseDiagnosticResult("Internet Connection", internetConnection));
+
+            // Check Authentication Service
+            var authService = await Http.GetStringAsync("Diagnostics/authentication-service");
+            _results.Add(ParseDiagnosticResult("Authentication Service", authService));
+
+            // Test Text-to-Speech Service
+            await TestTTSService();
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogWarning("Diagnostics run cancelled.");
+            _results.Add(new DiagnosticResult { CheckName = "Overall", Success = false, Message = "Diagnostics cancelled." });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error running diagnostics.");
+            _results.Add(new DiagnosticResult { CheckName = "Overall", Success = false, Message = $"An error occurred: {ex.Message}" });
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task TestTTSService()
+    {
+        try
+        {
+            Logger.LogInformation("Testing Text-to-Speech service...");
+            
+            // Call the TTS API to generate audio for "Hello"
+            var request = new GenerateSpeechRequest { Text = "Hello from diagnostics page", VoiceName = "en-US-DavisNeural" };
+            var response = await Http.PostAsJsonAsync("AI/generate-speech", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var audioBytes = await response.Content.ReadAsByteArrayAsync();
+                if (audioBytes != null && audioBytes.Length > 0)
+                {
+                    _results.Add(new DiagnosticResult 
+                    { 
+                        CheckName = "Text-to-Speech Service", 
+                        Success = true, 
+                        Message = $"OK - Generated {audioBytes.Length} bytes of audio data" 
+                    });
+                    
+                    Logger.LogInformation("TTS service test successful. Audio length: {Length}", audioBytes.Length);
+                }
+                else
+                {
+                    _results.Add(new DiagnosticResult 
+                    { 
+                        CheckName = "Text-to-Speech Service", 
+                        Success = false, 
+                        Message = "Error - No audio data returned" 
+                    });
+                    Logger.LogWarning("TTS service returned no audio data");
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _results.Add(new DiagnosticResult 
+                { 
+                    CheckName = "Text-to-Speech Service", 
+                    Success = false, 
+                    Message = $"Error - HTTP {response.StatusCode}: {errorContent}" 
+                });
+                Logger.LogError("TTS service test failed with status {Status}: {Error}", response.StatusCode, errorContent);
+            }
+        }
+        catch (Exception ex)
+        {
+            _results.Add(new DiagnosticResult 
+            { 
+                CheckName = "Text-to-Speech Service", 
+                Success = false, 
+                Message = $"Error - Exception: {ex.Message}" 
+            });
+            Logger.LogError(ex, "Exception during TTS service test");
+        }
+    }
+
+    private async Task TestTextToSpeech()
+    {
+        if (_isTestingAudio) return;
+        
+        _isTestingAudio = true;
+        StateHasChanged();
+        
+        try
+        {
+            Logger.LogInformation("Manual TTS test button clicked");
+            
+            // Call the TTS API to generate audio for "Hello"
+            var request = new GenerateSpeechRequest { Text = "Hello, this is a text to speech test from the diagnostics page", VoiceName = "en-US-DavisNeural" };
+            var response = await Http.PostAsJsonAsync("AI/generate-speech", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var audioBytes = await response.Content.ReadAsByteArrayAsync();
+                if (audioBytes != null && audioBytes.Length > 0 && objRef != null)
+                {
+                    Logger.LogInformation("TTS test successful. Playing audio with {Length} bytes", audioBytes.Length);
+                    
+                    var base64Audio = Convert.ToBase64String(audioBytes);
+                    await JSRuntime.InvokeVoidAsync("playAudio", objRef, base64Audio);
+                }
+                else
+                {
+                    Logger.LogWarning("TTS test returned no audio data");
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Logger.LogError("TTS test failed with status {Status}: {Error}", response.StatusCode, errorContent);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Exception during manual TTS test");
+        }
+        finally
+        {
+            _isTestingAudio = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public async Task NotifyAudioPlaybackComplete()
+    {
+        Logger.LogInformation("Audio playback completed in diagnostics page");
+        _isTestingAudio = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private DiagnosticResult ParseDiagnosticResult(string checkName, string? rawResult)
+    {
+        if (string.IsNullOrEmpty(rawResult))
+        {
+            return new DiagnosticResult { CheckName = checkName, Success = false, Message = "No response from API." };
+        }
+
+        // Expected format: "Check Name: Status - Details"
+        // Example: "API Health: OK" or "Data Connection: Error - Message"
+        var parts = rawResult.Split(new[] { ": " }, 2, StringSplitOptions.None);
+        if (parts.Length < 2)
+        {
+            return new DiagnosticResult { CheckName = checkName, Success = false, Message = rawResult };
+        }
+
+        var statusPart = parts[1].Trim();
+        bool success = statusPart.StartsWith("OK", StringComparison.OrdinalIgnoreCase);
+        string message = statusPart;
+
+        return new DiagnosticResult { CheckName = checkName, Success = success, Message = message };
+    }
+
+    // Ensure cancellation token source is disposed
+    public void Dispose()
+    {
+        objRef?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

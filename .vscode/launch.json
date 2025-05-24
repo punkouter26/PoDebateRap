@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch PoDebateRap",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Server/PoDebateRap.ServerApi/bin/Debug/net9.0/PoDebateRap.ServerApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Server/PoDebateRap.ServerApi",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s",
+                "revealTerminateProcessOnDebugBreak": true
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "browser": "chrome",
+            "webRoot": "${workspaceFolder}/Client/PoDebateRap.Client/wwwroot"
+        }
+    ]
+}

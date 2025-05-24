@@ -1,0 +1,54 @@
+param location string = resourceGroup().location
+param appServicePlanName string = 'PoDebateRapAppServicePlan'
+param webAppName string = 'PoDebateRapWebApp'
+param storageAccountName string = 'podebaterapstorage'
+param applicationInsightsConnectionString string // New parameter for App Insights connection string
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: appServicePlanName
+  location: location
+  sku: {
+    name: 'B1' // Basic tier, 1 core, 1.75 GB memory
+    tier: 'Basic'
+  }
+  properties: {
+    reserved: true // For Linux plans
+  }
+}
+
+resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+  name: webAppName
+  location: location
+  properties: {
+    serverFarmId: appServicePlan.id
+    httpsOnly: true
+    siteConfig: {
+      dotnetFrameworkVersion: 'v9.0' // Specify .NET 9.0
+      appSettings: [
+        {
+          name: 'Azure__StorageConnectionString'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: applicationInsightsConnectionString
+        }
+      ]
+    }
+  }
+}
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS' // Locally-redundant storage
+  }
+  kind: 'StorageV2' // General-purpose v2
+  properties: {
+    accessTier: 'Hot'
+  }
+}
+
+output webAppHostName string = webApp.properties.defaultHostName
+output storageAccountName string = storageAccount.name

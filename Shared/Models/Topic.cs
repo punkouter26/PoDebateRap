@@ -19,6 +19,11 @@ public class Topic : ITableEntity
     /// </summary>
     public string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the category of the topic (e.g., "Politics", "Technology").
+    /// </summary>
+    public string Category { get; set; } = string.Empty;
+
     // --- ITableEntity Implementation ---
 
     /// <summary>
@@ -53,13 +58,15 @@ public class Topic : ITableEntity
     /// </summary>
     /// <param name="title">The title of the topic.</param>
     /// <param name="description">The description of the topic.</param>
-    public Topic(string title, string description = "")
+    /// <param name="category">The category of the topic.</param>
+    public Topic(string title, string description = "", string category = "")
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Topic title cannot be empty.", nameof(title));
 
         Title = title;
         Description = description;
+        Category = category; // Set the category
         PartitionKey = "Topic"; // Set default partition key
         RowKey = Guid.NewGuid().ToString(); // Generate unique RowKey
     }

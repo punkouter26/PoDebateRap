@@ -1,0 +1,93 @@
+.navbar-toggler {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.navbar-toggler::before {
+    content: "☰"; /* Hamburger icon */
+    color: white;
+}
+
+.navbar-toggler:checked::before {
+    content: "✕"; /* Close icon */
+}
+
+.navbar-toggler:checked {
+    background-color: #555;
+}
+
+.top-row {
+    height: 3.5rem;
+    background-color: #222; /* Darker background for top row */
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    color: #FFD700; /* Gold color for brand */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+}
+
+.nav-item {
+    font-size: 1rem;
+    padding: 0.5rem 0;
+}
+
+.nav-link {
+    color: #d7d7d7;
+    border-radius: 4px;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: #FFD700; /* Gold on hover */
+}
+
+.nav-link.active {
+    background-color: rgba(255,255,255,0.2);
+    color: #FFD700; /* Gold when active */
+    font-weight: bold;
+}
+
+.nav-scrollable {
+    display: none;
+}
+
+.navbar-toggler:checked ~ .nav-scrollable {
+    display: block;
+}
+
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .nav-scrollable {
+        /* Never collapse the sidebar for wide screens */
+        display: block;
+
+        /* Allow sidebar to scroll for tall menus */
+        height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+    }
+}

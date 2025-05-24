@@ -1,0 +1,152 @@
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #1e1e1e; /* Darker background for the main content area */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+}
+
+.error-message {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.setup-section {
+    border: 1px solid #333;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    background-color: #2a2a2a; /* Slightly lighter than container */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.form-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.form-field {
+    flex: 1;
+    min-width: 250px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #FFD700; /* Gold for labels */
+}
+
+.form-field select,
+.form-field input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background-color: #333;
+    color: #e0e0e0;
+    font-size: 1em;
+}
+
+.form-field select:focus,
+.form-field input[type="text"]:focus {
+    border-color: #FFD700; /* Gold focus */
+    outline: none;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.vs-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    font-size: 1.8em;
+    font-family: 'Montserrat', sans-serif;
+    color: #CD7F32; /* Bronze for VS */
+}
+
+.button-group {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-primary,
+.btn-danger {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background-color: #007bff; /* Blue */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background-color: #dc3545; /* Red */
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled,
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #FFD700; /* Gold spinner */
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.debate-arena {
+    border: 2px dashed #555; /* Darker dashed border */
+    padding: 30px;
+    min-height: 350px;
+    border-radius: 10px;
+    background-color: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+}

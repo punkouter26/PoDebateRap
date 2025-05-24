@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Server\PoDebateRap.Server.csproj" />
+    <ProjectReference Include="..\Server\PoDebateRap.ServerApi\PoDebateRap.ServerApi.csproj" />
     <ProjectReference Include="..\Shared\PoDebateRap.Shared.csproj" />
   </ItemGroup>
 

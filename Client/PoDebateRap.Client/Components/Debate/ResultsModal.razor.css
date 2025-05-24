@@ -1,0 +1,179 @@
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85); /* Darker, more opaque backdrop */
+}
+
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* Add some padding for smaller screens */
+}
+
+.modal-content {
+    background-color: #1e1e1e; /* Dark background */
+    color: #e0e0e0;
+    border: 1px solid #333;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 850px; /* Slightly wider modal */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 1.75rem auto;
+    animation: fadeInScale 0.3s ease-out; /* Add animation */
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #444;
+    text-align: center;
+}
+
+.modal-title {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFD700; /* Primary color */
+    width: 100%;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.modal-body {
+    padding: 25px;
+    text-align: center;
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.modal-body hr {
+    border-top: 1px solid #555;
+    margin: 25px 0;
+}
+
+.modal-body h4 {
+    margin-bottom: 20px;
+    color: #FFD700; /* Primary color */
+    font-size: 1.8em;
+}
+
+.winner-name {
+    font-size: 2.2em;
+    color: #CD7F32; /* Accent color */
+    margin-top: 15px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+}
+
+.draw-text {
+    font-size: 1.8em;
+    color: #ffc107; /* Warning color */
+    font-weight: bold;
+}
+
+.undecided-text {
+    font-size: 1.4em;
+    color: #999; /* Muted color */
+}
+
+.error-text {
+    font-size: 1.4em;
+    color: #dc3545; /* Danger color */
+    font-weight: bold;
+}
+
+.judge-reasoning {
+    margin-top: 20px;
+    font-style: italic;
+    color: #bbb;
+    font-size: 1.1em;
+    line-height: 1.5;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    color: #eee;
+    font-size: 0.95em;
+}
+
+.stats-table th,
+.stats-table td {
+    border: 1px solid #555;
+    padding: 12px;
+    text-align: left;
+}
+
+.stats-table thead {
+    background-color: #333;
+}
+
+.stats-table th {
+    color: #FFD700; /* Primary color */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+}
+
+.stats-table .total-row {
+    background-color: #444;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.no-stats-text {
+    color: #888;
+    margin-top: 20px;
+    font-size: 0.9em;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #444;
+    text-align: right;
+}
+
+.btn-close-modal {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    color: white;
+    background-color: #6c757d; /* Secondary color */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+}
+
+.btn-close-modal:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
