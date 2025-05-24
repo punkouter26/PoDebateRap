@@ -4,6 +4,8 @@ param webAppName string = 'PoDebateRapWebApp'
 param storageAccountName string = 'podebaterapstorage'
 param applicationInsightsConnectionString string // New parameter for App Insights connection string
 
+// Updated on May 24, 2025 - Testing CI/CD pipeline
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appServicePlanName
   location: location
@@ -23,7 +25,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      dotnetFrameworkVersion: 'v9.0' // Specify .NET 9.0
+      linuxFxVersion: 'DOTNETCORE|9.0' // Specify .NET 9.0 for Linux App Service
       appSettings: [
         {
           name: 'Azure__StorageConnectionString'
