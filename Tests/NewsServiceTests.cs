@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System;
 using System.Net;
+using System.Threading;
 
 public class NewsServiceTests
 {
@@ -29,8 +30,15 @@ public class NewsServiceTests
         // Arrange
         // NewsAPI.org returns 401 Unauthorized for invalid API key, or 400 Bad Request for missing query parameters.
         // Given the previous logs showed 400, we'll expect that.
-        // We don't need to mock HttpClient's response for this, as we're testing the actual API call.
-        var httpClient = new HttpClient(); // Use a real HttpClient to make the actual call
+        
+        // Create a mock HttpClient that simulates a 400 Bad Request response
+        var handler = new MockHttpMessageHandler(new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.BadRequest,
+            Content = new StringContent("{\"status\":\"error\",\"code\":\"apiKeyMissing\",\"message\":\"Your API key is missing.\"}")
+        });
+        
+        var httpClient = new HttpClient(handler);
         var newsService = new NewsService(httpClient, _mockConfiguration.Object, _mockLogger.Object);
 
         // Act & Assert
@@ -40,5 +48,21 @@ public class NewsServiceTests
         Assert.NotNull(exception);
         var httpException = Assert.IsType<HttpRequestException>(exception);
         Assert.Contains("Response status code does not indicate success: 400 (Bad Request)", httpException.Message);
+    }
+}
+
+// Mock HttpMessageHandler for testing HTTP responses
+public class MockHttpMessageHandler : HttpMessageHandler
+{
+    private readonly HttpResponseMessage _response;
+
+    public MockHttpMessageHandler(HttpResponseMessage response)
+    {
+        _response = response;
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(_response);
     }
 }
