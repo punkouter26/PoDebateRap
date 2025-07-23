@@ -23,9 +23,9 @@ namespace PoDebateRap.ServerApi.Services.News
             _configuration = configuration;
             _logger = logger;
             _newsApiKey = _configuration["NewsApi:ApiKey"] ?? "";
-            
+
             _logger.LogWarning("NewsAPI Key value: '{ApiKey}' (Length: {Length})", _newsApiKey, _newsApiKey.Length);
-            
+
             if (string.IsNullOrWhiteSpace(_newsApiKey))
             {
                 _logger.LogWarning("NewsApi:ApiKey not found in configuration. Will use fallback topics.");
@@ -49,8 +49,8 @@ namespace PoDebateRap.ServerApi.Services.News
 
                 if (response?.Articles == null || !response.Articles.Any())
                 {
-                    _logger.LogWarning("News API returned no articles or null response. Falling back to hardcoded topic.");
-                    return new List<NewsHeadline> { new NewsHeadline { Title = "End of the world is coming", Url = "https://example.com/fallback" } };
+                    _logger.LogWarning("News API returned no articles or null response. Using fallback topics.");
+                    return GetFallbackTopics(count);
                 }
 
                 var headlines = response.Articles

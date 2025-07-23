@@ -114,7 +114,6 @@ using (var scope = app.Services.CreateScope())
             {
                 app.Logger.LogInformation("Attempting initial data seeding...");
                 rapperRepository.SeedInitialRappersAsync().GetAwaiter().GetResult();
-                topicRepository.SeedInitialTopicsAsync().GetAwaiter().GetResult();
                 app.Logger.LogInformation("Initial data seeding completed (if necessary).");
             }
             catch (Exception seedEx)

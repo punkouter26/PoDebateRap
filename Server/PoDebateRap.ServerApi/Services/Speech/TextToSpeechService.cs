@@ -54,7 +54,7 @@ namespace PoDebateRap.ServerApi.Services.Speech
                     // We start the synthesis and then wait on a task that can be cancelled.
                     var synthesisTask = synthesizer.SpeakTextAsync(text);
                     var cancellationTask = Task.Delay(Timeout.Infinite, cancellationToken);
-                    
+
                     var completedTask = await Task.WhenAny(synthesisTask, cancellationTask);
 
                     if (completedTask == cancellationTask)
