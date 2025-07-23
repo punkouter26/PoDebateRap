@@ -1,0 +1,97 @@
+classDiagram
+    direction LR
+
+    class Rapper {
+        <<ITableEntity>>
+        +string Name
+        +int Wins
+        +int Losses
+        +int TotalDebates
+        +string PartitionKey
+        +string RowKey
+        +DateTimeOffset? Timestamp
+        +ETag ETag
+    }
+
+    class Topic {
+        <<ITableEntity>>
+        +string Title
+        +string Description
+        +string Category
+        +string PartitionKey
+        +string RowKey
+        +DateTimeOffset? Timestamp
+        +ETag ETag
+    }
+
+    class DebateState {
+        +Rapper Rapper1
+        +Rapper Rapper2
+        +Topic Topic
+        +bool IsDebateInProgress
+        +bool IsDebateFinished
+        +int CurrentTurn
+        +int TotalTurns
+        +StringBuilder DebateTranscript
+        +string CurrentTurnText
+        +bool IsRapper1Turn
+        +byte[] CurrentTurnAudio
+        +string WinnerName
+        +string JudgeReasoning
+        +DebateStats Stats
+        +string ErrorMessage
+        +bool IsGeneratingTurn
+    }
+
+    class DebateStats {
+        +int Rapper1LogicScore
+        +int Rapper1SentimentScore
+        +int Rapper1AdherenceScore
+        +int Rapper1RebuttalScore
+        +int Rapper2LogicScore
+        +int Rapper2SentimentScore
+        +int Rapper2AdherenceScore
+        +int Rapper2RebuttalScore
+        +int Rapper1TotalScore
+        +int Rapper2TotalScore
+    }
+
+    class StartDebateRequest {
+        +Rapper Rapper1
+        +Rapper Rapper2
+        +Topic Topic
+    }
+
+    class JudgeDebateResponse {
+        +string WinnerName
+        +string Reasoning
+        +DebateStats Stats
+    }
+
+    class NewsHeadline {
+      +string? Title
+      +string? Description
+      +string? Url
+      +string? SourceName
+    }
+
+    class DiagnosticResult {
+      +string CheckName
+      +bool Success
+      +string Message
+    }
+
+    class WeatherForecast {
+      <<record>>
+      +DateOnly Date
+      +int TemperatureC
+      +string? Summary
+      +int TemperatureF
+    }
+
+    DebateState "1" -- "1" Rapper : has
+    DebateState "1" -- "1" Topic : has
+    DebateState "1" -- "1" DebateStats : has
+    StartDebateRequest "1" -- "1" Rapper : has
+    StartDebateRequest "1" -- "1" Topic : has
+    JudgeDebateResponse "1" -- "1" DebateStats : has

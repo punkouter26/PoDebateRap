@@ -54,15 +54,8 @@
         }
     </div>
     <div class="diagnostics-footer">
-        <button class="btn-test-audio" @onclick="TestTextToSpeech" disabled="@_isTestingAudio">
-            @if (_isTestingAudio)
-            {
-                <span>Testing Audio...</span>
-            }
-            else
-            {
-                <span>Test Text-to-Speech</span>
-            }
+        <button class="btn-test-audio" @onclick="RunDiagnostics">
+            <span>Re-run Diagnostics</span>
         </button>
         <a href="/" class="btn-home-link">Back to Home</a>
     </div>
@@ -248,13 +241,6 @@
     {
         objRef = DotNetObjectReference.Create(this);
         await RunDiagnostics();
-        
-        // Test TTS automatically when page loads
-        _ = Task.Run(async () => 
-        {
-            await Task.Delay(2000); // Wait 2 seconds for page to fully load
-            await TestTextToSpeech();
-        });
     }
 
     private async Task RunDiagnostics()
@@ -282,8 +268,13 @@
             var authService = await Http.GetStringAsync("Diagnostics/authentication-service");
             _results.Add(ParseDiagnosticResult("Authentication Service", authService));
 
-            // Test Text-to-Speech Service
-            await TestTTSService();
+            // Check Azure OpenAI Service
+            var openAIService = await Http.GetStringAsync("Diagnostics/azure-openai-service");
+            _results.Add(ParseDiagnosticResult("Azure OpenAI Service", openAIService));
+
+            // Check Text-to-Speech Service
+            var textToSpeechService = await Http.GetStringAsync("Diagnostics/text-to-speech-service");
+            _results.Add(ParseDiagnosticResult("Text-to-Speech Service", textToSpeechService));
         }
         catch (OperationCanceledException)
         {
@@ -302,64 +293,6 @@
         }
     }
 
-    private async Task TestTTSService()
-    {
-        try
-        {
-            Logger.LogInformation("Testing Text-to-Speech service...");
-            
-            // Call the TTS API to generate audio for "Hello"
-            var request = new GenerateSpeechRequest { Text = "Hello from diagnostics page", VoiceName = "en-US-DavisNeural" };
-            var response = await Http.PostAsJsonAsync("AI/generate-speech", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var audioBytes = await response.Content.ReadAsByteArrayAsync();
-                if (audioBytes != null && audioBytes.Length > 0)
-                {
-                    _results.Add(new DiagnosticResult 
-                    { 
-                        CheckName = "Text-to-Speech Service", 
-                        Success = true, 
-                        Message = $"OK - Generated {audioBytes.Length} bytes of audio data" 
-                    });
-                    
-                    Logger.LogInformation("TTS service test successful. Audio length: {Length}", audioBytes.Length);
-                }
-                else
-                {
-                    _results.Add(new DiagnosticResult 
-                    { 
-                        CheckName = "Text-to-Speech Service", 
-                        Success = false, 
-                        Message = "Error - No audio data returned" 
-                    });
-                    Logger.LogWarning("TTS service returned no audio data");
-                }
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _results.Add(new DiagnosticResult 
-                { 
-                    CheckName = "Text-to-Speech Service", 
-                    Success = false, 
-                    Message = $"Error - HTTP {response.StatusCode}: {errorContent}" 
-                });
-                Logger.LogError("TTS service test failed with status {Status}: {Error}", response.StatusCode, errorContent);
-            }
-        }
-        catch (Exception ex)
-        {
-            _results.Add(new DiagnosticResult 
-            { 
-                CheckName = "Text-to-Speech Service", 
-                Success = false, 
-                Message = $"Error - Exception: {ex.Message}" 
-            });
-            Logger.LogError(ex, "Exception during TTS service test");
-        }
-    }
 
     private async Task TestTextToSpeech()
     {

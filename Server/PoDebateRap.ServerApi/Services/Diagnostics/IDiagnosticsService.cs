@@ -8,5 +8,7 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
         Task<string> CheckDataConnectionAsync();
         Task<string> CheckInternetConnectionAsync();
         Task<string> CheckAuthenticationServiceAsync();
+        Task<string> CheckAzureOpenAIServiceAsync();
+        Task<string> CheckTextToSpeechServiceAsync();
     }
 }

@@ -60,7 +60,7 @@ namespace PoDebateRap.ServerApi.Services.AI
             }
         }
 
-        public async Task<string> GenerateDebateTurnAsync(string prompt, int maxTokens)
+        public async Task<string> GenerateDebateTurnAsync(string prompt, int maxTokens, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Generating debate turn with prompt: {Prompt}", prompt);
             try
@@ -73,13 +73,19 @@ namespace PoDebateRap.ServerApi.Services.AI
 
                 var options = new ChatCompletionOptions()
                 {
-                    Temperature = 0.7f
+                    Temperature = 0.7f,
+                    MaxOutputTokenCount = maxTokens
                 };
 
-                var response = await _chatClient.CompleteChatAsync(messages, options);
+                var response = await _chatClient.CompleteChatAsync(messages, options, cancellationToken);
                 string generatedText = response.Value.Content[0].Text;
                 _logger.LogInformation("Generated debate turn: {Text}", generatedText);
                 return generatedText;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Debate turn generation was canceled.");
+                throw;
             }
             catch (Exception ex)
             {
@@ -88,7 +94,7 @@ namespace PoDebateRap.ServerApi.Services.AI
             }
         }
 
-        public async Task<JudgeDebateResponse> JudgeDebateAsync(string debateTranscript, string rapper1Name, string rapper2Name, string topic)
+        public async Task<JudgeDebateResponse> JudgeDebateAsync(string debateTranscript, string rapper1Name, string rapper2Name, string topic, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Judging debate for topic: {Topic}", topic);
             try
@@ -120,7 +126,7 @@ namespace PoDebateRap.ServerApi.Services.AI
                     ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
                 };
 
-                var response = await _chatClient.CompleteChatAsync(messages, options);
+                var response = await _chatClient.CompleteChatAsync(messages, options, cancellationToken);
                 string jsonResponse = response.Value.Content[0].Text;
                 _logger.LogInformation("Judge response (JSON): {JsonResponse}", jsonResponse);
 
@@ -142,6 +148,11 @@ namespace PoDebateRap.ServerApi.Services.AI
 
                 return judgeResponse;
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Debate judging was canceled.");
+                throw;
+            }
             catch (JsonException jsonEx)
             {
                 _logger.LogError(jsonEx, "JSON deserialization error during debate judging.");
@@ -154,64 +165,11 @@ namespace PoDebateRap.ServerApi.Services.AI
             }
         }
 
-        public async Task<byte[]> GenerateSpeechAsync(string text, string voiceName)
+        public Task<byte[]> GenerateSpeechAsync(string text, string voiceName, CancellationToken cancellationToken)
         {
-            if (_speechConfig == null)
-            {
-                _logger.LogError("Azure Speech service is not configured. Cannot generate speech.");
-                throw new InvalidOperationException("Azure Speech service is not configured.");
-            }
-
-            _logger.LogInformation("Generating speech for text: '{Text}' with voice: {Voice}", text, voiceName);
-            try
-            {
-                _speechConfig.SpeechSynthesisVoiceName = voiceName;
-
-                using (var synthesizer = new SpeechSynthesizer(_speechConfig, null))
-                {
-                    using (var result = await synthesizer.SpeakTextAsync(text))
-                    {
-                        if (result.Reason == ResultReason.SynthesizingAudioCompleted)
-                        {
-                            _logger.LogInformation("Speech synthesis completed successfully.");
-                            using (var audioDataStream = AudioDataStream.FromResult(result))
-                            {
-                                using (var memoryStream = new MemoryStream())
-                                {
-                                    var buffer = new byte[16000];
-                                    uint totalSize = 0;
-                                    uint filledSize = 0;
-                                    
-                                    while ((filledSize = audioDataStream.ReadData(buffer)) > 0)
-                                    {
-                                        memoryStream.Write(buffer, 0, (int)filledSize);
-                                        totalSize += filledSize;
-                                    }
-                                    
-                                    return memoryStream.ToArray();
-                                }
-                            }
-                        }
-                        else if (result.Reason == ResultReason.Canceled)
-                        {
-                            var cancellation = SpeechSynthesisCancellationDetails.FromResult(result);
-                            _logger.LogError("Speech synthesis canceled: Reason={Reason}, ErrorDetails={ErrorDetails}",
-                                cancellation.Reason, cancellation.ErrorDetails);
-                            throw new Exception($"Speech synthesis canceled: {cancellation.Reason} - {cancellation.ErrorDetails}");
-                        }
-                        else
-                        {
-                            _logger.LogError("Speech synthesis failed: Reason={Reason}", result.Reason);
-                            throw new Exception($"Speech synthesis failed: {result.Reason}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during speech synthesis.");
-                throw;
-            }
+            // This service is a wrapper, the actual implementation is in TextToSpeechService.
+            // This method will be removed in a future refactoring to separate concerns.
+            throw new NotImplementedException("This method should be called on TextToSpeechService directly.");
         }
     }
 }

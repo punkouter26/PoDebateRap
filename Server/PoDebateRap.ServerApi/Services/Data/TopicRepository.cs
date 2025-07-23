@@ -8,9 +8,14 @@ using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Services.Data
 {
+    /// <summary>
+    /// Using Repository Pattern to abstract data access logic for Topic entities.
+    /// This class provides a clean API for data operations, decoupling the application
+    /// from the underlying data storage (Azure Table Storage).
+    /// </summary>
     public class TopicRepository : ITopicRepository
     {
-        private const string TableName = "Topics";
+        private const string TableName = "PoDebateRapTopics";
         private readonly ITableStorageService _tableStorageService;
         private readonly ILogger<TopicRepository> _logger;
 
@@ -51,11 +56,11 @@ namespace PoDebateRap.ServerApi.Services.Data
                 _logger.LogInformation("No topics found. Seeding initial data.");
                 var initialTopics = new List<TopicEntity>
                 {
-                    new TopicEntity("Politics", "The future of AI in governance"),
-                    new TopicEntity("Technology", "The ethics of self-driving cars"),
-                    new TopicEntity("Science", "Colonizing Mars: necessity or folly?"),
-                    new TopicEntity("Culture", "The impact of social media on mental health"),
-                    new TopicEntity("Economy", "Universal Basic Income: solution or fantasy?")
+                    new TopicEntity("PoDebateRapTopics", "The future of AI in governance"),
+                    new TopicEntity("PoDebateRapTopics", "The ethics of self-driving cars"),
+                    new TopicEntity("PoDebateRapTopics", "Colonizing Mars: necessity or folly?"),
+                    new TopicEntity("PoDebateRapTopics", "The impact of social media on mental health"),
+                    new TopicEntity("PoDebateRapTopics", "Universal Basic Income: solution or fantasy?")
                 };
 
                 foreach (var topic in initialTopics)

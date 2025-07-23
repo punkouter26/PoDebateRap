@@ -21,6 +21,26 @@ namespace PoDebateRap.ServerApi.Controllers
         [HttpPost("start")]
         public async Task<ActionResult<DebateState>> StartDebate([FromBody] StartDebateRequest request)
         {
+            if (request?.Rapper1 == null || request.Rapper2 == null || request.Topic == null)
+            {
+                return BadRequest("Invalid request: Rappers and Topic must be provided.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Rapper1.Name) || string.IsNullOrWhiteSpace(request.Rapper2.Name))
+            {
+                return BadRequest("Invalid request: Rapper names cannot be empty.");
+            }
+
+            if (request.Rapper1.Name == request.Rapper2.Name)
+            {
+                return BadRequest("Invalid request: Rappers cannot be the same.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Topic.Title))
+            {
+                return BadRequest("Invalid request: Topic title cannot be empty.");
+            }
+
             try
             {
                 await _orchestrator.StartNewDebateAsync(request.Rapper1, request.Rapper2, request.Topic);

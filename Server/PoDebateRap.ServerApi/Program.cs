@@ -11,6 +11,7 @@ using Azure.AI.OpenAI; // For OpenAIClient
 using Microsoft.CognitiveServices.Speech; // For SpeechConfig
 using Microsoft.CognitiveServices.Speech.Audio; // For AudioDataStream
 using Microsoft.Extensions.Configuration; // Required for IConfiguration
+using PoDebateRap.ServerApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,42 +27,20 @@ if (builder.Environment.IsDevelopment())
 }
 // --- End Logging Configuration ---
 
-// --- Add Key Vault Configuration ---
-var keyVaultUri = builder.Configuration["KeyVaultUri"];
-if (!string.IsNullOrEmpty(keyVaultUri))
+// --- Configure User Secrets for Development ---
+if (builder.Environment.IsDevelopment())
 {
-    try
-    {
-        builder.Configuration.AddAzureKeyVault(
-            new Uri(keyVaultUri),
-            new DefaultAzureCredential());
-        Console.WriteLine($"Successfully added Key Vault configuration source: {keyVaultUri}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error adding Key Vault configuration source: {ex.Message}");
-    }
+    builder.Configuration.AddUserSecrets<Program>();
+    Console.WriteLine("User Secrets configured for development.");
 }
-else
-{
-    Console.WriteLine("KeyVaultUri not found in configuration. Skipping Key Vault setup.");
-}
-// --- End Key Vault Configuration ---
+// --- End User Secrets Configuration ---
 
 // Add services to the container.
+builder.Services.AddSignalR();
 builder.Services.AddControllers(); // Add controllers for Web API
 builder.Services.AddRazorPages(); // Add Razor Pages support for Blazor
 builder.Services.AddEndpointsApiExplorer(); // For OpenAPI/Swagger
 builder.Services.AddSwaggerGen(); // For OpenAPI/Swagger
-
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:5000", "https://localhost:5001") // Adjust origins as needed for your Blazor client
-                         .AllowAnyHeader()
-                         .AllowAnyMethod());
-});
 
 // Register Data Services
 builder.Services.AddScoped<ITableStorageService, TableStorageService>();
@@ -82,7 +61,7 @@ builder.Services.AddHttpClient<INewsService, NewsService>();
 
 // Register Diagnostics Service
 builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
-builder.Services.AddHttpClient(); // Ensure HttpClientFactory is available (needed for DebateOrchestrator and NewsService)
+
 
 // Add Application Insights for telemetry and logging
 builder.Services.AddApplicationInsightsTelemetry();
@@ -94,6 +73,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // In development, use the DeveloperExceptionPage for detailed error information
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    // In production, use a more user-friendly error page and global exception handler
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -103,12 +91,11 @@ app.UseStaticFiles(); // Serve static files from wwwroot
 
 app.UseRouting(); // Use routing middleware
 
-app.UseCors("AllowSpecificOrigin"); // Use CORS policy
-
 app.UseAuthorization(); // Use authorization middleware
 
 app.MapControllers(); // Map controllers
 app.MapRazorPages(); // Map Razor Pages
+app.MapHub<DebateHub>("/debatehub");
 app.MapFallbackToFile("index.html"); // Fallback to index.html for client-side routing
 
 // --- Data Seeding ---
@@ -127,6 +114,7 @@ using (var scope = app.Services.CreateScope())
             {
                 app.Logger.LogInformation("Attempting initial data seeding...");
                 rapperRepository.SeedInitialRappersAsync().GetAwaiter().GetResult();
+                topicRepository.SeedInitialTopicsAsync().GetAwaiter().GetResult();
                 app.Logger.LogInformation("Initial data seeding completed (if necessary).");
             }
             catch (Exception seedEx)

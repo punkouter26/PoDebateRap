@@ -1,0 +1,29 @@
+graph TD
+    subgraph Application Projects
+        Client[PoDebateRap.Client]
+        ServerAPI[PoDebateRap.ServerApi]
+        Shared[PoDebateRap.Shared]
+    end
+
+    subgraph Test Projects
+        UnitTests[PoDebateRap.UnitTests]
+        IntegrationTests[PoDebateRap.IntegrationTests]
+        ApiTests[PoDebateRap.ApiTests]
+        SystemTests[PoDebateRap.SystemTests]
+    end
+
+    Client --> Shared
+    ServerAPI --> Shared
+    ServerAPI --> Client
+
+    UnitTests --> ServerAPI
+    UnitTests --> Shared
+
+    IntegrationTests --> ServerAPI
+    IntegrationTests --> Shared
+
+    ApiTests --> ServerAPI
+    ApiTests --> Shared
+
+    SystemTests --> ServerAPI
+    SystemTests --> Client

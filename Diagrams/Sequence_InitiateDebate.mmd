@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant Client
+    participant ServerAPI
+    participant DebateHub
+    participant DebateOrchestrator
+    participant AzureOpenAIService
+    participant TextToSpeechService
+
+    Client->>ServerAPI: POST /debate/start (rapper1, rapper2, topic)
+    ServerAPI->>DebateOrchestrator: StartNewDebateAsync(rapper1, rapper2, topic)
+    Note over DebateOrchestrator: Resets state, sets up intro text.
+    DebateOrchestrator->>TextToSpeechService: GenerateSpeechAsync(intro_text)
+    TextToSpeechService-->>DebateOrchestrator: intro_audio
+    Note over DebateOrchestrator: Stores intro audio in CurrentState.
+    ServerAPI-->>Client: 200 OK (initial DebateState with intro)
+    Note over Client: Plays intro audio.
+
+    par Debate Loop (background task)
+        DebateOrchestrator->>DebateOrchestrator: RunDebateTurnsAsync()
+        loop For each turn
+            Note over DebateOrchestrator: Update state: IsGeneratingTurn = true
+            DebateOrchestrator->>DebateHub: Push StateChange(DebateState)
+            DebateHub-->>Client: Receive StateChange
+            DebateOrchestrator->>AzureOpenAIService: GenerateDebateTurnAsync(prompt)
+            AzureOpenAIService-->>DebateOrchestrator: rap_text
+            DebateOrchestrator->>TextToSpeechService: GenerateSpeechAsync(rap_text)
+            TextToSpeechService-->>DebateOrchestrator: turn_audio
+            Note over DebateOrchestrator: Update state with new text and audio
+            DebateOrchestrator->>DebateHub: Push StateChange(DebateState)
+            DebateHub-->>Client: Receive StateChange
+            Note over Client: Plays turn audio.
+            Client->>DebateHub: SignalAudioPlaybackComplete()
+            DebateHub->>DebateOrchestrator: SignalAudioPlaybackCompleteAsync()
+            Note over DebateOrchestrator: Loop continues to next turn.
+        end
+    and Judging
+        Note over DebateOrchestrator: When loop finishes, start judging.
+        DebateOrchestrator->>AzureOpenAIService: JudgeDebateAsync(transcript)
+        AzureOpenAIService-->>DebateOrchestrator: judge_response
+        Note over DebateOrchestrator: Update state with winner and stats.
+        DebateOrchestrator->>DebateHub: Push StateChange(Final DebateState)
+        DebateHub-->>Client: Receive Final StateChange
+        Note over Client: Displays results modal.
+    end

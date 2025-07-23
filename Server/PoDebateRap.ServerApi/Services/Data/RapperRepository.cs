@@ -8,9 +8,14 @@ using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Services.Data
 {
+    /// <summary>
+    /// Using Repository Pattern to abstract data access logic for Rapper entities.
+    /// This class provides a clean API for data operations, decoupling the application
+    /// from the underlying data storage (Azure Table Storage).
+    /// </summary>
     public class RapperRepository : IRapperRepository
     {
-        private const string TableName = "Rappers";
+        private const string TableName = "PoDebateRapRappers";
         private readonly ITableStorageService _tableStorageService;
         private readonly ILogger<RapperRepository> _logger;
 
@@ -52,16 +57,16 @@ namespace PoDebateRap.ServerApi.Services.Data
                 _logger.LogInformation("No rappers found. Seeding initial data.");
                 var initialRappers = new List<RapperEntity>
                 {
-                    new RapperEntity("Rappers", "Eminem") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Kendrick Lamar") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Tupac Shakur") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "The Notorious B.I.G.") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Nas") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Jay-Z") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Rakim") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Andre 3000") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Lauryn Hill") { Wins = 0, Losses = 0 },
-                    new RapperEntity("Rappers", "Snoop Dogg") { Wins = 0, Losses = 0 }
+                    new RapperEntity("PoDebateRapRappers", "Eminem") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Kendrick Lamar") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Tupac Shakur") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "The Notorious B.I.G.") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Nas") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Jay-Z") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Rakim") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Andre 3000") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Lauryn Hill") { Wins = 0, Losses = 0 },
+                    new RapperEntity("PoDebateRapRappers", "Snoop Dogg") { Wins = 0, Losses = 0 }
                 };
 
                 foreach (var rapper in initialRappers)
@@ -81,7 +86,7 @@ namespace PoDebateRap.ServerApi.Services.Data
             _logger.LogInformation("Updating win/loss record for winner: {WinnerName}, loser: {LoserName}", winnerName, loserName);
             try
             {
-                var winnerEntity = await _tableStorageService.GetEntityAsync<RapperEntity>(TableName, "Rappers", winnerName);
+                var winnerEntity = await _tableStorageService.GetEntityAsync<RapperEntity>(TableName, "PoDebateRapRappers", winnerName);
                 if (winnerEntity != null)
                 {
                     winnerEntity.Wins++;
@@ -90,10 +95,10 @@ namespace PoDebateRap.ServerApi.Services.Data
                 else
                 {
                     _logger.LogWarning("Winner '{WinnerName}' not found in database. Creating new entry.", winnerName);
-                    await _tableStorageService.UpsertEntityAsync(TableName, new RapperEntity("Rappers", winnerName) { Wins = 1, Losses = 0 });
+                    await _tableStorageService.UpsertEntityAsync(TableName, new RapperEntity("PoDebateRapRappers", winnerName) { Wins = 1, Losses = 0 });
                 }
 
-                var loserEntity = await _tableStorageService.GetEntityAsync<RapperEntity>(TableName, "Rappers", loserName);
+                var loserEntity = await _tableStorageService.GetEntityAsync<RapperEntity>(TableName, "PoDebateRapRappers", loserName);
                 if (loserEntity != null)
                 {
                     loserEntity.Losses++;
@@ -102,7 +107,7 @@ namespace PoDebateRap.ServerApi.Services.Data
                 else
                 {
                     _logger.LogWarning("Loser '{LoserName}' not found in database. Creating new entry.", loserName);
-                    await _tableStorageService.UpsertEntityAsync(TableName, new RapperEntity("Rappers", loserName) { Wins = 0, Losses = 1 });
+                    await _tableStorageService.UpsertEntityAsync(TableName, new RapperEntity("PoDebateRapRappers", loserName) { Wins = 0, Losses = 1 });
                 }
                 _logger.LogInformation("Win/loss record updated successfully.");
             }

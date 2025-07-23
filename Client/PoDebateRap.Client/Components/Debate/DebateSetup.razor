@@ -1,0 +1,118 @@
+@using PoDebateRap.Shared.Models
+
+<div class="setup-section">
+    <div class="form-group">
+        <!-- Rapper 1 Selection -->
+        <div class="form-field">
+            <label for="rapper1Select">Select Rapper 1</label>
+            <select id="rapper1Select" @bind="SelectedRapper1Name" disabled="@IsDisabled">
+                <option value="">-- Select --</option>
+                @if (Rappers != null)
+                {
+                    foreach (var rapper in Rappers.OrderBy(r => r.Name))
+                    {
+                        <option value="@rapper.Name">@rapper.Name</option>
+                    }
+                }
+                else
+                {
+                    <option disabled value="">Loading Rappers Failed</option>
+                }
+            </select>
+        </div>
+
+        <!-- VS Separator -->
+        <div class="vs-separator">
+            <span style="font-size: 1.5rem; font-family: 'Impact', Haettenschweiler, 'Arial Narrow Bold', sans-serif; color: #CD7F32;">VS</span>
+        </div>
+
+        <!-- Rapper 2 Selection -->
+        <div class="form-field">
+                <label for="rapper2Select">Select Rapper 2</label>
+                <select id="rapper2Select" @bind="SelectedRapper2Name" disabled="@IsDisabled">
+                <option value="">-- Select --</option>
+                    @if (Rappers != null)
+                {
+                    foreach (var rapper in Rappers.OrderBy(r => r.Name))
+                    {
+                        if (rapper.Name != SelectedRapper1Name)
+                        {
+                            <option value="@rapper.Name">@rapper.Name</option>
+                        }
+                    }
+                }
+                    else
+                {
+                    <option disabled value="">Loading Rappers Failed</option>
+                }
+            </select>
+        </div>
+
+        <!-- Topic Input Area -->
+        <div class="form-field">
+            <label for="debateTopicInput">Debate Topic</label>
+            <input type="text" id="debateTopicInput" placeholder="@TopicPlaceholder"
+                    @bind="DebateTopicInput" @bind:event="oninput"
+                    maxlength="150" disabled="@IsDisabled" />
+            @if (!string.IsNullOrEmpty(InitialTopicFetchError))
+            {
+                <div class="text-danger mt-1"><small>@InitialTopicFetchError</small></div>
+            }
+        </div>
+
+        <!-- Begin/Stop Debate Button -->
+        <div class="button-group">
+            @if (!IsDebateInProgress)
+            {
+                <!-- Show Begin Button -->
+                <button class="btn-primary" @onclick="OnStartDebate" disabled="@IsStartDisabled">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner"></span>
+                        <span>@(IsStarting ? "Starting..." : (IsFetchingTopic ? "Fetching Topic..." : "Loading..."))</span>
+                    }
+                    else
+                    {
+                        <span>Begin Debate</span>
+                    }
+                </button>
+            }
+            else
+            {
+                <!-- Show Stop Button -->
+                <button class="btn-danger" @onclick="OnStopDebate" disabled="@IsVoting">
+                    @if (IsStarting)
+                    {
+                            <span class="spinner"></span>
+                            <span>Generating...</span>
+                    }
+                    else
+                    {
+                        <span>STOP DEBATE</span>
+                    }
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<Rapper>? Rappers { get; set; }
+    [Parameter] public string? SelectedRapper1Name { get; set; }
+    [Parameter] public EventCallback<string> SelectedRapper1NameChanged { get; set; }
+    [Parameter] public string? SelectedRapper2Name { get; set; }
+    [Parameter] public EventCallback<string> SelectedRapper2NameChanged { get; set; }
+    [Parameter] public string? DebateTopicInput { get; set; }
+    [Parameter] public EventCallback<string> DebateTopicInputChanged { get; set; }
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool IsStarting { get; set; }
+    [Parameter] public bool IsFetchingTopic { get; set; }
+    [Parameter] public bool IsDebateInProgress { get; set; }
+    [Parameter] public bool IsVoting { get; set; }
+    [Parameter] public bool IsStartDisabled { get; set; }
+    [Parameter] public string? InitialTopicFetchError { get; set; }
+    [Parameter] public string TopicPlaceholder { get; set; } = "Enter debate topic...";
+    [Parameter] public EventCallback OnStartDebate { get; set; }
+    [Parameter] public EventCallback OnStopDebate { get; set; }
+}

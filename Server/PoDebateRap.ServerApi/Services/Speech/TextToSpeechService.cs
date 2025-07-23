@@ -34,7 +34,7 @@ namespace PoDebateRap.ServerApi.Services.Speech
             }
         }
 
-        public async Task<byte[]> GenerateSpeechAsync(string text, string voiceName)
+        public async Task<byte[]> GenerateSpeechAsync(string text, string voiceName, CancellationToken cancellationToken)
         {
             if (_speechConfig == null)
             {
@@ -45,12 +45,28 @@ namespace PoDebateRap.ServerApi.Services.Speech
             _logger.LogInformation("Generating speech for text: '{Text}' with voice: {Voice}", text, voiceName);
             try
             {
-                // Set the voice on the SpeechConfig directly
                 _speechConfig.SpeechSynthesisVoiceName = voiceName;
 
                 using (var synthesizer = new SpeechSynthesizer(_speechConfig, null))
                 {
-                    using (var result = await synthesizer.SpeakTextAsync(text))
+                    // This is a workaround to make SpeakTextAsync cancellable.
+                    // The SDK's SpeakTextAsync doesn't directly accept a CancellationToken.
+                    // We start the synthesis and then wait on a task that can be cancelled.
+                    var synthesisTask = synthesizer.SpeakTextAsync(text);
+                    var cancellationTask = Task.Delay(Timeout.Infinite, cancellationToken);
+                    
+                    var completedTask = await Task.WhenAny(synthesisTask, cancellationTask);
+
+                    if (completedTask == cancellationTask)
+                    {
+                        // The cancellation token was triggered.
+                        // We don't have a direct way to stop the synthesizer, but we can stop processing.
+                        _logger.LogInformation("Speech synthesis was canceled.");
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    // The synthesis task completed.
+                    using (var result = await synthesisTask)
                     {
                         if (result.Reason == ResultReason.SynthesizingAudioCompleted)
                         {
@@ -59,67 +75,23 @@ namespace PoDebateRap.ServerApi.Services.Speech
                             {
                                 using (var memoryStream = new MemoryStream())
                                 {
-                                    byte[] buffer = new byte[16000]; // Buffer for reading audio data
+                                    // Read all data from AudioDataStream
+                                    byte[] buffer = new byte[4096];
                                     uint bytesRead;
                                     while ((bytesRead = audioDataStream.ReadData(buffer)) > 0)
                                     {
                                         memoryStream.Write(buffer, 0, (int)bytesRead);
                                     }
-
-                                    byte[] audioData = memoryStream.ToArray();
-
-                                    // Construct WAV header
-                                    int sampleRate = 16000; // From SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm
-                                    int bitsPerSample = 16; // From SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm
-                                    int numChannels = 1; // Mono
-
-                                    int byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-                                    short blockAlign = (short)(numChannels * (bitsPerSample / 8));
-
-                                    int audioDataLength = audioData.Length;
-                                    int chunkSize = 36 + audioDataLength; // 36 bytes for header + audio data length
-
-                                    using (var wavStream = new MemoryStream())
-                                    using (var writer = new BinaryWriter(wavStream))
-                                    {
-                                        // RIFF header
-                                        writer.Write(Encoding.ASCII.GetBytes("RIFF"));
-                                        writer.Write(chunkSize);
-                                        writer.Write(Encoding.ASCII.GetBytes("WAVE"));
-
-                                        // fmt chunk
-                                        writer.Write(Encoding.ASCII.GetBytes("fmt "));
-                                        writer.Write(16); // Subchunk1Size for PCM
-                                        writer.Write((short)1); // AudioFormat (1 for PCM)
-                                        writer.Write((short)numChannels);
-                                        writer.Write(sampleRate);
-                                        writer.Write(byteRate);
-                                        writer.Write(blockAlign);
-                                        writer.Write((short)bitsPerSample);
-
-                                        // data chunk
-                                        writer.Write(Encoding.ASCII.GetBytes("data"));
-                                        writer.Write(audioDataLength);
-                                        writer.Write(audioData);
-
-                                        var wavBytes = wavStream.ToArray();
-
-                                        // Save the WAV file to the root directory for verification
-                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "test_speech.wav");
-                                        await File.WriteAllBytesAsync(filePath, wavBytes);
-                                        _logger.LogInformation("Saved generated speech to {FilePath}", filePath);
-
-                                        return wavBytes;
-                                    }
+                                    return memoryStream.ToArray();
                                 }
                             }
                         }
                         else if (result.Reason == ResultReason.Canceled)
                         {
-                            var cancellation = SpeechSynthesisCancellationDetails.FromResult(result);
-                            _logger.LogError("Speech synthesis canceled: Reason={Reason}, ErrorDetails={ErrorDetails}",
-                                cancellation.Reason, cancellation.ErrorDetails);
-                            throw new Exception($"Speech synthesis canceled: {cancellation.Reason} - {cancellation.ErrorDetails}");
+                            var cancellationDetails = SpeechSynthesisCancellationDetails.FromResult(result);
+                            _logger.LogError("Speech synthesis canceled by service: Reason={Reason}, ErrorDetails={ErrorDetails}",
+                                cancellationDetails.Reason, cancellationDetails.ErrorDetails);
+                            throw new Exception($"Speech synthesis canceled: {cancellationDetails.Reason} - {cancellationDetails.ErrorDetails}");
                         }
                         else
                         {
@@ -128,6 +100,11 @@ namespace PoDebateRap.ServerApi.Services.Speech
                         }
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Speech generation was canceled by the caller.");
+                throw;
             }
             catch (Exception ex)
             {

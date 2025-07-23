@@ -23,7 +23,7 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             try
             {
-                var response = await _openAIService.GenerateDebateTurnAsync(request.Prompt, request.MaxTokens);
+                var response = await _openAIService.GenerateDebateTurnAsync(request.Prompt, request.MaxTokens, CancellationToken.None);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -38,7 +38,7 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             try
             {
-                var response = await _openAIService.JudgeDebateAsync(request.DebateTranscript, request.Rapper1Name, request.Rapper2Name, request.Topic);
+                var response = await _openAIService.JudgeDebateAsync(request.DebateTranscript, request.Rapper1Name, request.Rapper2Name, request.Topic, CancellationToken.None);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -53,7 +53,7 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             try
             {
-                var audioBytes = await _openAIService.GenerateSpeechAsync(request.Text, request.VoiceName);
+                var audioBytes = await _openAIService.GenerateSpeechAsync(request.Text, request.VoiceName, CancellationToken.None);
                 return File(audioBytes, "audio/wav"); // Assuming WAV format
             }
             catch (Exception ex)

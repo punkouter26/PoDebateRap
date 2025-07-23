@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/PoDebateRap.sln",
+                "${workspaceFolder}/Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

@@ -1,20 +1,20 @@
 using Microsoft.Extensions.Logging;
 using PoDebateRap.Shared.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json; // Ensure this is present
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PoDebateRap.ServerApi.Services.AI;
+using PoDebateRap.ServerApi.Services.Speech;
+using PoDebateRap.ServerApi.Services.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PoDebateRap.ServerApi.Services.Orchestration
 {
     public class DebateOrchestrator : IDebateOrchestrator
     {
         private readonly ILogger<DebateOrchestrator> _logger;
-        private readonly HttpClient _httpClient; // To call AI API endpoints
+        private readonly IServiceProvider _serviceProvider;
 
         private DebateState _currentState;
         public DebateState CurrentState => _currentState;
@@ -29,11 +29,10 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         private const string Rapper1Voice = "en-US-GuyNeural"; // Example voice for Rapper 1
         private const string Rapper2Voice = "en-US-JennyNeural"; // Example voice for Rapper 2
 
-        public DebateOrchestrator(ILogger<DebateOrchestrator> logger, IHttpClientFactory httpClientFactory)
+        public DebateOrchestrator(ILogger<DebateOrchestrator> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _httpClient = httpClientFactory.CreateClient(); // Create HttpClient using the factory
-            _httpClient.BaseAddress = new Uri("http://localhost:5278/"); // Set base address for internal calls
+            _serviceProvider = serviceProvider;
             _currentState = new DebateState();
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
         }
@@ -90,64 +89,62 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
             {
                 while (_currentState.CurrentTurn < MaxDebateTurns && !cancellationToken.IsCancellationRequested)
                 {
-                    _currentState.CurrentTurn++;
-                    _currentState.IsGeneratingTurn = true;
-                    _currentState.CurrentTurnAudio = null; // Clear previous audio
-                    _currentState.ErrorMessage = null; // Clear previous errors
-                    await NotifyStateChangeAsync();
-
-                    string currentRapperName = _currentState.IsRapper1Turn ? _currentState.Rapper1.Name : _currentState.Rapper2.Name;
-                    string opponentRapperName = _currentState.IsRapper1Turn ? _currentState.Rapper2.Name : _currentState.Rapper1.Name;
-                    string role = _currentState.IsRapper1Turn ? "Pro" : "Con";
-
-                    string prompt = $"You are {currentRapperName} debating {opponentRapperName} on the topic '{_currentState.Topic.Title}'. " +
-                                    $"Your role is {role}. This is turn {_currentState.CurrentTurn} of {MaxDebateTurns}. " +
-                                    $"Current transcript:\n{_currentState.DebateTranscript.ToString()}\n" +
-                                    $"Your rap:";
-
-                    _logger.LogInformation("Generating turn {Turn} for {Rapper} ({Role}).", _currentState.CurrentTurn, currentRapperName, role);
-
-                    try
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        var generateTurnRequest = new GenerateDebateTurnRequest { Prompt = prompt, MaxTokens = MaxTokensPerTurn };
-                        var jsonContent = JsonContent.Create(generateTurnRequest);
-                        var response = await _httpClient.PostAsync("AI/generate-debate-turn", jsonContent, cancellationToken);
-                        response.EnsureSuccessStatusCode();
-                        _currentState.CurrentTurnText = await response.Content.ReadAsStringAsync(cancellationToken);
+                        var openAiService = scope.ServiceProvider.GetRequiredService<IAzureOpenAIService>();
+                        var ttsService = scope.ServiceProvider.GetRequiredService<ITextToSpeechService>();
+
+                        _currentState.CurrentTurn++;
+                        _currentState.IsGeneratingTurn = true;
+                        _currentState.CurrentTurnAudio = null; // Clear previous audio
+                        _currentState.ErrorMessage = null; // Clear previous errors
+                        await NotifyStateChangeAsync();
+
+                        string currentRapperName = _currentState.IsRapper1Turn ? _currentState.Rapper1.Name : _currentState.Rapper2.Name;
+                        string opponentRapperName = _currentState.IsRapper1Turn ? _currentState.Rapper2.Name : _currentState.Rapper1.Name;
+                        string role = _currentState.IsRapper1Turn ? "Pro" : "Con";
+
+                        string prompt = $"You are {currentRapperName} debating {opponentRapperName} on the topic '{_currentState.Topic.Title}'. " +
+                                        $"Your role is {role}. This is turn {_currentState.CurrentTurn} of {MaxDebateTurns}. " +
+                                        $"Current transcript:\n{_currentState.DebateTranscript.ToString()}\n" +
+                                        $"Your rap:";
+
+                        _logger.LogInformation("Generating turn {Turn} for {Rapper} ({Role}).", _currentState.CurrentTurn, currentRapperName, role);
+
+                        try
+                        {
+                            _currentState.CurrentTurnText = await openAiService.GenerateDebateTurnAsync(prompt, MaxTokensPerTurn, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error generating turn {Turn} text.", _currentState.CurrentTurn);
+                            _currentState.CurrentTurnText = $"Error generating rap for {currentRapperName}.";
+                            _currentState.ErrorMessage = ex.Message;
+                        }
+
+                        _currentState.DebateTranscript.AppendLine($"{currentRapperName} (Turn {_currentState.CurrentTurn}):\n{_currentState.CurrentTurnText}\n");
+
+                        // Generate speech for the current turn
+                        try
+                        {
+                            string voice = _currentState.IsRapper1Turn ? Rapper1Voice : Rapper2Voice;
+                            _currentState.CurrentTurnAudio = await ttsService.GenerateSpeechAsync(_currentState.CurrentTurnText, voice, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error generating speech for turn {Turn}.", _currentState.CurrentTurn);
+                            _currentState.ErrorMessage = ex.Message;
+                            _currentState.CurrentTurnAudio = null; // Ensure no audio is played if generation fails
+                        }
+
+                        await NotifyStateChangeAsync();
+
+                        // Wait for audio playback to complete before proceeding to the next turn
+                        await _audioPlaybackCompletionSource.Task;
+                        _audioPlaybackCompletionSource = new TaskCompletionSource<bool>(); // Reset for next turn
+
+                        _currentState.IsRapper1Turn = !_currentState.IsRapper1Turn; // Switch turns
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error generating turn {Turn} text.", _currentState.CurrentTurn);
-                        _currentState.CurrentTurnText = $"Error generating rap for {currentRapperName}.";
-                        _currentState.ErrorMessage = ex.Message;
-                    }
-
-                    _currentState.DebateTranscript.AppendLine($"{currentRapperName} (Turn {_currentState.CurrentTurn}):\n{_currentState.CurrentTurnText}\n");
-
-                    // Generate speech for the current turn
-                    try
-                    {
-                        string voice = _currentState.IsRapper1Turn ? Rapper1Voice : Rapper2Voice;
-                        var generateSpeechRequest = new GenerateSpeechRequest { Text = _currentState.CurrentTurnText, VoiceName = voice };
-                        var speechJsonContent = JsonContent.Create(generateSpeechRequest);
-                        var speechResponse = await _httpClient.PostAsync("AI/generate-speech", speechJsonContent, cancellationToken);
-                        speechResponse.EnsureSuccessStatusCode();
-                        _currentState.CurrentTurnAudio = await speechResponse.Content.ReadAsByteArrayAsync(cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error generating speech for turn {Turn}.", _currentState.CurrentTurn);
-                        _currentState.ErrorMessage = ex.Message;
-                        _currentState.CurrentTurnAudio = null; // Ensure no audio is played if generation fails
-                    }
-
-                    await NotifyStateChangeAsync();
-
-                    // Wait for audio playback to complete before proceeding to the next turn
-                    await _audioPlaybackCompletionSource.Task;
-                    _audioPlaybackCompletionSource = new TaskCompletionSource<bool>(); // Reset for next turn
-
-                    _currentState.IsRapper1Turn = !_currentState.IsRapper1Turn; // Switch turns
                 }
 
                 if (!cancellationToken.IsCancellationRequested)
@@ -160,20 +157,28 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
                     // Judge the debate
                     try
                     {
-                        var judgeRequest = new JudgeDebateRequest
+                        using (var scope = _serviceProvider.CreateScope())
                         {
-                            DebateTranscript = _currentState.DebateTranscript.ToString(),
-                            Rapper1Name = _currentState.Rapper1.Name,
-                            Rapper2Name = _currentState.Rapper2.Name,
-                            Topic = _currentState.Topic.Title
-                        };
-                        var judgeJsonContent = JsonContent.Create(judgeRequest);
-                        var judgeHttpResponse = await _httpClient.PostAsync("AI/judge-debate", judgeJsonContent, cancellationToken);
-                        judgeHttpResponse.EnsureSuccessStatusCode();
-                        var judgeResponse = await judgeHttpResponse.Content.ReadFromJsonAsync<JudgeDebateResponse>(cancellationToken);
-                        _currentState.WinnerName = judgeResponse.WinnerName;
-                        _currentState.JudgeReasoning = judgeResponse.Reasoning;
-                        _currentState.Stats = judgeResponse.Stats;
+                            var openAiService = scope.ServiceProvider.GetRequiredService<IAzureOpenAIService>();
+                            var rapperRepository = scope.ServiceProvider.GetRequiredService<IRapperRepository>();
+
+                            var judgeResponse = await openAiService.JudgeDebateAsync(
+                                _currentState.DebateTranscript.ToString(),
+                                _currentState.Rapper1.Name,
+                                _currentState.Rapper2.Name,
+                                _currentState.Topic.Title,
+                                cancellationToken);
+
+                            _currentState.WinnerName = judgeResponse.WinnerName;
+                            _currentState.JudgeReasoning = judgeResponse.Reasoning;
+                            _currentState.Stats = judgeResponse.Stats;
+
+                            if (!string.IsNullOrEmpty(_currentState.WinnerName) && _currentState.WinnerName != "Error Judging")
+                            {
+                                string loserName = _currentState.WinnerName == _currentState.Rapper1.Name ? _currentState.Rapper2.Name : _currentState.Rapper1.Name;
+                                await rapperRepository.UpdateWinLossRecordAsync(_currentState.WinnerName, loserName);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -217,11 +222,11 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         {
             try
             {
-                var generateSpeechRequest = new GenerateSpeechRequest { Text = text, VoiceName = voiceName };
-                var speechJsonContent = JsonContent.Create(generateSpeechRequest);
-                var speechResponse = await _httpClient.PostAsync("AI/generate-speech", speechJsonContent);
-                speechResponse.EnsureSuccessStatusCode();
-                _currentState.CurrentTurnAudio = await speechResponse.Content.ReadAsByteArrayAsync();
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var ttsService = scope.ServiceProvider.GetRequiredService<ITextToSpeechService>();
+                    _currentState.CurrentTurnAudio = await ttsService.GenerateSpeechAsync(text, voiceName, CancellationToken.None);
+                }
                 await NotifyStateChangeAsync();
             }
             catch (Exception ex)
@@ -235,11 +240,16 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
         private async Task NotifyStateChangeAsync()
         {
-            if (OnStateChangeAsync != null)
+            try
             {
-                _logger.LogInformation("NotifyStateChangeAsync: Broadcasting state. IsDebateInProgress: {InProg}, IsGeneratingTurn: {Gen}, CurrentTurnText: '{Text}'",
-                    _currentState.IsDebateInProgress, _currentState.IsGeneratingTurn, _currentState.CurrentTurnText);
-                await OnStateChangeAsync.Invoke(_currentState);
+                if (OnStateChangeAsync != null)
+                {
+                    await OnStateChangeAsync.Invoke(_currentState);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying state change.");
             }
         }
     }

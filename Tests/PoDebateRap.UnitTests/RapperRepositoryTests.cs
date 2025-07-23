@@ -25,21 +25,21 @@ public class RapperRepositoryTests
         // Arrange
         var winnerName = "RapperWin";
         var loserName = "RapperLose";
-        
+
         // Use RapperRepository.RapperEntity for mocking
-        var initialWinnerEntity = new RapperRepository.RapperEntity("Rappers", winnerName) { Wins = 5, Losses = 2 };
-        var initialLoserEntity = new RapperRepository.RapperEntity("Rappers", loserName) { Wins = 3, Losses = 4 };
+        var initialWinnerEntity = new RapperRepository.RapperEntity("PoDebateRapRappers", winnerName) { Wins = 5, Losses = 2 };
+        var initialLoserEntity = new RapperRepository.RapperEntity("PoDebateRapRappers", loserName) { Wins = 3, Losses = 4 };
 
         // Setup mock GetEntityAsync to return the initial rapper entities
-        _mockTableStorageService.Setup(s => s.GetEntityAsync<RapperRepository.RapperEntity>("Rappers", "Rappers", winnerName))
+        _mockTableStorageService.Setup(s => s.GetEntityAsync<RapperRepository.RapperEntity>("PoDebateRapRappers", "PoDebateRapRappers", winnerName))
                                 .ReturnsAsync(initialWinnerEntity);
-        _mockTableStorageService.Setup(s => s.GetEntityAsync<RapperRepository.RapperEntity>("Rappers", "Rappers", loserName))
+        _mockTableStorageService.Setup(s => s.GetEntityAsync<RapperRepository.RapperEntity>("PoDebateRapRappers", "PoDebateRapRappers", loserName))
                                 .ReturnsAsync(initialLoserEntity);
 
         // Setup mock UpsertEntityAsync to capture the updated entities
         RapperRepository.RapperEntity? updatedWinnerEntity = null;
         RapperRepository.RapperEntity? updatedLoserEntity = null;
-        _mockTableStorageService.Setup(s => s.UpsertEntityAsync("Rappers", It.IsAny<RapperRepository.RapperEntity>()))
+        _mockTableStorageService.Setup(s => s.UpsertEntityAsync("PoDebateRapRappers", It.IsAny<RapperRepository.RapperEntity>()))
                                 .Callback<string, RapperRepository.RapperEntity>((tableName, entity) =>
                                 {
                                     if (entity.RowKey == winnerName) updatedWinnerEntity = entity;
@@ -52,11 +52,11 @@ public class RapperRepositoryTests
 
         // Assert
         // Verify GetEntityAsync was called for both rappers
-        _mockTableStorageService.Verify(s => s.GetEntityAsync<RapperRepository.RapperEntity>("Rappers", "Rappers", winnerName), Times.Once);
-        _mockTableStorageService.Verify(s => s.GetEntityAsync<RapperRepository.RapperEntity>("Rappers", "Rappers", loserName), Times.Once);
+        _mockTableStorageService.Verify(s => s.GetEntityAsync<RapperRepository.RapperEntity>("PoDebateRapRappers", "PoDebateRapRappers", winnerName), Times.Once);
+        _mockTableStorageService.Verify(s => s.GetEntityAsync<RapperRepository.RapperEntity>("PoDebateRapRappers", "PoDebateRapRappers", loserName), Times.Once);
 
         // Verify UpsertEntityAsync was called twice (once for each rapper)
-        _mockTableStorageService.Verify(s => s.UpsertEntityAsync("Rappers", It.IsAny<RapperRepository.RapperEntity>()), Times.Exactly(2));
+        _mockTableStorageService.Verify(s => s.UpsertEntityAsync("PoDebateRapRappers", It.IsAny<RapperRepository.RapperEntity>()), Times.Exactly(2));
 
         // Check if the captured entities have the correct updated stats
         Assert.NotNull(updatedWinnerEntity);

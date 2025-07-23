@@ -1,0 +1,20 @@
+erDiagram
+    RAPPER ||--o{ RAPPER_ENTITY : "maps to"
+    TOPIC ||--o{ TOPIC_ENTITY : "maps to"
+
+    RAPPER_ENTITY {
+        string PartitionKey PK
+        string RowKey PK "Rapper Name"
+        int Wins
+        int Losses
+        datetime Timestamp
+        string ETag
+    }
+
+    TOPIC_ENTITY {
+        string PartitionKey PK "Category"
+        string RowKey PK "Topic Title"
+        string Category
+        datetime Timestamp
+        string ETag
+    }

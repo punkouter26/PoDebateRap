@@ -1,0 +1,16 @@
+graph TD
+    A[User Opens App] --> B{Select Debate Options};
+    B --> C[Choose Topic];
+    B --> D[Choose Rapper 1];
+    B --> E[Choose Rapper 2];
+    C & D & E --> F[Initiate Debate];
+    F --> G[Backend: Orchestrate Debate];
+    G --> H{AI: Generate Rap Turn};
+    H --> I[Backend: Process Turn & Update State];
+    I --> J{AI: Generate Speech};
+    J --> K[Client: Play Audio & Display Text];
+    K --> L{Is Debate Over?};
+    L -- No --> H;
+    L -- Yes --> M[Display Results];
+    M --> N[Update Rapper Win/Loss Records];
+    N --> O[User Views Leaderboard];

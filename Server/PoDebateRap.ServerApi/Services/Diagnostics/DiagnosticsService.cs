@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PoDebateRap.ServerApi.Services.AI;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,12 +12,14 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
         private readonly ILogger<DiagnosticsService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IAzureOpenAIService _openAIService;
 
-        public DiagnosticsService(ILogger<DiagnosticsService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public DiagnosticsService(ILogger<DiagnosticsService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IAzureOpenAIService openAIService)
         {
             _logger = logger;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _openAIService = openAIService;
         }
 
         public async Task<string> CheckApiHealthAsync()
@@ -84,6 +87,50 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
             // For example, try to get a token or hit an auth endpoint.
             _logger.LogInformation("Checking authentication service...");
             return "Authentication Service: Not Implemented (Placeholder)";
+        }
+
+        public async Task<string> CheckAzureOpenAIServiceAsync()
+        {
+            _logger.LogInformation("Checking Azure OpenAI Service...");
+            try
+            {
+                // Attempt a simple text generation to verify connectivity and authentication
+                var testPrompt = "Say 'hello' in a rap battle style.";
+                var response = await _openAIService.GenerateDebateTurnAsync(testPrompt, 10, CancellationToken.None);
+                if (!string.IsNullOrEmpty(response))
+                {
+                    return "Azure OpenAI Service: OK";
+                }
+                return "Azure OpenAI Service: Error - No response from service.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking Azure OpenAI Service.");
+                return $"Azure OpenAI Service: Error - {ex.Message}";
+            }
+        }
+
+        public async Task<string> CheckTextToSpeechServiceAsync()
+        {
+            _logger.LogInformation("Testing Text-to-Speech service...");
+            try
+            {
+                // Attempt a simple speech synthesis to verify connectivity and authentication
+                var testText = "Hello from diagnostics page";
+                var testVoice = "en-US-DavisNeural"; // A common default voice
+                var audioBytes = await _openAIService.GenerateSpeechAsync(testText, testVoice, CancellationToken.None);
+
+                if (audioBytes != null && audioBytes.Length > 0)
+                {
+                    return "Text-to-Speech Service: OK";
+                }
+                return "Text-to-Speech Service: Error - No audio generated.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Text-to-Speech service test failed.");
+                return $"Text-to-Speech Service: Error - {ex.Message}";
+            }
         }
     }
 }

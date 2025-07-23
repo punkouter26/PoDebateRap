@@ -22,7 +22,14 @@ namespace PoDebateRap.ServerApi.Services.News
             _httpClient = httpClient;
             _configuration = configuration;
             _logger = logger;
-            _newsApiKey = _configuration["NewsApi:ApiKey"] ?? throw new ArgumentNullException("NewsApi:ApiKey not found in configuration.");
+            _newsApiKey = _configuration["NewsApi:ApiKey"] ?? "";
+            
+            _logger.LogWarning("NewsAPI Key value: '{ApiKey}' (Length: {Length})", _newsApiKey, _newsApiKey.Length);
+            
+            if (string.IsNullOrWhiteSpace(_newsApiKey))
+            {
+                _logger.LogWarning("NewsApi:ApiKey not found in configuration. Will use fallback topics.");
+            }
             _httpClient.BaseAddress = new Uri("https://newsapi.org/v2/");
         }
 
@@ -30,6 +37,13 @@ namespace PoDebateRap.ServerApi.Services.News
         {
             try
             {
+                // If no API key is configured, return fallback topics immediately
+                if (string.IsNullOrWhiteSpace(_newsApiKey))
+                {
+                    _logger.LogInformation("No NewsAPI key configured, using fallback topics.");
+                    return GetFallbackTopics(count);
+                }
+
                 _logger.LogInformation("Fetching top {Count} news headlines.", count);
                 var response = await _httpClient.GetFromJsonAsync<NewsApiResponse>($"top-headlines?country=us&apiKey={_newsApiKey}");
 
@@ -51,8 +65,26 @@ namespace PoDebateRap.ServerApi.Services.News
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching news headlines from NewsAPI. Falling back to hardcoded topic.");
-                return new List<NewsHeadline> { new NewsHeadline { Title = "End of the world is coming", Url = "https://example.com/fallback" } };
+                return GetFallbackTopics(count);
             }
+        }
+
+        private List<NewsHeadline> GetFallbackTopics(int count)
+        {
+            var fallbackTopics = new List<NewsHeadline>
+            {
+                new NewsHeadline { Title = "Artificial Intelligence vs Human Creativity", Url = "https://example.com/ai-creativity" },
+                new NewsHeadline { Title = "Social Media Impact on Society", Url = "https://example.com/social-media" },
+                new NewsHeadline { Title = "Climate Change Solutions", Url = "https://example.com/climate" },
+                new NewsHeadline { Title = "Future of Remote Work", Url = "https://example.com/remote-work" },
+                new NewsHeadline { Title = "Electric Cars vs Gas Cars", Url = "https://example.com/electric-cars" },
+                new NewsHeadline { Title = "Space Exploration Priorities", Url = "https://example.com/space" },
+                new NewsHeadline { Title = "Healthy Lifestyle Choices", Url = "https://example.com/health" },
+                new NewsHeadline { Title = "Education System Reform", Url = "https://example.com/education" }
+            };
+
+            var random = new Random();
+            return fallbackTopics.OrderBy(x => random.Next()).Take(count).ToList();
         }
 
         private class NewsApiResponse
