@@ -106,36 +106,73 @@
 
         try
         {
-            Rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers");
+            // Add timeout and better error handling for Rappers API
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            
+            Rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers", cts.Token);
             Logger.LogDebug("Retrieved {LoadedRapperCount} rappers.", Rappers?.Count ?? 0);
             if (Rappers == null || Rappers.Count == 0)
             {
-                 LoadingErrorMessage = "Rapper list is empty. Check Azurite data and seeding logic.";
+                 LoadingErrorMessage = "Rapper list is empty. Check server connection and data seeding.";
                  Logger.LogWarning(LoadingErrorMessage);
             }
 
             try
             {
-                var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("News/headlines");
+                var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("News/headlines", cts.Token);
                 if (headlines != null && headlines.Count > 0 && !string.IsNullOrWhiteSpace(headlines[0].Title))
                 {
                     DebateTopicInput = headlines[0].Title.Trim();
-                    InitialTopicFetchError = null; // Clear any previous error
+                    InitialTopicFetchError = null;
                     Logger.LogInformation("Pre-populated topic from news: {NewsTopic}", DebateTopicInput);
                 }
                 else
                 {
-                    InitialTopicFetchError = "Could not fetch a news topic. Please enter one manually.";
+                    InitialTopicFetchError = "No news topics available. Please enter a topic manually.";
                     Logger.LogWarning("News API returned no headlines or headline had no title.");
-                    DebateTopicInput = "";
+                    if (string.IsNullOrWhiteSpace(DebateTopicInput))
+                    {
+                        DebateTopicInput = "Social Media Impact on Society";
+                    }
                 }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                 Logger.LogError(httpEx, "HTTP error fetching initial news topic from API.");
+                 InitialTopicFetchError = $"Could not connect to news service: {httpEx.Message}";
+                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
+                 {
+                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
+                 }
+            }
+            catch (TaskCanceledException)
+            {
+                 Logger.LogError("Timeout fetching initial news topic from API.");
+                 InitialTopicFetchError = "News service request timed out. Please enter a topic manually.";
+                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
+                 {
+                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
+                 }
             }
             catch (Exception newsEx)
             {
                  Logger.LogError(newsEx, "Error fetching initial news topic from API.");
-                 InitialTopicFetchError = $"Error fetching news topic from API: {newsEx.Message}. Please enter one manually.";
-                 DebateTopicInput = "";
+                 InitialTopicFetchError = $"Could not fetch news topic: {newsEx.Message}";
+                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
+                 {
+                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
+                 }
             }
+        }
+        catch (HttpRequestException httpEx)
+        {
+            Logger.LogError(httpEx, "HTTP error loading initial data for Home page.");
+            LoadingErrorMessage = $"Could not connect to server: {httpEx.Message}. Please check if the API server is running on https://localhost:5001.";
+        }
+        catch (TaskCanceledException)
+        {
+            Logger.LogError("Timeout loading initial data for Home page.");
+            LoadingErrorMessage = "Server request timed out. Please check your connection and try again.";
         }
         catch (Exception ex)
         {
@@ -257,10 +294,21 @@
 
     private bool IsStartDisabled()
     {
-        if (IsLoading || IsFetchingInitialTopic || _latestDebateState.IsGeneratingTurn || ShowVotingModal) return true;
-        if (string.IsNullOrEmpty(SelectedRapper1Name) || string.IsNullOrEmpty(SelectedRapper2Name)) return true;
-        if (SelectedRapper1Name == SelectedRapper2Name) return true;
-        if (string.IsNullOrWhiteSpace(DebateTopicInput)) return true;
+        // Basic loading/state checks
+        if (IsLoading || IsFetchingInitialTopic || _latestDebateState.IsGeneratingTurn || ShowVotingModal) 
+            return true;
+        
+        // Rapper validation
+        if (string.IsNullOrEmpty(SelectedRapper1Name) || string.IsNullOrEmpty(SelectedRapper2Name)) 
+            return true;
+        
+        if (SelectedRapper1Name == SelectedRapper2Name) 
+            return true;
+        
+        // Topic validation - ensure there's a valid topic regardless of fetch error
+        if (string.IsNullOrWhiteSpace(DebateTopicInput)) 
+            return true;
+        
         return false;
     }
 

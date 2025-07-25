@@ -62,7 +62,6 @@ builder.Services.AddHttpClient<INewsService, NewsService>();
 // Register Diagnostics Service
 builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
 
-
 // Add Application Insights for telemetry and logging
 builder.Services.AddApplicationInsightsTelemetry();
 
@@ -105,7 +104,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var rapperRepository = services.GetRequiredService<IRapperRepository>();
-        var topicRepository = services.GetRequiredService<ITopicRepository>();
+        // Note: Topic repository removed - topics now come from live news API
 
         var configuration = services.GetRequiredService<IConfiguration>();
         if (!string.IsNullOrEmpty(configuration["Azure:StorageConnectionString"]))
