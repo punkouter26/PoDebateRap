@@ -1,19 +1,19 @@
-2025-07-24 16:37:47 [Information] PoDebateRap.ServerApi: Attempting initial data seeding... 
-2025-07-24 16:37:47 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Checking if initial rappers need to be seeded... 
-2025-07-24 16:37:47 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Rappers already exist. Skipping seeding. 
-2025-07-24 16:37:47 [Information] PoDebateRap.ServerApi: Initial data seeding completed (if necessary). 
-2025-07-24 16:37:47 [Information] Microsoft.Hosting.Lifetime: Now listening on: http://localhost:5000 
-2025-07-24 16:37:47 [Information] Microsoft.Hosting.Lifetime: Application started. Press Ctrl+C to shut down. 
-2025-07-24 16:37:47 [Information] Microsoft.Hosting.Lifetime: Hosting environment: Development 
-2025-07-24 16:37:47 [Information] Microsoft.Hosting.Lifetime: Content root path: C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi 
-2025-07-24 16:38:09 [Warning] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware: Failed to determine the https port for redirect. 
-2025-07-24 16:38:10 [Warning] PoDebateRap.ServerApi.Services.News.NewsService: NewsAPI Key value: 'acd7ec0ba05b49b2944494ebd941be3c' (Length: 32) 
-2025-07-24 16:38:10 [Information] PoDebateRap.ServerApi.Services.News.NewsService: Fetching top 1 news headlines. 
-2025-07-24 16:38:10 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: Start processing HTTP request GET https://newsapi.org/v2/top-headlines?* 
-2025-07-24 16:38:10 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Sending HTTP request GET https://newsapi.org/v2/top-headlines?* 
-2025-07-24 16:38:10 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Received HTTP response headers after 426.1585ms - 400 
-2025-07-24 16:38:10 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: End processing HTTP request after 441.4676ms - 400 
-2025-07-24 16:38:10 [Error] PoDebateRap.ServerApi.Services.News.NewsService: Error fetching news headlines from NewsAPI. Falling back to hardcoded topic. System.Net.Http.HttpRequestException: Response status code does not indicate success: 400 (Bad Request).
+2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi: Attempting initial data seeding... 
+2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Checking if initial rappers need to be seeded... 
+2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Rappers already exist. Skipping seeding. 
+2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi: Initial data seeding completed (if necessary). 
+2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Now listening on: http://localhost:5000 
+2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Application started. Press Ctrl+C to shut down. 
+2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Hosting environment: Development 
+2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Content root path: C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi 
+2025-07-27 13:52:28 [Warning] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware: Failed to determine the https port for redirect. 
+2025-07-27 13:52:29 [Warning] PoDebateRap.ServerApi.Services.News.NewsService: NewsAPI Key value: 'acd7ec0ba05b49b2944494ebd941be3c' (Length: 32) 
+2025-07-27 13:52:29 [Information] PoDebateRap.ServerApi.Services.News.NewsService: Fetching top 1 news headlines. 
+2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: Start processing HTTP request GET https://newsapi.org/v2/top-headlines?* 
+2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Sending HTTP request GET https://newsapi.org/v2/top-headlines?* 
+2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Received HTTP response headers after 328.3632ms - 400 
+2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: End processing HTTP request after 334.2329ms - 400 
+2025-07-27 13:52:29 [Error] PoDebateRap.ServerApi.Services.News.NewsService: Error fetching news headlines from NewsAPI. Falling back to hardcoded topic. System.Net.Http.HttpRequestException: Response status code does not indicate success: 400 (Bad Request).
    at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
    at System.Net.Http.Json.HttpClientJsonExtensions.<FromJsonAsyncCore>g__Core|12_0[TValue,TJsonOptions](HttpClient client, Task`1 responseTask, Boolean usingResponseHeadersRead, CancellationTokenSource linkedCTS, Func`4 deserializeMethod, TJsonOptions jsonOptions, CancellationToken cancellationToken)
    at PoDebateRap.ServerApi.Services.News.NewsService.GetTopHeadlinesAsync(Int32 count) in C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi\Services\News\NewsService.cs:line 48

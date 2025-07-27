@@ -10,7 +10,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // For hosted Blazor WebAssembly, use the default HttpClient base address
 // which will be the same origin as the hosting server
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5000/") });
 
 // Add Radzen services
 builder.Services.AddRadzenComponents();
