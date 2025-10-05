@@ -54,10 +54,13 @@
         }
     </div>
     <div class="diagnostics-footer">
-        <button class="btn-test-audio" @onclick="RunDiagnostics">
-            <span>Re-run Diagnostics</span>
+        <button class="btn-test-audio" @onclick="RunDiagnostics" disabled="@_isLoading">
+            <span>@(_isLoading ? "Running..." : "Re-run Diagnostics")</span>
         </button>
-        <a href="/" class="btn-home-link">Back to Home</a>
+        <button class="btn-test-audio" @onclick="TestTextToSpeech" disabled="@_isTestingAudio" style="margin-left: 10px;">
+            <span>@(_isTestingAudio ? "Testing Audio..." : "🔊 Test Audio")</span>
+        </button>
+        <a href="/" class="btn-home-link" style="margin-left: 10px;">Back to Home</a>
     </div>
 </div>
 
@@ -305,34 +308,65 @@
         {
             Logger.LogInformation("Manual TTS test button clicked");
             
-            // Call the TTS API to generate audio for "Hello"
-            var request = new GenerateSpeechRequest { Text = "Hello, this is a text to speech test from the diagnostics page", VoiceName = "en-US-DavisNeural" };
-            var response = await Http.PostAsJsonAsync("AI/generate-speech", request);
+            // Simple test using the TTS service via the AI controller
+            var testText = "Hello! This is a text to speech test from the diagnostics page. If you can hear this, the audio system is working correctly.";
+            
+            // Use capitalized property names to match C# model (GenerateSpeechRequest)
+            var requestBody = new { Text = testText, VoiceName = "en-US-JennyNeural" };
+            var response = await Http.PostAsJsonAsync("AI/generate-speech", requestBody);
             
             if (response.IsSuccessStatusCode)
             {
                 var audioBytes = await response.Content.ReadAsByteArrayAsync();
                 if (audioBytes != null && audioBytes.Length > 0 && objRef != null)
                 {
-                    Logger.LogInformation("TTS test successful. Playing audio with {Length} bytes", audioBytes.Length);
+                    Logger.LogInformation("✅ TTS test successful. Playing audio with {Length} bytes", audioBytes.Length);
+                    
+                    // Log first 50 bytes for debugging
+                    var first50 = string.Join(" ", audioBytes.Take(50).Select(b => b.ToString("X2")));
+                    Logger.LogInformation("🔍 First 50 bytes of audio: {Bytes}", first50);
                     
                     var base64Audio = Convert.ToBase64String(audioBytes);
+                    Logger.LogInformation("🎵 Base64 length: {Length}", base64Audio.Length);
+                    
                     await JSRuntime.InvokeVoidAsync("playAudio", objRef, base64Audio);
+                    Logger.LogInformation("✅ Audio playback initiated");
                 }
                 else
                 {
-                    Logger.LogWarning("TTS test returned no audio data");
+                    Logger.LogWarning("⚠️ TTS test returned no audio data");
+                    _results?.Add(new DiagnosticResult 
+                    { 
+                        CheckName = "Audio Test", 
+                        Success = false, 
+                        Message = "No audio data returned from TTS service" 
+                    });
+                    StateHasChanged();
                 }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                Logger.LogError("TTS test failed with status {Status}: {Error}", response.StatusCode, errorContent);
+                Logger.LogError("❌ TTS test failed with status {Status}: {Error}", response.StatusCode, errorContent);
+                _results?.Add(new DiagnosticResult 
+                { 
+                    CheckName = "Audio Test", 
+                    Success = false, 
+                    Message = $"TTS API returned {response.StatusCode}: {errorContent}" 
+                });
+                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Exception during manual TTS test");
+            Logger.LogError(ex, "❌ Exception during manual TTS test");
+            _results?.Add(new DiagnosticResult 
+            { 
+                CheckName = "Audio Test", 
+                Success = false, 
+                Message = $"Exception: {ex.Message}" 
+            });
+            StateHasChanged();
         }
         finally
         {

@@ -1,45 +1,54 @@
 window.currentAudio = null; // Global variable to hold the current audio object
 
 window.playAudio = (dotnetHelper, base64String) => { // Accept dotnetHelper
-    console.log("playAudio called with base64 length:", base64String ? base64String.length : 0);
+    console.log("🎵 playAudio called with base64 length:", base64String ? base64String.length : 0);
+    console.log("🎵 Base64 prefix (first 50 chars):", base64String ? base64String.substring(0, 50) : "null");
+    console.log("🎵 dotnetHelper:", dotnetHelper ? "Present" : "Missing");
     
     try {
         // Stop any currently playing audio first
         if (window.currentAudio) {
             window.currentAudio.pause();
             window.currentAudio.currentTime = 0;
-            console.log("Stopped previous audio.");
-        }            // Use only WAV format which matches what the server returns
+            console.log("🛑 Stopped previous audio.");
+        }
+        
+        // Use only WAV format which matches what the server returns
         const audioDataUrl = `data:audio/wav;base64,${base64String}`;
         
-        console.log("Creating audio with WAV format");
+        console.log("🎵 Creating audio with WAV format, data URL length:", audioDataUrl.length);
         try {
             window.currentAudio = new Audio(audioDataUrl);
-            console.log("Audio object created successfully");
+            console.log("✅ Audio object created successfully");
         } catch (error) {
-            console.error("Failed to create audio object:", error);
+            console.error("❌ Failed to create audio object:", error);
             throw error;
         }
         
         // Add debugging to check if the audio is valid
         if (window.currentAudio.error) {
-            console.error("Audio has error immediately after creation:", window.currentAudio.error);
+            console.error("❌ Audio has error immediately after creation:", window.currentAudio.error);
             throw new Error("Audio object created with error");
         }
 
         // Set volume to ensure it's audible
-        window.currentAudio.volume = 0.8;
+        window.currentAudio.volume = 1.0; // Increase to max volume
+        console.log("🔊 Volume set to:", window.currentAudio.volume);
 
         window.currentAudio.addEventListener('loadstart', () => {
-            console.log("Audio loading started");
+            console.log("📥 Audio loading started");
         });
 
         window.currentAudio.addEventListener('canplay', () => {
-            console.log("Audio can start playing");
+            console.log("✅ Audio can start playing - ready state:", window.currentAudio.readyState);
+        });
+
+        window.currentAudio.addEventListener('playing', () => {
+            console.log("▶️ Audio is now PLAYING!");
         });
 
         window.currentAudio.addEventListener('ended', () => {
-            console.log("Audio playback finished.");
+            console.log("🏁 Audio playback finished.");
             window.currentAudio = null; // Clear reference on end
             if (dotnetHelper) {
                 dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
@@ -48,8 +57,12 @@ window.playAudio = (dotnetHelper, base64String) => { // Accept dotnetHelper
         });
 
         window.currentAudio.addEventListener('error', (e) => {
-            console.error("Error during audio playback:", e);
-            console.error("Audio error details:", window.currentAudio.error);
+            console.error("❌ Error during audio playback:", e);
+            console.error("❌ Audio error details:", window.currentAudio.error);
+            if (window.currentAudio.error) {
+                console.error("❌ Error code:", window.currentAudio.error.code);
+                console.error("❌ Error message:", window.currentAudio.error.message);
+            }
             window.currentAudio = null; // Clear reference on error
             if (dotnetHelper) {
                 dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
@@ -58,15 +71,17 @@ window.playAudio = (dotnetHelper, base64String) => { // Accept dotnetHelper
         });
 
         // Attempt to play with user interaction handling
+        console.log("🎬 Attempting to play audio...");
         const playPromise = window.currentAudio.play();
         
         if (playPromise !== undefined) {
             playPromise
                 .then(() => {
-                    console.log("Audio playback started successfully");
+                    console.log("✅ Audio playback started successfully");
                 })
                 .catch(e => {
-                    console.error("Error starting audio playback:", e);
+                    console.error("❌ Error starting audio playback:", e);
+                    console.error("❌ Error name:", e.name, "Error message:", e.message);
                     
                     // If autoplay failed, try to enable audio on next user interaction
                     if (e.name === 'NotAllowedError') {

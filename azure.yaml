@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: PoDebateRap
+metadata:
+  template: PoDebateRap
+
+services:
+  api:
+    project: ./Server/PoDebateRap.ServerApi
+    language: dotnet
+    host: appservice
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+pipeline:
+  provider: github

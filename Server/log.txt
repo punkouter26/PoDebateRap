@@ -1,19 +1,455 @@
-2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi: Attempting initial data seeding... 
-2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Checking if initial rappers need to be seeded... 
-2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Rappers already exist. Skipping seeding. 
-2025-07-27 13:52:14 [Information] PoDebateRap.ServerApi: Initial data seeding completed (if necessary). 
-2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Now listening on: http://localhost:5000 
-2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Application started. Press Ctrl+C to shut down. 
-2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Hosting environment: Development 
-2025-07-27 13:52:14 [Information] Microsoft.Hosting.Lifetime: Content root path: C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi 
-2025-07-27 13:52:28 [Warning] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware: Failed to determine the https port for redirect. 
-2025-07-27 13:52:29 [Warning] PoDebateRap.ServerApi.Services.News.NewsService: NewsAPI Key value: 'acd7ec0ba05b49b2944494ebd941be3c' (Length: 32) 
-2025-07-27 13:52:29 [Information] PoDebateRap.ServerApi.Services.News.NewsService: Fetching top 1 news headlines. 
-2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: Start processing HTTP request GET https://newsapi.org/v2/top-headlines?* 
-2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Sending HTTP request GET https://newsapi.org/v2/top-headlines?* 
-2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Received HTTP response headers after 328.3632ms - 400 
-2025-07-27 13:52:29 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: End processing HTTP request after 334.2329ms - 400 
-2025-07-27 13:52:29 [Error] PoDebateRap.ServerApi.Services.News.NewsService: Error fetching news headlines from NewsAPI. Falling back to hardcoded topic. System.Net.Http.HttpRequestException: Response status code does not indicate success: 400 (Bad Request).
-   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
-   at System.Net.Http.Json.HttpClientJsonExtensions.<FromJsonAsyncCore>g__Core|12_0[TValue,TJsonOptions](HttpClient client, Task`1 responseTask, Boolean usingResponseHeadersRead, CancellationTokenSource linkedCTS, Func`4 deserializeMethod, TJsonOptions jsonOptions, CancellationToken cancellationToken)
-   at PoDebateRap.ServerApi.Services.News.NewsService.GetTopHeadlinesAsync(Int32 count) in C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi\Services\News\NewsService.cs:line 48
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi: Attempting initial data seeding... 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Checking if initial rappers need to be seeded... 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Attempting to retrieve all rappers from Table Storage... 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Successfully retrieved 10 rappers from Table Storage 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Found 10 existing rappers in storage 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Existing rappers: Andre 3000, Eminem, Jay-Z, Kendrick Lamar, Lauryn Hill, Nas, Rakim, Snoop Dogg, The Notorious B.I.G., Tupac Shakur 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Rappers already exist. Skipping seeding. 
+2025-10-05 12:39:26 [Information] PoDebateRap.ServerApi: Initial data seeding completed (if necessary). 
+2025-10-05 12:39:26 [Information] Microsoft.Hosting.Lifetime: Now listening on: http://localhost:5000 
+2025-10-05 12:39:26 [Information] Microsoft.Hosting.Lifetime: Application started. Press Ctrl+C to shut down. 
+2025-10-05 12:39:26 [Information] Microsoft.Hosting.Lifetime: Hosting environment: Development 
+2025-10-05 12:39:26 [Information] Microsoft.Hosting.Lifetime: Content root path: C:\Users\punko\Downloads\PoDebateRap\Server\PoDebateRap.ServerApi 
+2025-10-05 12:39:30 [Warning] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware: Failed to determine the https port for redirect. 
+2025-10-05 12:39:31 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Attempting to retrieve all rappers from Table Storage... 
+2025-10-05 12:39:31 [Information] PoDebateRap.ServerApi.Services.Data.RapperRepository: Successfully retrieved 10 rappers from Table Storage 
+2025-10-05 12:39:31 [Warning] PoDebateRap.ServerApi.Services.News.NewsService: NewsAPI Key value: 'acd7ec0ba05b49b2944494ebd941be3c' (Length: 32) 
+2025-10-05 12:39:31 [Information] PoDebateRap.ServerApi.Services.News.NewsService: Fetching top 1 news headlines. 
+2025-10-05 12:39:31 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: Start processing HTTP request GET https://newsapi.org/v2/top-headlines?* 
+2025-10-05 12:39:31 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Sending HTTP request GET https://newsapi.org/v2/top-headlines?* 
+2025-10-05 12:39:31 [Information] System.Net.Http.HttpClient.INewsService.ClientHandler: Received HTTP response headers after 174.4186ms - 400 
+2025-10-05 12:39:31 [Information] System.Net.Http.HttpClient.INewsService.LogicalHandler: End processing HTTP request after 183.7168ms - 400 
+2025-10-05 12:39:31 [Warning] PoDebateRap.ServerApi.Services.News.NewsService: NewsAPI returned 400 Bad Request. API key may be invalid or rate limited. Using fallback topics. 
+2025-10-05 12:39:35 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: Resetting debate state. 
+2025-10-05 12:39:35 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Azure Speech client initialized for region: eastus 
+2025-10-05 12:39:35 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Generating speech for text: 'Get ready! Topic: 'Electric Cars vs Gas Cars'. Nas (Pro) vs The Notorious B.I.G. (Con). Nas starts...' with voice: en-US-GuyNeural 
+2025-10-05 12:39:35 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Speech synthesis completed successfully. 
+2025-10-05 12:39:35 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Retrieved 346846 bytes of audio data from result.AudioData 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: Debate started: Nas vs The Notorious B.I.G. on Electric Cars vs Gas Cars 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Azure OpenAI client initialized with endpoint: https://pohappytrump-openai.openai.azure.com/ 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Azure Speech client initialized for region: eastus 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Azure Speech client initialized for region: eastus 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: Generating turn 1 for Nas (Pro). 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Generating debate turn with prompt: You are Nas debating The Notorious B.I.G. on the topic 'Electric Cars vs Gas Cars'. Your role is Pro. This is turn 1 of 10. Current transcript:
+
+Your rap: 
+2025-10-05 12:39:36 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: 'Get ready! Topic: 'Electric Cars vs Gas Cars'. Nas (Pro) vs The Notorious B.I.G. (Con). Nas starts...' 
+2025-10-05 12:39:37 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: 'Get ready! Topic: 'Electric Cars vs Gas Cars'. Nas (Pro) vs The Notorious B.I.G. (Con). Nas starts...' 
+2025-10-05 12:39:39 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Generated debate turn: (Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly, 
+2025-10-05 12:39:39 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Generating speech for text: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' with voice: en-US-GuyNeural 
+2025-10-05 12:39:39 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:40 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:40 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Speech synthesis completed successfully. 
+2025-10-05 12:39:40 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Retrieved 1696446 bytes of audio data from result.AudioData 
+2025-10-05 12:39:40 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: 🎵 Generated audio for turn 1, size: 1696446 bytes 
+2025-10-05 12:39:40 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: 🔍 First 50 bytes of audio: 52 49 46 46 B6 E2 19 00 57 41 56 45 66 6D 74 20 12 00 00 00 01 00 01 00 80 3E 00 00 00 7D 00 00 02 00 10 00 00 00 64 61 74 61 90 E2 19 00 00 00 00 00 
+2025-10-05 12:39:41 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:44 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:46 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Azure OpenAI client initialized with endpoint: https://pohappytrump-openai.openai.azure.com/ 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Azure Speech client initialized for region: eastus 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Azure Speech client initialized for region: eastus 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: Generating turn 2 for The Notorious B.I.G. (Con). 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Generating debate turn with prompt: You are The Notorious B.I.G. debating Nas on the topic 'Electric Cars vs Gas Cars'. Your role is Con. This is turn 2 of 10. Current transcript:
+Nas (Turn 1):
+(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,
+
+
+Your rap: 
+2025-10-05 12:39:48 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 1 - Nas)  
+Yo, Biggie, let me break it down, listen clear,  
+Electric cars rollin’ in, the future’s right here.  
+No more fumes in the air, can you feel that vibe?  
+Clean energy hustlin’, watch the planet thrive.  
+
+Gasoline's a relic, a dinosaur, it’s true,  
+Oil spills and pollution, man, we gotta push through.  
+Silent but deadly, that torque’s insane,  
+With a flick of the wrist, I’m spittin’ like a hurricane.  
+
+Charge up my ride, plug it in, watch it glow,  
+No gas station stops, just a smooth electric flow.  
+Sustainability's the key, the planet’s in our hands,  
+Let’s drive into the future, take a stand with the fans.  
+
+So while you’re stuck in traffic, with that exhaust in sight,  
+I’ll be cruisin’ the streets, eco-friendly,' 
+2025-10-05 12:39:50 [Information] PoDebateRap.ServerApi.Services.AI.AzureOpenAIService: Generated debate turn: (Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin 
+2025-10-05 12:39:50 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Generating speech for text: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' with voice: en-US-JennyNeural 
+2025-10-05 12:39:51 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Speech synthesis completed successfully. 
+2025-10-05 12:39:51 [Information] PoDebateRap.ServerApi.Services.Speech.TextToSpeechService: Retrieved 1684446 bytes of audio data from result.AudioData 
+2025-10-05 12:39:51 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: 🎵 Generated audio for turn 2, size: 1684446 bytes 
+2025-10-05 12:39:51 [Information] PoDebateRap.ServerApi.Services.Orchestration.DebateOrchestrator: 🔍 First 50 bytes of audio: 52 49 46 46 D6 B3 19 00 57 41 56 45 66 6D 74 20 12 00 00 00 01 00 01 00 80 3E 00 00 00 7D 00 00 02 00 10 00 00 00 64 61 74 61 B0 B3 19 00 00 00 00 00 
+2025-10-05 12:39:51 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:39:53 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:39:54 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:39:57 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:00 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:03 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:06 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:08 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:11 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:14 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:17 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:40:20 [Information] PoDebateRap.ServerApi.Controllers.DebateController: GetCurrentState: Returning state. IsDebateInProgress: True, IsGeneratingTurn: True, CurrentTurnText: '(Verse 2 - Biggie)  
+Yo, Nas, I hear you, but let me set it straight,  
+Ain't no future in the silence, gotta appreciate the fate.  
+Gas cars roar like lions, they command the scene,  
+Feel the power in the engine, know what I mean?  
+
+You talkin’ ‘bout the planet, but let’s keep it real,  
+Battery production’s dirty, that’s a hard deal to conceal.  
+Mining lithium for batteries, toxic waste in the ground,  
+While you’re livin’ in a dream, I’m just spittin’ the sound.  
+
+Yeah, gas pumps stink, but they fuel the hustle,  
+Give me that V8 rumble, feel the power, flex the muscle.  
+Road trips with the crew, windows down, feel that breeze,  
+Electric whips can’t match the vibe of gas-powered keys.  
+
+So plug in if you want, but I’m still rollin' 
+2025-10-05 12:48:22 [Information] Microsoft.Hosting.Lifetime: Application is shutting down... 

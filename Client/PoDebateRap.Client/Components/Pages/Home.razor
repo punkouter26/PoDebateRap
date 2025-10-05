@@ -9,22 +9,32 @@
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
-<PageTitle>PoDebateRap - Home</PageTitle>
+<PageTitle>PoDebateRap - AI Rap Battles</PageTitle>
 
-<div class="container mt-4">
-    <h3 style="text-align: center; font-family: @ThemeVariables.HeaderFont; color: @ThemeVariables.PrimaryColor; margin-bottom: 0.5rem;">PoDebateRap</h3>
-    <h5 style="text-align: center; color: grey; margin-bottom: 1.5rem;">AI Rap Battles</h5>
+<div class="page-container">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1 class="main-title">PoDebateRap</h1>
+        <p class="subtitle">AI-Powered Rap Battle Arena</p>
+    </div>
 
     @* Display loading error if any *@
     @if (!string.IsNullOrEmpty(LoadingErrorMessage))
     {
-        <div class="error-message" role="alert">@LoadingErrorMessage</div>
+        <div class="alert alert-error" role="alert">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-content">
+                <strong>Error Loading Application</strong>
+                <p>@LoadingErrorMessage</p>
+            </div>
+        </div>
     }
 
     <DebateSetup Rappers="Rappers"
              @bind-SelectedRapper1Name="SelectedRapper1Name"
              @bind-SelectedRapper2Name="SelectedRapper2Name"
              @bind-DebateTopicInput="DebateTopicInput"
+             @bind-DebateTopicInput:after="OnTopicChanged"
              IsDisabled="@(IsLoading || _latestDebateState.IsGeneratingTurn || _latestDebateState.IsDebateInProgress)"
              IsLoading="IsLoading"
              IsStarting="_latestDebateState.IsGeneratingTurn"
@@ -38,7 +48,7 @@
              OnStopDebate="StopDebate" />
 
     <!-- Debate Arena Section -->
-    <div class="debate-arena">
+    <div class="debate-arena-container">
         @if (_latestDebateState.IsDebateInProgress || _latestDebateState.IsDebateFinished)
         {
             <DebateVisualizer Rapper1="@_latestDebateState.Rapper1"
@@ -51,7 +61,11 @@
         }
         else
         {
-            <h6 style="text-align: center; color: grey;">Select rappers and a topic to start the debate!</h6>
+            <div class="empty-state">
+                <div class="empty-state-icon">🎤</div>
+                <h3>Ready to Battle?</h3>
+                <p>Select two rappers and choose a debate topic to start an epic AI rap battle!</p>
+            </div>
         }
     </div>
 
@@ -67,18 +81,34 @@
                       OnClose="HandleResultsModalClosed" />
     }
 
-</div> @* End container *@
+</div> @* End page-container *@
 
 
 
 @code {
     private DotNetObjectReference<Home>? objRef;
     private DebateState _latestDebateState = new();
+    private int _lastPlayedTurnNumber = -1; // Track which turn's audio we've already played
 
     private List<Rapper>? Rappers;
     private string? SelectedRapper1Name;
     private string? SelectedRapper2Name;
-    private string DebateTopicInput { get; set; } = "";
+    
+    // Use backing field to ensure StateHasChanged is called when topic changes
+    private string _debateTopicInput = "";
+    private string DebateTopicInput 
+    { 
+        get => _debateTopicInput;
+        set
+        {
+            if (_debateTopicInput != value)
+            {
+                _debateTopicInput = value;
+                Console.WriteLine($"[Home] DebateTopicInput property setter called with: '{value}'");
+                StateHasChanged(); // Force re-render to update button state
+            }
+        }
+    }
 
     private bool IsLoading = true;
     private bool IsFetchingInitialTopic = false;
@@ -111,6 +141,19 @@
             
             Rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers", cts.Token);
             Logger.LogDebug("Retrieved {LoadedRapperCount} rappers.", Rappers?.Count ?? 0);
+            
+            // Add detailed logging for debugging
+            if (Rappers != null && Rappers.Count > 0)
+            {
+                Logger.LogInformation("Successfully loaded {Count} rappers: {RapperNames}", 
+                    Rappers.Count, 
+                    string.Join(", ", Rappers.Select(r => $"'{r.Name}'")));
+            }
+            else
+            {
+                Logger.LogWarning("Rappers list is null or empty after API call");
+            }
+            
             if (Rappers == null || Rappers.Count == 0)
             {
                  LoadingErrorMessage = "Rapper list is empty. Check server connection and data seeding.";
@@ -128,40 +171,32 @@
                 }
                 else
                 {
+                    // Leave blank for user to fill in
+                    DebateTopicInput = "";
                     InitialTopicFetchError = "No news topics available. Please enter a topic manually.";
                     Logger.LogWarning("News API returned no headlines or headline had no title.");
-                    if (string.IsNullOrWhiteSpace(DebateTopicInput))
-                    {
-                        DebateTopicInput = "Social Media Impact on Society";
-                    }
                 }
             }
             catch (HttpRequestException httpEx)
             {
                  Logger.LogError(httpEx, "HTTP error fetching initial news topic from API.");
-                 InitialTopicFetchError = $"Could not connect to news service: {httpEx.Message}";
-                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
-                 {
-                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
-                 }
+                 // Leave blank for user to fill in
+                 DebateTopicInput = "";
+                 InitialTopicFetchError = "News service unavailable. Please enter a topic manually.";
             }
             catch (TaskCanceledException)
             {
                  Logger.LogError("Timeout fetching initial news topic from API.");
-                 InitialTopicFetchError = "News service request timed out. Please enter a topic manually.";
-                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
-                 {
-                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
-                 }
+                 // Leave blank for user to fill in
+                 DebateTopicInput = "";
+                 InitialTopicFetchError = "News service timeout. Please enter a topic manually.";
             }
             catch (Exception newsEx)
             {
                  Logger.LogError(newsEx, "Error fetching initial news topic from API.");
-                 InitialTopicFetchError = $"Could not fetch news topic: {newsEx.Message}";
-                 if (string.IsNullOrWhiteSpace(DebateTopicInput))
-                 {
-                     DebateTopicInput = "Artificial Intelligence vs Human Creativity";
-                 }
+                 // Leave blank for user to fill in
+                 DebateTopicInput = "";
+                 InitialTopicFetchError = "Could not fetch news topic. Please enter a topic manually.";
             }
         }
         catch (HttpRequestException httpEx)
@@ -206,19 +241,44 @@
             Logger.LogInformation("Received state update. Turn: {Turn}, IsGenerating: {IsGenerating}, Winner: {Winner}, CurrentTurnText length: {TextLength}",
                 newState.CurrentTurnNumber, newState.IsGeneratingTurn, newState.WinnerName ?? "N/A", newState.CurrentTurnText?.Length ?? 0);
 
-            if (newState.CurrentTurnAudio != null && newState.CurrentTurnAudio.Length > 0 && objRef != null)
+            // Log audio data info
+            if (newState.CurrentTurnAudio != null)
             {
-                Logger.LogInformation("Audio data received for turn {Turn} (length: {AudioLength}), attempting playback via JS interop.", newState.CurrentTurnNumber, newState.CurrentTurnAudio.Length);
+                Logger.LogInformation("🎵 Audio data present: Length={Length} bytes", newState.CurrentTurnAudio.Length);
+                
+                // Log first 50 bytes for debugging
+                if (newState.CurrentTurnAudio.Length > 0)
+                {
+                    var first50 = string.Join(" ", newState.CurrentTurnAudio.Take(50).Select(b => b.ToString("X2")));
+                    Logger.LogInformation("🔍 First 50 bytes received: {Bytes}", first50);
+                }
+            }
+            else
+            {
+                Logger.LogWarning("⚠️ No audio data in state");
+            }
+
+            // Only play audio if this is a new turn we haven't played yet
+            if (newState.CurrentTurnAudio != null && newState.CurrentTurnAudio.Length > 0 && objRef != null && newState.CurrentTurnNumber != _lastPlayedTurnNumber)
+            {
+                Logger.LogInformation("🎵 Audio data received for turn {Turn} (length: {AudioLength}), attempting playback via JS interop.", newState.CurrentTurnNumber, newState.CurrentTurnAudio.Length);
                 try
                 {
                     var base64Audio = Convert.ToBase64String(newState.CurrentTurnAudio);
+                    Logger.LogInformation("🎵 Converted to base64, length: {Base64Length}", base64Audio.Length);
                     await JSRuntime.InvokeVoidAsync("playAudio", objRef, base64Audio);
+                    _lastPlayedTurnNumber = newState.CurrentTurnNumber; // Mark this turn as played
+                    Logger.LogInformation("✅ JS playAudio invoked successfully");
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error invoking JS for audio playback for turn {Turn}. Signaling completion.", newState.CurrentTurnNumber);
+                    Logger.LogError(ex, "❌ Error invoking JS for audio playback for turn {Turn}. Signaling completion.", newState.CurrentTurnNumber);
                     await NotifyAudioPlaybackComplete();
                 }
+            }
+            else if (newState.CurrentTurnNumber == _lastPlayedTurnNumber && newState.CurrentTurnAudio != null)
+            {
+                Logger.LogDebug("⏭️ Skipping audio playback for turn {Turn} - already played", newState.CurrentTurnNumber);
             }
             else if (newState.IsDebateInProgress && newState.CurrentTurnNumber > 0)
             {
@@ -294,28 +354,58 @@
 
     private bool IsStartDisabled()
     {
+        Console.WriteLine($"[Home] IsStartDisabled called. Topic: '{DebateTopicInput}', Rapper1: '{SelectedRapper1Name}', Rapper2: '{SelectedRapper2Name}', IsLoading: {IsLoading}");
+        
         // Basic loading/state checks
         if (IsLoading || IsFetchingInitialTopic || _latestDebateState.IsGeneratingTurn || ShowVotingModal) 
+        {
+            Console.WriteLine($"[Home] IsStartDisabled = true (loading/state check)");
             return true;
+        }
         
         // Rapper validation
         if (string.IsNullOrEmpty(SelectedRapper1Name) || string.IsNullOrEmpty(SelectedRapper2Name)) 
+        {
+            Console.WriteLine($"[Home] IsStartDisabled = true (rapper not selected)");
             return true;
+        }
         
         if (SelectedRapper1Name == SelectedRapper2Name) 
+        {
+            Console.WriteLine($"[Home] IsStartDisabled = true (same rapper)");
             return true;
+        }
         
         // Topic validation - ensure there's a valid topic regardless of fetch error
         if (string.IsNullOrWhiteSpace(DebateTopicInput)) 
+        {
+            Console.WriteLine($"[Home] IsStartDisabled = true (topic is whitespace)");
             return true;
+        }
         
+        Console.WriteLine($"[Home] IsStartDisabled = false (all checks passed!)");
         return false;
+    }
+
+    private void OnRapperChanged()
+    {
+        Console.WriteLine($"[Home] OnRapperChanged callback fired! Rapper1: '{SelectedRapper1Name}', Rapper2: '{SelectedRapper2Name}'");
+        Console.WriteLine($"[Home] Button should be enabled: {!IsStartDisabled()}");
+        StateHasChanged(); // Force re-render
+    }
+
+    private void OnTopicChanged()
+    {
+        Console.WriteLine($"[Home] OnTopicChanged callback fired! Topic is now: '{DebateTopicInput}' (Length: {DebateTopicInput?.Length ?? 0})");
+        Console.WriteLine($"[Home] Button should be enabled: {!IsStartDisabled()}");
+        StateHasChanged(); // Force re-render
     }
 
     private async Task StartDebate()
     {
         if (IsStartDisabled()) return;
         _latestDebateState.IsGeneratingTurn = true;
+        _lastPlayedTurnNumber = -1; // Reset audio tracking for new debate
         ShowVotingModal = false;
         LoadingErrorMessage = null;
         InitialTopicFetchError = null;
@@ -324,6 +414,23 @@
         var rapper1 = Rappers?.FirstOrDefault(r => r.Name == SelectedRapper1Name);
         var rapper2 = Rappers?.FirstOrDefault(r => r.Name == SelectedRapper2Name);
         var topic = new Topic(DebateTopicInput.Trim());
+
+        // Add detailed debugging
+        Logger.LogInformation("StartDebate: Looking for rappers. Selected1: '{R1}', Selected2: '{R2}'", 
+            SelectedRapper1Name ?? "NULL", SelectedRapper2Name ?? "NULL");
+        
+        if (Rappers != null)
+        {
+            Logger.LogInformation("StartDebate: Available rappers: {RapperNames}", 
+                string.Join(", ", Rappers.Select(r => $"'{r.Name}'")));
+        }
+        else
+        {
+            Logger.LogError("StartDebate: Rappers list is NULL!");
+        }
+
+        Logger.LogInformation("StartDebate: Found rapper1: {R1}, Found rapper2: {R2}", 
+            rapper1?.Name ?? "NULL", rapper2?.Name ?? "NULL");
 
         if (rapper1 == null || rapper2 == null)
         {
@@ -425,6 +532,7 @@
     {
         Logger.LogInformation("ResetDebateState called. Resetting UI state.");
         _latestDebateState = new DebateState();
+        _lastPlayedTurnNumber = -1; // Reset audio tracking
         ShowVotingModal = false;
         StateHasChanged();
     }

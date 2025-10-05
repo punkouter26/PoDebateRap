@@ -46,7 +46,7 @@ namespace PoDebateRap.IntegrationTests
             }
         }
 
-        [Fact(Skip = "Requires a valid Azure Storage Connection String and active storage account. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task UpsertAndGetEntityAsync_WorksCorrectly()
         {
             // Arrange
@@ -68,7 +68,7 @@ namespace PoDebateRap.IntegrationTests
             await service.DeleteEntityAsync<TestEntity>(_testTableName, entity.PartitionKey, entity.RowKey);
         }
 
-        [Fact(Skip = "Requires a valid Azure Storage Connection String and active storage account. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task GetEntitiesAsync_ReturnsAllEntitiesInPartition()
         {
             // Arrange
@@ -106,7 +106,7 @@ namespace PoDebateRap.IntegrationTests
             }
         }
 
-        [Fact(Skip = "Requires a valid Azure Storage Connection String and active storage account. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task DeleteEntityAsync_RemovesEntity()
         {
             // Arrange

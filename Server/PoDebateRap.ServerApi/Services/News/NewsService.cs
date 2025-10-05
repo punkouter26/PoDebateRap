@@ -59,12 +59,22 @@ namespace PoDebateRap.ServerApi.Services.News
                     .Select(a => new NewsHeadline { Title = a.Title, Url = a.Url })
                     .ToList();
 
-                _logger.LogInformation("Fetched {FetchedCount} headlines.", headlines.Count);
+                _logger.LogInformation("Fetched {FetchedCount} headlines from NewsAPI.", headlines.Count);
                 return headlines;
+            }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                _logger.LogWarning("NewsAPI returned 400 Bad Request. API key may be invalid or rate limited. Using fallback topics.");
+                return GetFallbackTopics(count);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogWarning(httpEx, "NewsAPI request failed with status {StatusCode}. Using fallback topics.", httpEx.StatusCode);
+                return GetFallbackTopics(count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching news headlines from NewsAPI. Falling back to hardcoded topic.");
+                _logger.LogWarning(ex, "Error fetching news headlines from NewsAPI. Using fallback topics.");
                 return GetFallbackTopics(count);
             }
         }

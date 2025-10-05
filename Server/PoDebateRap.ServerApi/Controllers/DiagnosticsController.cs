@@ -40,5 +40,17 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             return Ok(await _diagnosticsService.CheckAuthenticationServiceAsync());
         }
+
+        [HttpGet("azure-openai-service")]
+        public async Task<ActionResult<string>> GetAzureOpenAIService()
+        {
+            return Ok(await _diagnosticsService.CheckAzureOpenAIServiceAsync());
+        }
+
+        [HttpGet("text-to-speech-service")]
+        public async Task<ActionResult<string>> GetTextToSpeechService()
+        {
+            return Ok(await _diagnosticsService.CheckTextToSpeechServiceAsync());
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace PoDebateRap.IntegrationTests
             _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<NewsService>();
         }
 
-        [Fact(Skip = "Requires a valid NewsAPI key and external API call. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task GetTopHeadlinesAsync_ReturnsHeadlines_WhenApiCallIsSuccessful()
         {
             // Arrange
@@ -42,7 +42,7 @@ namespace PoDebateRap.IntegrationTests
             Assert.False(headlines.Any(h => h.Title == "End of the world is coming"), "Should not return fallback headline.");
         }
 
-        [Fact(Skip = "Requires a valid NewsAPI key and external API call. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task GetTopHeadlinesAsync_ReturnsCorrectNumberOfHeadlines()
         {
             // Arrange

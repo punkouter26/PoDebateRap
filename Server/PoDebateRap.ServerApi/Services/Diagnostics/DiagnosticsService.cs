@@ -128,5 +128,20 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
                 return $"Text-to-Speech Service Check failed: {ex.Message}";
             }
         }
+
+        public async Task<string> CheckNewsServiceAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("https://newsapi.org/v2/top-headlines?country=us&apiKey=test");
+                _logger.LogInformation("News Service Check - OK (service is reachable)");
+                return "News service is reachable";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "News Service Check failed");
+                return $"News Service Check failed: {ex.Message}";
+            }
+        }
     }
 }

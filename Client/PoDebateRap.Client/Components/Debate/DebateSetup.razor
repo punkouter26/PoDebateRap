@@ -52,9 +52,10 @@
         <div class="form-field">
             <label for="debateTopicInput">Debate Topic</label>
             <input type="text" id="debateTopicInput" placeholder="@TopicPlaceholder"
-                    @bind="DebateTopicInput" @bind:event="oninput"
+                    value="@DebateTopicInput" 
+                    @oninput="HandleTopicInput"
                     maxlength="150" disabled="@IsDisabled" />
-            @if (!string.IsNullOrEmpty(InitialTopicFetchError))
+            @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
             {
                 <div class="text-danger mt-1"><small>@InitialTopicFetchError</small></div>
             }
@@ -64,8 +65,13 @@
         <div class="button-group">
             @if (!IsDebateInProgress)
             {
-                <!-- Show Begin Button -->
-                <button class="btn-primary" @onclick="OnStartDebate" disabled="@IsStartDisabled">
+                <!-- Show Begin Link (acts as button) -->
+                <a href="javascript:void(0)" 
+                   class="btn-primary @(IsStartDisabled ? "disabled-link" : "enabled-link")" 
+                   role="button" 
+                   aria-disabled="@IsStartDisabled"
+                   @onclick="HandleBeginClick" 
+                   @onclick:preventDefault="true">
                     @if (IsLoading)
                     {
                         <span class="spinner"></span>
@@ -75,7 +81,7 @@
                     {
                         <span>Begin Debate</span>
                     }
-                </button>
+                </a>
             }
             else
             {
@@ -98,9 +104,39 @@
 
 @code {
     [Parameter] public List<Rapper>? Rappers { get; set; }
-    [Parameter] public string? SelectedRapper1Name { get; set; }
+    
+    private string? _selectedRapper1Name;
+    [Parameter] 
+    public string? SelectedRapper1Name 
+    { 
+        get => _selectedRapper1Name;
+        set
+        {
+            if (_selectedRapper1Name != value)
+            {
+                _selectedRapper1Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper1 changed to: '{value}'");
+                _ = OnRapper1Changed();
+            }
+        }
+    }
     [Parameter] public EventCallback<string> SelectedRapper1NameChanged { get; set; }
-    [Parameter] public string? SelectedRapper2Name { get; set; }
+    
+    private string? _selectedRapper2Name;
+    [Parameter] 
+    public string? SelectedRapper2Name 
+    { 
+        get => _selectedRapper2Name;
+        set
+        {
+            if (_selectedRapper2Name != value)
+            {
+                _selectedRapper2Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper2 changed to: '{value}'");
+                _ = OnRapper2Changed();
+            }
+        }
+    }
     [Parameter] public EventCallback<string> SelectedRapper2NameChanged { get; set; }
     [Parameter] public string? DebateTopicInput { get; set; }
     [Parameter] public EventCallback<string> DebateTopicInputChanged { get; set; }
@@ -115,4 +151,35 @@
     [Parameter] public string TopicPlaceholder { get; set; } = "Enter debate topic...";
     [Parameter] public EventCallback OnStartDebate { get; set; }
     [Parameter] public EventCallback OnStopDebate { get; set; }
+
+    private async Task OnRapper1Changed()
+    {
+        Console.WriteLine($"[DebateSetup] OnRapper1Changed invoking parent callback with: '{SelectedRapper1Name}'");
+        await SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
+    }
+
+    private async Task OnRapper2Changed()
+    {
+        Console.WriteLine($"[DebateSetup] OnRapper2Changed invoking parent callback with: '{SelectedRapper2Name}'");
+        await SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
+    }
+
+    private async Task HandleTopicInput(ChangeEventArgs e)
+    {
+        var newValue = e.Value?.ToString();
+        Console.WriteLine($"[DebateSetup] HandleTopicInput called. Old value: '{DebateTopicInput}', New value: '{newValue}'");
+        DebateTopicInput = newValue;
+        Console.WriteLine($"[DebateSetup] Invoking parent callback with: '{DebateTopicInput}'");
+        await DebateTopicInputChanged.InvokeAsync(DebateTopicInput);
+        Console.WriteLine($"[DebateSetup] Parent callback completed");
+    }
+
+    private async Task HandleBeginClick()
+    {
+        if (!IsStartDisabled)
+        {
+            await OnStartDebate.InvokeAsync();
+        }
+    }
 }
+

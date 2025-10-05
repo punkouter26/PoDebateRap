@@ -10,5 +10,6 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
         Task<string> CheckAuthenticationServiceAsync();
         Task<string> CheckAzureOpenAIServiceAsync();
         Task<string> CheckTextToSpeechServiceAsync();
+        Task<string> CheckNewsServiceAsync();
     }
 }

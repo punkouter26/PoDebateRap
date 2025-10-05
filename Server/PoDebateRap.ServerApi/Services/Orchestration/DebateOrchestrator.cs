@@ -96,7 +96,8 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
                         _currentState.CurrentTurn++;
                         _currentState.IsGeneratingTurn = true;
-                        _currentState.CurrentTurnAudio = null; // Clear previous audio
+                        // DON'T clear audio here - it causes the client to miss it during polling
+                        // _currentState.CurrentTurnAudio = null; // Clear previous audio
                         _currentState.ErrorMessage = null; // Clear previous errors
                         await NotifyStateChangeAsync();
 
@@ -128,7 +129,17 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
                         try
                         {
                             string voice = _currentState.IsRapper1Turn ? Rapper1Voice : Rapper2Voice;
-                            _currentState.CurrentTurnAudio = await ttsService.GenerateSpeechAsync(_currentState.CurrentTurnText, voice, cancellationToken);
+                            var newAudio = await ttsService.GenerateSpeechAsync(_currentState.CurrentTurnText, voice, cancellationToken);
+                            _logger.LogInformation("🎵 Generated audio for turn {Turn}, size: {Size} bytes", _currentState.CurrentTurn, newAudio?.Length ?? 0);
+                            
+                            // Log first 50 bytes for debugging
+                            if (newAudio != null && newAudio.Length > 0)
+                            {
+                                var first50 = string.Join(" ", newAudio.Take(50).Select(b => b.ToString("X2")));
+                                _logger.LogInformation("🔍 First 50 bytes of audio: {Bytes}", first50);
+                            }
+                            
+                            _currentState.CurrentTurnAudio = newAudio; // Set the new audio after generation
                         }
                         catch (Exception ex)
                         {

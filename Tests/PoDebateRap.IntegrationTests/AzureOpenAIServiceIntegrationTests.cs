@@ -23,7 +23,7 @@ namespace PoDebateRap.IntegrationTests
             _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<AzureOpenAIService>();
         }
 
-        [Fact(Skip = "Requires valid Azure OpenAI configuration and external API call. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task GenerateDebateTurnAsync_ReturnsResponse_WhenApiCallIsSuccessful()
         {
             // Arrange
@@ -39,7 +39,7 @@ namespace PoDebateRap.IntegrationTests
             Assert.True(response.Length > 0);
         }
 
-        [Fact(Skip = "Requires valid Azure OpenAI configuration and external API call. Run manually or with specific CI setup.")]
+        [Fact]
         public async Task GenerateSpeechAsync_ReturnsAudioBytes_WhenApiCallIsSuccessful()
         {
             // Arrange

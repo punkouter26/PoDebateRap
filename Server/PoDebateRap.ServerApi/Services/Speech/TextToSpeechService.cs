@@ -71,19 +71,20 @@ namespace PoDebateRap.ServerApi.Services.Speech
                         if (result.Reason == ResultReason.SynthesizingAudioCompleted)
                         {
                             _logger.LogInformation("Speech synthesis completed successfully.");
-                            using (var audioDataStream = AudioDataStream.FromResult(result))
+                            
+                            // Use result.AudioData directly instead of AudioDataStream
+                            // This avoids potential issues with stream reading
+                            var audioBytes = result.AudioData;
+                            
+                            if (audioBytes != null && audioBytes.Length > 0)
                             {
-                                using (var memoryStream = new MemoryStream())
-                                {
-                                    // Read all data from AudioDataStream
-                                    byte[] buffer = new byte[4096];
-                                    uint bytesRead;
-                                    while ((bytesRead = audioDataStream.ReadData(buffer)) > 0)
-                                    {
-                                        memoryStream.Write(buffer, 0, (int)bytesRead);
-                                    }
-                                    return memoryStream.ToArray();
-                                }
+                                _logger.LogInformation("Retrieved {Size} bytes of audio data from result.AudioData", audioBytes.Length);
+                                return audioBytes;
+                            }
+                            else
+                            {
+                                _logger.LogError("AudioData is null or empty despite successful synthesis");
+                                throw new Exception("No audio data was generated");
                             }
                         }
                         else if (result.Reason == ResultReason.Canceled)

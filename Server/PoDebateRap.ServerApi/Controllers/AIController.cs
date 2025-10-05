@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.AI;
+using PoDebateRap.ServerApi.Services.Speech;
 using PoDebateRap.Shared.Models;
 using System.Threading.Tasks;
 
@@ -10,11 +11,16 @@ namespace PoDebateRap.ServerApi.Controllers
     public class AIController : ControllerBase
     {
         private readonly IAzureOpenAIService _openAIService;
+        private readonly ITextToSpeechService _textToSpeechService;
         private readonly ILogger<AIController> _logger;
 
-        public AIController(IAzureOpenAIService openAIService, ILogger<AIController> logger)
+        public AIController(
+            IAzureOpenAIService openAIService, 
+            ITextToSpeechService textToSpeechService,
+            ILogger<AIController> logger)
         {
             _openAIService = openAIService;
+            _textToSpeechService = textToSpeechService;
             _logger = logger;
         }
 
@@ -53,13 +59,19 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             try
             {
-                var audioBytes = await _openAIService.GenerateSpeechAsync(request.Text, request.VoiceName, CancellationToken.None);
-                return File(audioBytes, "audio/wav"); // Assuming WAV format
+                _logger.LogInformation("Generating speech for text: '{Text}' with voice: {Voice}", 
+                    request.Text?.Substring(0, Math.Min(50, request.Text?.Length ?? 0)), request.VoiceName);
+                
+                var audioBytes = await _textToSpeechService.GenerateSpeechAsync(request.Text, request.VoiceName, CancellationToken.None);
+                
+                _logger.LogInformation("✅ Generated {Size} bytes of audio", audioBytes?.Length ?? 0);
+                
+                return File(audioBytes, "audio/wav"); // Return WAV format
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating speech.");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError(ex, "❌ Error generating speech");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }

@@ -29,6 +29,7 @@ namespace PoDebateRap.ServerApi.Services.Data
         {
             try
             {
+                _logger.LogInformation("Attempting to retrieve all rappers from Table Storage...");
                 var rappers = new List<Rapper>();
                 await foreach (var entity in _tableStorageService.GetEntitiesAsync<RapperEntity>(TableName))
                 {
@@ -39,6 +40,7 @@ namespace PoDebateRap.ServerApi.Services.Data
                         Losses = entity.Losses
                     });
                 }
+                _logger.LogInformation("Successfully retrieved {Count} rappers from Table Storage", rappers.Count);
                 return rappers;
             }
             catch (Exception ex)
@@ -51,33 +53,50 @@ namespace PoDebateRap.ServerApi.Services.Data
         public async Task SeedInitialRappersAsync()
         {
             _logger.LogInformation("Checking if initial rappers need to be seeded...");
-            var existingRappers = await GetAllRappersAsync();
-            if (!existingRappers.Any())
+            
+            try
             {
-                _logger.LogInformation("No rappers found. Seeding initial data.");
-                var initialRappers = new List<RapperEntity>
+                var existingRappers = await GetAllRappersAsync();
+                _logger.LogInformation("Found {Count} existing rappers in storage", existingRappers.Count);
+                
+                if (existingRappers.Count > 0)
                 {
-                    new RapperEntity("PoDebateRapRappers", "Eminem") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Kendrick Lamar") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Tupac Shakur") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "The Notorious B.I.G.") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Nas") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Jay-Z") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Rakim") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Andre 3000") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Lauryn Hill") { Wins = 0, Losses = 0 },
-                    new RapperEntity("PoDebateRapRappers", "Snoop Dogg") { Wins = 0, Losses = 0 }
-                };
-
-                foreach (var rapper in initialRappers)
-                {
-                    await _tableStorageService.UpsertEntityAsync(TableName, rapper);
+                    _logger.LogInformation("Existing rappers: {Names}", 
+                        string.Join(", ", existingRappers.Select(r => r.Name)));
                 }
-                _logger.LogInformation("Initial rappers seeded successfully.");
+                
+                if (!existingRappers.Any())
+                {
+                    _logger.LogInformation("No rappers found. Seeding initial data.");
+                    var initialRappers = new List<RapperEntity>
+                    {
+                        new RapperEntity("PoDebateRapRappers", "Eminem") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Kendrick Lamar") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Tupac Shakur") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "The Notorious B.I.G.") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Nas") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Jay-Z") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Rakim") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Andre 3000") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Lauryn Hill") { Wins = 0, Losses = 0 },
+                        new RapperEntity("PoDebateRapRappers", "Snoop Dogg") { Wins = 0, Losses = 0 }
+                    };
+
+                    foreach (var rapper in initialRappers)
+                    {
+                        await _tableStorageService.UpsertEntityAsync(TableName, rapper);
+                    }
+                    _logger.LogInformation("Initial rappers seeded successfully.");
+                }
+                else
+                {
+                    _logger.LogInformation("Rappers already exist. Skipping seeding.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation("Rappers already exist. Skipping seeding.");
+                _logger.LogError(ex, "Error during rapper seeding process");
+                throw;
             }
         }
 

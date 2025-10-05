@@ -57,6 +57,19 @@ public class NewsServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Single(result); // Expecting one fallback headline
-        Assert.Equal("Climate Change Solutions", result[0].Title);
+        // Since fallback topics are randomized, just verify we got a valid fallback topic
+        var fallbackTitles = new[]
+        {
+            "Artificial Intelligence vs Human Creativity",
+            "Social Media Impact on Society",
+            "Climate Change Solutions",
+            "Future of Remote Work",
+            "Electric Cars vs Gas Cars",
+            "Space Exploration Priorities",
+            "Healthy Lifestyle Choices",
+            "Education System Reform"
+        };
+        Assert.Contains(result[0].Title, fallbackTitles);
+        Assert.StartsWith("https://example.com/", result[0].Url);
     }
 }
