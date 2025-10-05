@@ -42,6 +42,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
+      - name: Restart app to free disk space (F1 tier limitation)
+        run: |
+          echo "Restarting app to clear temporary files and free disk space..."
+          az webapp restart \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          echo "Waiting for restart to complete..."
+          sleep 30
+          echo "App restarted successfully"
+      
       - name: Create deployment package
         run: |
           cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
