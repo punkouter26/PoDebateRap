@@ -1,0 +1,66 @@
+name: Deploy PoDebateRap to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  AZURE_WEBAPP_NAME: PoDebateRap
+  AZURE_RESOURCE_GROUP: PoDebateRap
+  AZURE_WEBAPP_PACKAGE_PATH: './publish'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --filter "FullyQualifiedName!~SystemTests" --verbosity normal
+
+      - name: Publish
+        run: dotnet publish Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Health Check
+        run: |
+          echo "Testing health endpoint: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health"
+          
+          # Wait for app to be ready (max 2 minutes)
+          for i in {1..24}; do
+            if curl -f -s "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health" > /dev/null; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+            echo "Waiting for app to be ready... ($i/24)"
+            sleep 5
+          done
+          
+          echo "❌ Health check failed after 2 minutes"
+          curl -s "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health" || true
+          exit 1
