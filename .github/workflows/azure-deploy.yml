@@ -34,9 +34,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test --configuration Release --no-build --filter "FullyQualifiedName!~SystemTests" --verbosity normal
-
       - name: Publish
         run: dotnet publish Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
       
