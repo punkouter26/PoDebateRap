@@ -202,7 +202,7 @@
         catch (HttpRequestException httpEx)
         {
             Logger.LogError(httpEx, "HTTP error loading initial data for Home page.");
-            LoadingErrorMessage = $"Could not connect to server: {httpEx.Message}. Please check if the API server is running on https://localhost:5001.";
+            LoadingErrorMessage = $"Could not connect to server: {httpEx.Message}. Please check if the API server is running.";
         }
         catch (TaskCanceledException)
         {

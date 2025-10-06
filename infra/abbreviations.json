@@ -1,0 +1,9 @@
+{
+  "resourcesResourceGroups": "rg-",
+  "webSitesAppService": "app-",
+  "webServerFarms": "asp-",
+  "insightsComponents": "appi-",
+  "storageStorageAccounts": "st",
+  "cognitiveServicesAccounts": "cog-",
+  "cognitiveServicesOpenAI": "oai-"
+}
