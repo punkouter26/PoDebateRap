@@ -21,53 +21,34 @@ namespace PoDebateRap.ServerApi.Controllers
         /// Comprehensive health check for all external dependencies
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<DiagnosticResult>> GetHealth()
+        public async Task<ActionResult<HealthCheckResult>> GetHealth()
         {
             _logger.LogInformation("Health check requested");
 
-            var diagnosticResult = new DiagnosticResult
-            {
-                Timestamp = DateTime.UtcNow,
-                Checks = new Dictionary<string, string>()
-            };
-
             try
             {
-                // API Health
-                diagnosticResult.Checks["API"] = await _diagnosticsService.CheckApiHealthAsync();
+                var results = await _diagnosticsService.RunAllChecksAsync();
+                var isHealthy = results.All(r => r.Success);
 
-                // Storage Connection
-                diagnosticResult.Checks["Storage"] = await _diagnosticsService.CheckDataConnectionAsync();
+                var healthResult = new HealthCheckResult
+                {
+                    IsHealthy = isHealthy,
+                    Timestamp = DateTime.UtcNow,
+                    Checks = results.ToDictionary(r => r.CheckName, r => r.Message)
+                };
 
-                // Azure OpenAI
-                diagnosticResult.Checks["AzureOpenAI"] = await _diagnosticsService.CheckAzureOpenAIServiceAsync();
-
-                // Text-to-Speech
-                diagnosticResult.Checks["TextToSpeech"] = await _diagnosticsService.CheckTextToSpeechServiceAsync();
-
-                // Internet Connection
-                diagnosticResult.Checks["Internet"] = await _diagnosticsService.CheckInternetConnectionAsync();
-
-                // News API
-                diagnosticResult.Checks["NewsAPI"] = await _diagnosticsService.CheckNewsServiceAsync();
-
-                // Determine overall health
-                diagnosticResult.IsHealthy = diagnosticResult.Checks.Values.All(v => 
-                    v.Contains("OK") || 
-                    v.Contains("working") || 
-                    v.Contains("healthy") || 
-                    v.Contains("available"));
-
-                _logger.LogInformation("Health check completed. Overall health: {IsHealthy}", diagnosticResult.IsHealthy);
-
-                return Ok(diagnosticResult);
+                _logger.LogInformation("Health check completed. Overall health: {IsHealthy}", isHealthy);
+                return Ok(healthResult);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Health check failed with exception");
-                diagnosticResult.IsHealthy = false;
-                diagnosticResult.Checks["Error"] = $"Health check failed: {ex.Message}";
-                return StatusCode(500, diagnosticResult);
+                return StatusCode(500, new HealthCheckResult
+                {
+                    IsHealthy = false,
+                    Timestamp = DateTime.UtcNow,
+                    Checks = new Dictionary<string, string> { ["Error"] = $"Health check failed: {ex.Message}" }
+                });
             }
         }
 
@@ -88,9 +69,8 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             try
             {
-                // Quick check of critical services
-                var apiCheck = await _diagnosticsService.CheckApiHealthAsync();
-                var isReady = apiCheck.Contains("healthy") || apiCheck.Contains("OK");
+                var results = await _diagnosticsService.RunAllChecksAsync();
+                var isReady = results.Any() && results.First().Success;
 
                 if (isReady)
                 {
@@ -107,5 +87,12 @@ namespace PoDebateRap.ServerApi.Controllers
                 return StatusCode(503, new { status = "not ready", error = ex.Message, timestamp = DateTime.UtcNow });
             }
         }
+    }
+
+    public class HealthCheckResult
+    {
+        public bool IsHealthy { get; set; }
+        public DateTime Timestamp { get; set; }
+        public Dictionary<string, string> Checks { get; set; } = new();
     }
 }

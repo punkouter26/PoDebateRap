@@ -4,36 +4,21 @@ using PoDebateRap.ServerApi.Services.Speech;
 using PoDebateRap.ServerApi.Services.Orchestration;
 using PoDebateRap.ServerApi.Services.News;
 using PoDebateRap.ServerApi.Services.Diagnostics;
-using PoDebateRap.ServerApi.Logging; // For FileLoggerProvider
-using PoDebateRap.Shared.Models; // For DebateState, etc.
-using Azure.Identity; // For DefaultAzureCredential
-using Azure.AI.OpenAI; // For OpenAIClient
-using Microsoft.CognitiveServices.Speech; // For SpeechConfig
-using Microsoft.CognitiveServices.Speech.Audio; // For AudioDataStream
-using Microsoft.Extensions.Configuration; // Required for IConfiguration
+using PoDebateRap.Shared.Models;
 using PoDebateRap.ServerApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Configure Logging ---
+// Configure Logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-if (builder.Environment.IsDevelopment())
-{
-    var logFilePath = Path.Combine(builder.Environment.ContentRootPath, "..", "log.txt");
-    builder.Logging.AddProvider(new FileLoggerProvider(logFilePath));
-    Console.WriteLine($"File logging enabled at: {logFilePath}");
-}
-// --- End Logging Configuration ---
 
-// --- Configure User Secrets for Development ---
+// Configure User Secrets for Development
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
-    Console.WriteLine("User Secrets configured for development.");
 }
-// --- End User Secrets Configuration ---
 
 // Add services to the container.
 builder.Services.AddSignalR();
@@ -45,7 +30,6 @@ builder.Services.AddSwaggerGen(); // For OpenAPI/Swagger
 // Register Data Services
 builder.Services.AddScoped<ITableStorageService, TableStorageService>();
 builder.Services.AddScoped<IRapperRepository, RapperRepository>();
-builder.Services.AddScoped<ITopicRepository, TopicRepository>();
 
 // Register AI Service
 builder.Services.AddScoped<IAzureOpenAIService, AzureOpenAIService>();
@@ -104,8 +88,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var rapperRepository = services.GetRequiredService<IRapperRepository>();
-        // Note: Topic repository removed - topics now come from live news API
-
         var configuration = services.GetRequiredService<IConfiguration>();
         if (!string.IsNullOrEmpty(configuration["Azure:StorageConnectionString"]))
         {

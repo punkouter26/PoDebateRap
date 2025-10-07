@@ -42,12 +42,12 @@
                 @foreach (var context in LeaderboardEntries)
                 {
                     <tr>
-                        <td class="rank-cell" style="@GetRankStyle(context.Rank)">
+                        <td class="rank-cell">
                             @if (context.Rank <= 3)
                             {
                                 <span class="rank-icon" style="@($"color: {GetRankColor(context.Rank)};")">@GetRankIcon(context.Rank)</span>
                             }
-                            @context.Rank
+                            <strong>@context.Rank</strong>
                         </td>
                         <td>@context.Name</td>
                         <td>@context.Wins</td>
@@ -124,16 +124,7 @@
         NavManager.NavigateTo("/");
     }
 
-    // Helper methods for styling top ranks - kept logic, removed MudBlazor specifics
-    private string GetRankStyle(int rank) => rank switch
-    {
-        1 => "font-weight: bold;",
-        2 => "font-weight: bold;",
-        3 => "font-weight: bold;",
-        _ => ""
-    };
-
-     private string GetRankColor(int rank) => rank switch
+    private string GetRankColor(int rank) => rank switch
     {
         1 => "#FFD700", // Gold
         2 => "#C0C0C0", // Silver
@@ -141,12 +132,11 @@
         _ => "inherit"
     };
 
-    // Replace MudIcon references with Unicode characters
     private string GetRankIcon(int rank) => rank switch
     {
-        1 => "🏆", // Trophy
-        2 => "🥈", // 2nd place medal
-        3 => "🥉", // 3rd place medal
+        1 => "🏆",
+        2 => "🥈",
+        3 => "🥉",
         _ => ""
     };
 

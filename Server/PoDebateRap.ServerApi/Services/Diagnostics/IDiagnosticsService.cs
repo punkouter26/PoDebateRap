@@ -1,15 +1,9 @@
-using System.Threading.Tasks;
+using PoDebateRap.Shared.Models;
 
 namespace PoDebateRap.ServerApi.Services.Diagnostics
 {
     public interface IDiagnosticsService
     {
-        Task<string> CheckApiHealthAsync();
-        Task<string> CheckDataConnectionAsync();
-        Task<string> CheckInternetConnectionAsync();
-        Task<string> CheckAuthenticationServiceAsync();
-        Task<string> CheckAzureOpenAIServiceAsync();
-        Task<string> CheckTextToSpeechServiceAsync();
-        Task<string> CheckNewsServiceAsync();
+        Task<List<DiagnosticResult>> RunAllChecksAsync();
     }
 }

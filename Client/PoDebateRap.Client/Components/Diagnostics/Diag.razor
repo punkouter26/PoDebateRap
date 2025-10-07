@@ -251,43 +251,17 @@
         _isLoading = true;
         StateHasChanged();
 
-        _results = new List<DiagnosticResult>();
-
         try
         {
-            // Check API Health
-            var apiHealth = await Http.GetStringAsync("Diagnostics/api-health");
-            _results.Add(ParseDiagnosticResult("API Health", apiHealth));
-
-            // Check Data Connection
-            var dataConnection = await Http.GetStringAsync("Diagnostics/data-connection");
-            _results.Add(ParseDiagnosticResult("Data Connection", dataConnection));
-
-            // Check Internet Connection
-            var internetConnection = await Http.GetStringAsync("Diagnostics/internet-connection");
-            _results.Add(ParseDiagnosticResult("Internet Connection", internetConnection));
-
-            // Check Authentication Service
-            var authService = await Http.GetStringAsync("Diagnostics/authentication-service");
-            _results.Add(ParseDiagnosticResult("Authentication Service", authService));
-
-            // Check Azure OpenAI Service
-            var openAIService = await Http.GetStringAsync("Diagnostics/azure-openai-service");
-            _results.Add(ParseDiagnosticResult("Azure OpenAI Service", openAIService));
-
-            // Check Text-to-Speech Service
-            var textToSpeechService = await Http.GetStringAsync("Diagnostics/text-to-speech-service");
-            _results.Add(ParseDiagnosticResult("Text-to-Speech Service", textToSpeechService));
-        }
-        catch (OperationCanceledException)
-        {
-            Logger.LogWarning("Diagnostics run cancelled.");
-            _results.Add(new DiagnosticResult { CheckName = "Overall", Success = false, Message = "Diagnostics cancelled." });
+            _results = await Http.GetFromJsonAsync<List<DiagnosticResult>>("Diagnostics/all");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error running diagnostics.");
-            _results.Add(new DiagnosticResult { CheckName = "Overall", Success = false, Message = $"An error occurred: {ex.Message}" });
+            _results = new List<DiagnosticResult>
+            {
+                new DiagnosticResult { CheckName = "Overall", Success = false, Message = $"Error: {ex.Message}" }
+            };
         }
         finally
         {
@@ -383,29 +357,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private DiagnosticResult ParseDiagnosticResult(string checkName, string? rawResult)
-    {
-        if (string.IsNullOrEmpty(rawResult))
-        {
-            return new DiagnosticResult { CheckName = checkName, Success = false, Message = "No response from API." };
-        }
-
-        // Expected format: "Check Name: Status - Details"
-        // Example: "API Health: OK" or "Data Connection: Error - Message"
-        var parts = rawResult.Split(new[] { ": " }, 2, StringSplitOptions.None);
-        if (parts.Length < 2)
-        {
-            return new DiagnosticResult { CheckName = checkName, Success = false, Message = rawResult };
-        }
-
-        var statusPart = parts[1].Trim();
-        bool success = statusPart.StartsWith("OK", StringComparison.OrdinalIgnoreCase);
-        string message = statusPart;
-
-        return new DiagnosticResult { CheckName = checkName, Success = success, Message = message };
-    }
-
-    // Ensure cancellation token source is disposed
     public void Dispose()
     {
         objRef?.Dispose();

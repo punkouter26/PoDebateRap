@@ -413,7 +413,7 @@
 
         var rapper1 = Rappers?.FirstOrDefault(r => r.Name == SelectedRapper1Name);
         var rapper2 = Rappers?.FirstOrDefault(r => r.Name == SelectedRapper2Name);
-        var topic = new Topic(DebateTopicInput.Trim());
+        var topic = new Topic { Title = DebateTopicInput.Trim(), Category = "Custom" };
 
         // Add detailed debugging
         Logger.LogInformation("StartDebate: Looking for rappers. Selected1: '{R1}', Selected2: '{R2}'", 

@@ -38,7 +38,7 @@ namespace PoDebateRap.UnitTests
             var orchestrator = new DebateOrchestrator(_mockLogger.Object, _serviceProvider);
             var rapper1 = new Rapper("Test Rapper 1");
             var rapper2 = new Rapper("Test Rapper 2");
-            var topic = new Topic("Test Topic");
+            var topic = new Topic { Title = "Test Topic", Category = "Test" };
 
             _mockTtsService.Setup(s => s.GenerateSpeechAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<System.Threading.CancellationToken>())).ReturnsAsync(new byte[0]);
 

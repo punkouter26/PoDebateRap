@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.News;
-using PoDebateRap.Shared.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -21,19 +17,12 @@ namespace PoDebateRap.ServerApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Topic>>> Get()
+        public async Task<ActionResult<IEnumerable<TopicDto>>> Get()
         {
             try
             {
-                // Get latest news headlines and convert them to debate topics
-                var headlines = await _newsService.GetTopHeadlinesAsync(10); // Get top 10 latest news
-                
-                var topics = headlines.Select(headline => new Topic 
-                { 
-                    Title = headline.Title,
-                    Category = "Current Events" // Since these are from news
-                }).ToList();
-
+                var headlines = await _newsService.GetTopHeadlinesAsync(10);
+                var topics = headlines.Select(h => new TopicDto { Title = h.Title, Category = "Current Events" }).ToList();
                 _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
                 return Ok(topics);
             }
@@ -45,29 +34,19 @@ namespace PoDebateRap.ServerApi.Controllers
         }
 
         [HttpGet("latest")]
-        public async Task<ActionResult<Topic>> GetLatest()
+        public async Task<ActionResult<TopicDto>> GetLatest()
         {
             try
             {
-                // Get the most recent news headline as the debate topic
-                var headlines = await _newsService.GetTopHeadlinesAsync(1); // Get only the latest
-                
+                var headlines = await _newsService.GetTopHeadlinesAsync(1);
                 if (headlines.Any())
                 {
-                    var latestTopic = new Topic 
-                    { 
-                        Title = headlines.First().Title,
-                        Category = "Breaking News"
-                    };
-
+                    var latestTopic = new TopicDto { Title = headlines.First().Title, Category = "Breaking News" };
                     _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
                     return Ok(latestTopic);
                 }
-                else
-                {
-                    _logger.LogWarning("No news headlines available for topic generation.");
-                    return NotFound("No current news topics available");
-                }
+                _logger.LogWarning("No news headlines available for topic generation.");
+                return NotFound("No current news topics available");
             }
             catch (Exception ex)
             {
@@ -75,5 +54,11 @@ namespace PoDebateRap.ServerApi.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+    }
+
+    public record TopicDto
+    {
+        public string Title { get; init; } = string.Empty;
+        public string Category { get; init; } = string.Empty;
     }
 }

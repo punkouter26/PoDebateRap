@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.Diagnostics;
-using System.Threading.Tasks;
+using PoDebateRap.Shared.Models;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -17,40 +17,19 @@ namespace PoDebateRap.ServerApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet("api-health")]
-        public async Task<ActionResult<string>> GetApiHealth()
+        [HttpGet("all")]
+        public async Task<ActionResult<List<DiagnosticResult>>> GetAllDiagnostics()
         {
-            return Ok(await _diagnosticsService.CheckApiHealthAsync());
-        }
-
-        [HttpGet("data-connection")]
-        public async Task<ActionResult<string>> GetDataConnection()
-        {
-            return Ok(await _diagnosticsService.CheckDataConnectionAsync());
-        }
-
-        [HttpGet("internet-connection")]
-        public async Task<ActionResult<string>> GetInternetConnection()
-        {
-            return Ok(await _diagnosticsService.CheckInternetConnectionAsync());
-        }
-
-        [HttpGet("authentication-service")]
-        public async Task<ActionResult<string>> GetAuthenticationService()
-        {
-            return Ok(await _diagnosticsService.CheckAuthenticationServiceAsync());
-        }
-
-        [HttpGet("azure-openai-service")]
-        public async Task<ActionResult<string>> GetAzureOpenAIService()
-        {
-            return Ok(await _diagnosticsService.CheckAzureOpenAIServiceAsync());
-        }
-
-        [HttpGet("text-to-speech-service")]
-        public async Task<ActionResult<string>> GetTextToSpeechService()
-        {
-            return Ok(await _diagnosticsService.CheckTextToSpeechServiceAsync());
+            try
+            {
+                var results = await _diagnosticsService.RunAllChecksAsync();
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error running diagnostics");
+                return StatusCode(500, "Error running diagnostics");
+            }
         }
     }
 }

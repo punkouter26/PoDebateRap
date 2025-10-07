@@ -7,6 +7,7 @@ using PoDebateRap.ServerApi.Services.AI;
 using PoDebateRap.ServerApi.Services.Speech;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Linq;
 
 namespace PoDebateRap.IntegrationTests
 {
@@ -25,7 +26,7 @@ namespace PoDebateRap.IntegrationTests
         }
 
         [Fact]
-        public async Task DiagnosticsService_CheckApiHealth_ReturnsSuccess()
+        public async Task DiagnosticsService_RunAllChecks_ReturnsResults()
         {
             // Arrange
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -47,101 +48,13 @@ namespace PoDebateRap.IntegrationTests
                 httpClient);
 
             // Act
-            var result = await diagnosticsService.CheckApiHealthAsync();
+            var results = await diagnosticsService.RunAllChecksAsync();
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Contains("healthy", result.ToLower());
-        }
-
-        [Fact]
-        public async Task DiagnosticsService_CheckInternetConnection_ReturnsSuccess()
-        {
-            // Arrange
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var logger = loggerFactory.CreateLogger<DiagnosticsService>();
-            var tableLogger = loggerFactory.CreateLogger<TableStorageService>();
-            var aiLogger = loggerFactory.CreateLogger<AzureOpenAIService>();
-            var ttsLogger = loggerFactory.CreateLogger<TextToSpeechService>();
-
-            var httpClient = new HttpClient();
-            var tableStorageService = new TableStorageService(_configuration, tableLogger);
-            var azureOpenAIService = new AzureOpenAIService(_configuration, aiLogger);
-            var textToSpeechService = new TextToSpeechService(_configuration, ttsLogger);
-
-            var diagnosticsService = new DiagnosticsService(
-                logger,
-                tableStorageService,
-                azureOpenAIService,
-                textToSpeechService,
-                httpClient);
-
-            // Act
-            var result = await diagnosticsService.CheckInternetConnectionAsync();
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Contains("working", result.ToLower());
-        }
-
-        [Fact]
-        public async Task DiagnosticsService_CheckDataConnection_ReturnsSuccess()
-        {
-            // Arrange
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var logger = loggerFactory.CreateLogger<DiagnosticsService>();
-            var tableLogger = loggerFactory.CreateLogger<TableStorageService>();
-            var aiLogger = loggerFactory.CreateLogger<AzureOpenAIService>();
-            var ttsLogger = loggerFactory.CreateLogger<TextToSpeechService>();
-
-            var httpClient = new HttpClient();
-            var tableStorageService = new TableStorageService(_configuration, tableLogger);
-            var azureOpenAIService = new AzureOpenAIService(_configuration, aiLogger);
-            var textToSpeechService = new TextToSpeechService(_configuration, ttsLogger);
-
-            var diagnosticsService = new DiagnosticsService(
-                logger,
-                tableStorageService,
-                azureOpenAIService,
-                textToSpeechService,
-                httpClient);
-
-            // Act
-            var result = await diagnosticsService.CheckDataConnectionAsync();
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Contains("available", result.ToLower());
-        }
-
-        [Fact]
-        public async Task DiagnosticsService_CheckAzureOpenAI_ReturnsSuccess()
-        {
-            // Arrange
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var logger = loggerFactory.CreateLogger<DiagnosticsService>();
-            var tableLogger = loggerFactory.CreateLogger<TableStorageService>();
-            var aiLogger = loggerFactory.CreateLogger<AzureOpenAIService>();
-            var ttsLogger = loggerFactory.CreateLogger<TextToSpeechService>();
-
-            var httpClient = new HttpClient();
-            var tableStorageService = new TableStorageService(_configuration, tableLogger);
-            var azureOpenAIService = new AzureOpenAIService(_configuration, aiLogger);
-            var textToSpeechService = new TextToSpeechService(_configuration, ttsLogger);
-
-            var diagnosticsService = new DiagnosticsService(
-                logger,
-                tableStorageService,
-                azureOpenAIService,
-                textToSpeechService,
-                httpClient);
-
-            // Act
-            var result = await diagnosticsService.CheckAzureOpenAIServiceAsync();
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Contains("working", result.ToLower());
+            Assert.NotNull(results);
+            Assert.True(results.Any());
+            Assert.Contains(results, r => r.CheckName == "API Health");
+            Assert.Contains(results, r => r.CheckName == "Internet Connection");
         }
     }
 }

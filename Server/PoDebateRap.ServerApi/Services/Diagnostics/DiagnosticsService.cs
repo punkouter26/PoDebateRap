@@ -1,9 +1,7 @@
-using System.Threading.Tasks;
 using PoDebateRap.ServerApi.Services.Data;
 using PoDebateRap.ServerApi.Services.AI;
 using PoDebateRap.ServerApi.Services.Speech;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
+using PoDebateRap.Shared.Models;
 
 namespace PoDebateRap.ServerApi.Services.Diagnostics
 {
@@ -29,37 +27,69 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
             _httpClient = httpClient;
         }
 
-        public Task<string> CheckApiHealthAsync()
+        public async Task<List<DiagnosticResult>> RunAllChecksAsync()
+        {
+            var results = new List<DiagnosticResult>();
+
+            results.Add(await CheckApiHealthAsync());
+            results.Add(await CheckDataConnectionAsync());
+            results.Add(await CheckInternetConnectionAsync());
+            results.Add(await CheckAzureOpenAIServiceAsync());
+            results.Add(await CheckTextToSpeechServiceAsync());
+            results.Add(await CheckNewsServiceAsync());
+
+            return results;
+        }
+
+        private Task<DiagnosticResult> CheckApiHealthAsync()
         {
             try
             {
                 _logger.LogInformation("API Health Check - OK");
-                return Task.FromResult("API is running and healthy");
+                return Task.FromResult(new DiagnosticResult
+                {
+                    CheckName = "API Health",
+                    Success = true,
+                    Message = "API is running and healthy"
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "API Health Check failed");
-                return Task.FromResult($"API Health Check failed: {ex.Message}");
+                return Task.FromResult(new DiagnosticResult
+                {
+                    CheckName = "API Health",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                });
             }
         }
 
-        public async Task<string> CheckDataConnectionAsync()
+        private Task<DiagnosticResult> CheckDataConnectionAsync()
         {
             try
             {
-                // Try to access table storage service - just check if service is available
-                // Using a simple operation that won't fail due to missing entities
                 _logger.LogInformation("Data Connection Check - OK");
-                return "Data connection service is available";
+                return Task.FromResult(new DiagnosticResult
+                {
+                    CheckName = "Data Connection",
+                    Success = true,
+                    Message = "Data connection service is available"
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Data Connection Check failed");
-                return $"Data Connection Check failed: {ex.Message}";
+                return Task.FromResult(new DiagnosticResult
+                {
+                    CheckName = "Data Connection",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                });
             }
         }
 
-        public async Task<string> CheckInternetConnectionAsync()
+        private async Task<DiagnosticResult> CheckInternetConnectionAsync()
         {
             try
             {
@@ -67,80 +97,105 @@ namespace PoDebateRap.ServerApi.Services.Diagnostics
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Internet Connection Check - OK");
-                    return "Internet connection is working";
+                    return new DiagnosticResult
+                    {
+                        CheckName = "Internet Connection",
+                        Success = true,
+                        Message = "Internet connection is working"
+                    };
                 }
-                else
+                _logger.LogWarning("Internet Connection Check - Failed with status: {StatusCode}", response.StatusCode);
+                return new DiagnosticResult
                 {
-                    _logger.LogWarning("Internet Connection Check - Failed with status: {StatusCode}", response.StatusCode);
-                    return $"Internet connection check failed with status: {response.StatusCode}";
-                }
+                    CheckName = "Internet Connection",
+                    Success = false,
+                    Message = $"Failed with status: {response.StatusCode}"
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Internet Connection Check failed");
-                return $"Internet Connection Check failed: {ex.Message}";
+                return new DiagnosticResult
+                {
+                    CheckName = "Internet Connection",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                };
             }
         }
 
-        public Task<string> CheckAuthenticationServiceAsync()
+        private async Task<DiagnosticResult> CheckAzureOpenAIServiceAsync()
         {
             try
             {
-                // Basic authentication check - this could be expanded based on your auth requirements
-                _logger.LogInformation("Authentication Service Check - OK");
-                return Task.FromResult("Authentication service is available");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Authentication Service Check failed");
-                return Task.FromResult($"Authentication Service Check failed: {ex.Message}");
-            }
-        }
-
-        public async Task<string> CheckAzureOpenAIServiceAsync()
-        {
-            try
-            {
-                // Try a simple test with the Azure OpenAI service
                 var result = await _azureOpenAIService.GenerateDebateTurnAsync("Hello", 10, CancellationToken.None);
                 _logger.LogInformation("Azure OpenAI Service Check - OK");
-                return "Azure OpenAI service is working";
+                return new DiagnosticResult
+                {
+                    CheckName = "Azure OpenAI Service",
+                    Success = true,
+                    Message = "Azure OpenAI service is working"
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Azure OpenAI Service Check failed");
-                return $"Azure OpenAI Service Check failed: {ex.Message}";
+                return new DiagnosticResult
+                {
+                    CheckName = "Azure OpenAI Service",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                };
             }
         }
 
-        public async Task<string> CheckTextToSpeechServiceAsync()
+        private async Task<DiagnosticResult> CheckTextToSpeechServiceAsync()
         {
             try
             {
-                // Try a simple test with the Text-to-Speech service
                 var result = await _textToSpeechService.GenerateSpeechAsync("Hello", "en-US-JennyNeural", CancellationToken.None);
                 _logger.LogInformation("Text-to-Speech Service Check - OK");
-                return "Text-to-Speech service is working";
+                return new DiagnosticResult
+                {
+                    CheckName = "Text-to-Speech Service",
+                    Success = true,
+                    Message = "Text-to-Speech service is working"
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Text-to-Speech Service Check failed");
-                return $"Text-to-Speech Service Check failed: {ex.Message}";
+                return new DiagnosticResult
+                {
+                    CheckName = "Text-to-Speech Service",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                };
             }
         }
 
-        public async Task<string> CheckNewsServiceAsync()
+        private async Task<DiagnosticResult> CheckNewsServiceAsync()
         {
             try
             {
                 var response = await _httpClient.GetAsync("https://newsapi.org/v2/top-headlines?country=us&apiKey=test");
                 _logger.LogInformation("News Service Check - OK (service is reachable)");
-                return "News service is reachable";
+                return new DiagnosticResult
+                {
+                    CheckName = "News Service",
+                    Success = true,
+                    Message = "News service is reachable"
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "News Service Check failed");
-                return $"News Service Check failed: {ex.Message}";
+                return new DiagnosticResult
+                {
+                    CheckName = "News Service",
+                    Success = false,
+                    Message = $"Failed: {ex.Message}"
+                };
             }
         }
     }

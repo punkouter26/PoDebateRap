@@ -1,6 +1,0 @@
-@PoDebateRap.ServerApi_HostAddress = http://localhost:5278
-
-GET {{PoDebateRap.ServerApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
