@@ -62,6 +62,39 @@
     font-size: 1.1em;
 }
 
+.health-summary {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.health-status {
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.health-status.healthy {
+    background-color: rgba(40, 167, 69, 0.2);
+    border: 2px solid #28a745;
+}
+
+.health-status.unhealthy {
+    background-color: rgba(220, 53, 69, 0.2);
+    border: 2px solid #dc3545;
+}
+
+.health-status h6 {
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.health-status p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #bbb;
+}
+
 .diagnostics-table {
     width: 100%;
     border-collapse: collapse;
@@ -93,6 +126,10 @@
 
 .status-icon.success {
     color: #28a745; /* Green for success */
+}
+
+.status-icon.degraded {
+    color: #ffc107; /* Yellow/orange for degraded */
 }
 
 .status-icon.failed {

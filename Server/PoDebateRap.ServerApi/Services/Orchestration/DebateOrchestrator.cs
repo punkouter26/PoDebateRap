@@ -19,9 +19,9 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         private DebateState _currentState;
         public DebateState CurrentState => _currentState;
 
-        public event Func<DebateState, Task> OnStateChangeAsync;
+        public event Func<DebateState, Task> OnStateChangeAsync = null!;
 
-        private CancellationTokenSource _debateCancellationTokenSource;
+        private CancellationTokenSource? _debateCancellationTokenSource;
         private TaskCompletionSource<bool> _audioPlaybackCompletionSource;
 
         private const int MaxDebateTurns = 10; // Total turns for the debate
@@ -33,7 +33,17 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _currentState = new DebateState();
+            _currentState = new DebateState
+            {
+                Rapper1 = new Rapper(),
+                Rapper2 = new Rapper(),
+                Topic = new Topic(),
+                CurrentTurnAudio = Array.Empty<byte>(),
+                WinnerName = string.Empty,
+                JudgeReasoning = string.Empty,
+                Stats = new DebateStats(),
+                ErrorMessage = string.Empty
+            };
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
         }
 
@@ -47,8 +57,18 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
             _audioPlaybackCompletionSource?.TrySetResult(true); // Complete any pending audio playback
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
 
-            _currentState = new DebateState();
-            NotifyStateChangeAsync(); // Notify UI of reset
+            _currentState = new DebateState
+            {
+                Rapper1 = new Rapper(),
+                Rapper2 = new Rapper(),
+                Topic = new Topic(),
+                CurrentTurnAudio = Array.Empty<byte>(),
+                WinnerName = string.Empty,
+                JudgeReasoning = string.Empty,
+                Stats = new DebateStats(),
+                ErrorMessage = string.Empty
+            };
+            _ = NotifyStateChangeAsync(); // Fire-and-forget: Notify UI of reset
         }
 
         public async Task StartNewDebateAsync(Rapper rapper1, Rapper rapper2, Topic topic)
@@ -67,7 +87,12 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
                 DebateTranscript = new StringBuilder(),
                 IsRapper1Turn = true,
                 CurrentTurnText = $"Get ready! Topic: '{topic.Title}'. {rapper1.Name} (Pro) vs {rapper2.Name} (Con). {rapper1.Name} starts...",
-                IsGeneratingTurn = false // Initial state, not generating yet
+                IsGeneratingTurn = false, // Initial state, not generating yet
+                CurrentTurnAudio = Array.Empty<byte>(),
+                WinnerName = string.Empty,
+                JudgeReasoning = string.Empty,
+                Stats = new DebateStats(),
+                ErrorMessage = string.Empty
             };
             await NotifyStateChangeAsync();
 
@@ -97,8 +122,8 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
                         _currentState.CurrentTurn++;
                         _currentState.IsGeneratingTurn = true;
                         // DON'T clear audio here - it causes the client to miss it during polling
-                        // _currentState.CurrentTurnAudio = null; // Clear previous audio
-                        _currentState.ErrorMessage = null; // Clear previous errors
+                        // _currentState.CurrentTurnAudio = Array.Empty<byte>(); // Clear previous audio
+                        _currentState.ErrorMessage = string.Empty; // Clear previous errors
                         await NotifyStateChangeAsync();
 
                         string currentRapperName = _currentState.IsRapper1Turn ? _currentState.Rapper1.Name : _currentState.Rapper2.Name;
@@ -131,21 +156,21 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
                             string voice = _currentState.IsRapper1Turn ? Rapper1Voice : Rapper2Voice;
                             var newAudio = await ttsService.GenerateSpeechAsync(_currentState.CurrentTurnText, voice, cancellationToken);
                             _logger.LogInformation("🎵 Generated audio for turn {Turn}, size: {Size} bytes", _currentState.CurrentTurn, newAudio?.Length ?? 0);
-                            
+
                             // Log first 50 bytes for debugging
                             if (newAudio != null && newAudio.Length > 0)
                             {
                                 var first50 = string.Join(" ", newAudio.Take(50).Select(b => b.ToString("X2")));
                                 _logger.LogInformation("🔍 First 50 bytes of audio: {Bytes}", first50);
                             }
-                            
-                            _currentState.CurrentTurnAudio = newAudio; // Set the new audio after generation
+
+                            _currentState.CurrentTurnAudio = newAudio ?? Array.Empty<byte>(); // Set the new audio after generation
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error generating speech for turn {Turn}.", _currentState.CurrentTurn);
                             _currentState.ErrorMessage = ex.Message;
-                            _currentState.CurrentTurnAudio = null; // Ensure no audio is played if generation fails
+                            _currentState.CurrentTurnAudio = Array.Empty<byte>(); // Ensure no audio is played if generation fails
                         }
 
                         await NotifyStateChangeAsync();
@@ -244,7 +269,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
             {
                 _logger.LogError(ex, "Error generating and playing speech for intro text.");
                 _currentState.ErrorMessage = ex.Message;
-                _currentState.CurrentTurnAudio = null;
+                _currentState.CurrentTurnAudio = Array.Empty<byte>();
                 await NotifyStateChangeAsync();
             }
         }

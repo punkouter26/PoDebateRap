@@ -52,7 +52,7 @@ public class AudioPlaybackTests : IAsyncLifetime
         {
             var message = msg.Text;
             consoleMessages.Add(message);
-            
+
             // Track audio-related logs
             if (message.Contains("playAudio") || message.Contains("🎵") || message.Contains("Audio"))
             {
@@ -99,7 +99,7 @@ public class AudioPlaybackTests : IAsyncLifetime
         for (int i = 0; i < 30; i++)
         {
             await Task.Delay(1000);
-            
+
             // Check if we have audio playback logs
             if (audioPlaybackLogs.Any(log => log.Contains("playAudio called with base64 length")))
             {
@@ -149,10 +149,10 @@ public class AudioPlaybackTests : IAsyncLifetime
         await Task.Delay(5000);
 
         // Check if audio started playing
-        var playbackStartedLog = audioPlaybackLogs.FirstOrDefault(log => 
-            log.Contains("Audio playback started successfully") || 
+        var playbackStartedLog = audioPlaybackLogs.FirstOrDefault(log =>
+            log.Contains("Audio playback started successfully") ||
             log.Contains("Audio is now PLAYING"));
-        
+
         if (playbackStartedLog != null)
         {
             _output.WriteLine($"Audio playback started: {playbackStartedLog}");
@@ -209,7 +209,7 @@ public class AudioPlaybackTests : IAsyncLifetime
         for (int i = 0; i < 60; i++)
         {
             await Task.Delay(1000);
-            
+
             if (audioCallCount >= 2)
             {
                 _output.WriteLine($"Found {audioCallCount} audio turns at {i + 1} seconds");
@@ -236,14 +236,14 @@ public class AudioPlaybackTests : IAsyncLifetime
         page.Console += (_, msg) =>
         {
             var message = msg.Text;
-            
+
             // Track errors
             if (message.Contains("❌") || (message.Contains("Error") && message.Contains("audio")))
             {
                 audioErrors.Add(message);
                 _output.WriteLine($"[ERROR] {message}");
             }
-            
+
             // Track successes
             if (message.Contains("✅") || message.Contains("successfully"))
             {
@@ -302,7 +302,7 @@ public class AudioPlaybackTests : IAsyncLifetime
         page.Console += (_, msg) =>
         {
             var message = msg.Text;
-            
+
             if (message.Contains("🔊 Volume set to:"))
             {
                 volumeSet = true;
@@ -329,7 +329,7 @@ public class AudioPlaybackTests : IAsyncLifetime
 
         // Assert: Volume was set
         Assert.True(volumeSet, "Volume should be set when audio is created");
-        
+
         // Assert: Volume is 1.0 (maximum)
         Assert.Contains("1", volumeValue);
         _output.WriteLine("Volume correctly set to maximum");

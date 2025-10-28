@@ -31,7 +31,7 @@ namespace PoDebateRap.ServerApi.Services.Data
             return tableClient;
         }
 
-        public async Task<T> GetEntityAsync<T>(string tableName, string partitionKey, string rowKey) where T : class, ITableEntity
+        public async Task<T?> GetEntityAsync<T>(string tableName, string partitionKey, string rowKey) where T : class, ITableEntity
         {
             try
             {
@@ -45,7 +45,7 @@ namespace PoDebateRap.ServerApi.Services.Data
             }
         }
 
-        public async IAsyncEnumerable<T> GetEntitiesAsync<T>(string tableName, string filter = null) where T : class, ITableEntity
+        public async IAsyncEnumerable<T> GetEntitiesAsync<T>(string tableName, string? filter = null) where T : class, ITableEntity
         {
             var tableClient = await GetTableClientAsync(tableName);
             var query = tableClient.QueryAsync<T>(filter);

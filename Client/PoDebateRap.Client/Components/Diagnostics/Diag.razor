@@ -1,5 +1,4 @@
 @page "/diag"
-@using PoDebateRap.Shared.Models // For DiagnosticResult
 @inject HttpClient Http
 @inject ILogger<Diag> Logger
 @inject IJSRuntime JSRuntime
@@ -17,36 +16,49 @@
                 <div class="spinner"></div>
             </div>
         }
-        else if (_results == null || !_results.Any())
+        else if (_healthReport == null)
         {
             <p class="no-results">No diagnostic results available.</p>
         }
         else
         {
+            <div class="health-summary">
+                <div class="health-status @(_healthReport.IsHealthy ? "healthy" : "unhealthy")">
+                    <h6>Overall Status: @(_healthReport.Status)</h6>
+                    <p>Checked at: @_healthReport.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</p>
+                </div>
+            </div>
+            
             <table class="diagnostics-table">
                 <thead>
                     <tr>
                         <th>Check</th>
                         <th>Status</th>
                         <th>Details</th>
+                        <th>Duration (ms)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var result in _results)
+                    @foreach (var check in _healthReport.Checks)
                     {
                         <tr>
-                            <td>@result.CheckName</td>
+                            <td>@FormatCheckName(check.Name)</td>
                             <td class="status-cell">
-                                @if (result.Success)
+                                @if (check.Status == "Healthy")
                                 {
-                                    <span class="status-icon success" title="Success">✔</span>
+                                    <span class="status-icon success" title="Healthy">✔</span>
+                                }
+                                else if (check.Status == "Degraded")
+                                {
+                                    <span class="status-icon degraded" title="Degraded">⚠</span>
                                 }
                                 else
                                 {
-                                    <span class="status-icon failed" title="Failed">✖</span>
+                                    <span class="status-icon failed" title="Unhealthy">✖</span>
                                 }
                             </td>
-                            <td>@result.Message</td>
+                            <td>@(check.Description ?? "No description")</td>
+                            <td>@check.Duration.ToString("F2")</td>
                         </tr>
                     }
                 </tbody>
@@ -235,7 +247,7 @@
 
 @code {
     private DotNetObjectReference<Diag>? objRef;
-    private List<DiagnosticResult>? _results;
+    private HealthReport? _healthReport;
     private bool _isLoading = true;
     private bool _isTestingAudio = false;
     private CancellationTokenSource _cts = new CancellationTokenSource();
@@ -253,14 +265,27 @@
 
         try
         {
-            _results = await Http.GetFromJsonAsync<List<DiagnosticResult>>("Diagnostics/all");
+            var response = await Http.GetFromJsonAsync<HealthReport>("api/health");
+            _healthReport = response;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error running diagnostics.");
-            _results = new List<DiagnosticResult>
+            _healthReport = new HealthReport
             {
-                new DiagnosticResult { CheckName = "Overall", Success = false, Message = $"Error: {ex.Message}" }
+                Status = "Unhealthy",
+                IsHealthy = false,
+                Timestamp = DateTime.UtcNow,
+                Checks = new List<HealthCheck>
+                {
+                    new HealthCheck
+                    {
+                        Name = "Overall",
+                        Status = "Unhealthy",
+                        Description = $"Error: {ex.Message}",
+                        Duration = 0
+                    }
+                }
             };
         }
         finally
@@ -268,6 +293,13 @@
             _isLoading = false;
             StateHasChanged();
         }
+    }
+
+    private string FormatCheckName(string name)
+    {
+        // Convert snake_case to Title Case
+        return string.Join(" ", name.Split('_')
+            .Select(word => char.ToUpper(word[0]) + word.Substring(1)));
     }
 
 
@@ -309,38 +341,17 @@
                 else
                 {
                     Logger.LogWarning("⚠️ TTS test returned no audio data");
-                    _results?.Add(new DiagnosticResult 
-                    { 
-                        CheckName = "Audio Test", 
-                        Success = false, 
-                        Message = "No audio data returned from TTS service" 
-                    });
-                    StateHasChanged();
                 }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Logger.LogError("❌ TTS test failed with status {Status}: {Error}", response.StatusCode, errorContent);
-                _results?.Add(new DiagnosticResult 
-                { 
-                    CheckName = "Audio Test", 
-                    Success = false, 
-                    Message = $"TTS API returned {response.StatusCode}: {errorContent}" 
-                });
-                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "❌ Exception during manual TTS test");
-            _results?.Add(new DiagnosticResult 
-            { 
-                CheckName = "Audio Test", 
-                Success = false, 
-                Message = $"Exception: {ex.Message}" 
-            });
-            StateHasChanged();
         }
         finally
         {
@@ -362,5 +373,23 @@
         objRef?.Dispose();
         _cts?.Cancel();
         _cts?.Dispose();
+    }
+
+    // Health Report Models
+    public class HealthReport
+    {
+        public string Status { get; set; } = string.Empty;
+        public bool IsHealthy { get; set; }
+        public DateTime Timestamp { get; set; }
+        public List<HealthCheck> Checks { get; set; } = new();
+    }
+
+    public class HealthCheck
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public double Duration { get; set; }
+        public string? Exception { get; set; }
     }
 }

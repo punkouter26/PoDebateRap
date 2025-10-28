@@ -11,7 +11,7 @@ namespace PoDebateRap.ServerApi.Services.Speech
 {
     public class TextToSpeechService : ITextToSpeechService
     {
-        private readonly SpeechConfig _speechConfig;
+        private readonly SpeechConfig? _speechConfig;
         private readonly ILogger<TextToSpeechService> _logger;
 
         public TextToSpeechService(IConfiguration configuration, ILogger<TextToSpeechService> logger)
@@ -71,11 +71,11 @@ namespace PoDebateRap.ServerApi.Services.Speech
                         if (result.Reason == ResultReason.SynthesizingAudioCompleted)
                         {
                             _logger.LogInformation("Speech synthesis completed successfully.");
-                            
+
                             // Use result.AudioData directly instead of AudioDataStream
                             // This avoids potential issues with stream reading
                             var audioBytes = result.AudioData;
-                            
+
                             if (audioBytes != null && audioBytes.Length > 0)
                             {
                                 _logger.LogInformation("Retrieved {Size} bytes of audio data from result.AudioData", audioBytes.Length);

@@ -30,9 +30,9 @@ namespace PoDebateRap.IntegrationTests
         // A simple test entity for Table Storage
         public class TestEntity : ITableEntity
         {
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; }
-            public string Message { get; set; }
+            public string PartitionKey { get; set; } = string.Empty;
+            public string RowKey { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
             public DateTimeOffset? Timestamp { get; set; }
             public Azure.ETag ETag { get; set; }
 

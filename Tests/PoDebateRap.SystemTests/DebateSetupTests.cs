@@ -35,7 +35,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000); // Wait for Blazor to initialize
@@ -55,10 +55,10 @@ public class DebateSetupTests : IAsyncLifetime
 
         // Act & Assert
         var beginButton = page.GetByRole(AriaRole.Button, new() { Name = "Begin Debate" });
-        
+
         // Button should be disabled when topic is empty
         await Expect(beginButton).ToBeDisabledAsync();
-        
+
         await page.CloseAsync();
     }
 
@@ -68,7 +68,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000); // Wait for Blazor to initialize
@@ -88,10 +88,10 @@ public class DebateSetupTests : IAsyncLifetime
 
         // Act & Assert
         var beginButton = page.GetByRole(AriaRole.Button, new() { Name = "Begin Debate" });
-        
+
         // Button should be enabled when all fields are filled
         await Expect(beginButton).ToBeEnabledAsync();
-        
+
         await page.CloseAsync();
     }
 
@@ -101,7 +101,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000); // Wait for Blazor to initialize
@@ -118,7 +118,7 @@ public class DebateSetupTests : IAsyncLifetime
         await Task.Delay(500);
 
         var beginButton = page.GetByRole(AriaRole.Button, new() { Name = "Begin Debate" });
-        
+
         // Initially disabled
         await Expect(beginButton).ToBeDisabledAsync();
 
@@ -128,7 +128,7 @@ public class DebateSetupTests : IAsyncLifetime
 
         // Assert - Button should now be enabled
         await Expect(beginButton).ToBeEnabledAsync();
-        
+
         await page.CloseAsync();
     }
 
@@ -138,7 +138,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000);
@@ -146,7 +146,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Select same rapper for both
         await page.SelectOptionAsync("#rapper1Select", new[] { "Eminem" });
         await Task.Delay(500);
-        
+
         // Fill in topic
         var topicInput = page.Locator("#debateTopicInput");
         await topicInput.FillAsync("Test Topic");
@@ -157,10 +157,10 @@ public class DebateSetupTests : IAsyncLifetime
         // So this test verifies the validation logic
 
         var beginButton = page.GetByRole(AriaRole.Button, new() { Name = "Begin Debate" });
-        
+
         // Button should be disabled because Rapper 2 is not selected
         await Expect(beginButton).ToBeDisabledAsync();
-        
+
         await page.CloseAsync();
     }
 
@@ -170,7 +170,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000);
 
@@ -184,7 +184,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Assert
         var inputValue = await topicInput.InputValueAsync();
         Assert.Equal(testTopic, inputValue);
-        
+
         await page.CloseAsync();
     }
 
@@ -194,7 +194,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000); // Wait for Blazor to initialize
@@ -224,20 +224,20 @@ public class DebateSetupTests : IAsyncLifetime
         // The button should change to show "Starting..." or "Generating..." 
         // or be disabled while the debate is being generated
         var buttonText = await beginButton.TextContentAsync();
-        
+
         // Check if we either see loading state or the debate arena appears
-        var isLoading = buttonText?.Contains("Starting") == true || 
+        var isLoading = buttonText?.Contains("Starting") == true ||
                        buttonText?.Contains("Generating") == true ||
                        buttonText?.Contains("Loading") == true;
-        
+
         // Alternative: Check if debate arena/visualizer becomes visible
         var debateArena = page.Locator(".debate-arena-container");
         var arenaVisible = await debateArena.IsVisibleAsync();
-        
+
         // At least one of these conditions should be true
-        Assert.True(isLoading || arenaVisible, 
+        Assert.True(isLoading || arenaVisible,
             $"Expected debate to start. Button text: '{buttonText}', Arena visible: {arenaVisible}");
-        
+
         await Task.Delay(2000); // Give time to observe the result
         await page.CloseAsync();
     }
@@ -248,7 +248,7 @@ public class DebateSetupTests : IAsyncLifetime
         // Arrange
         var page = await _browser!.NewPageAsync();
         await page.GotoAsync(BaseUrl);
-        
+
         // Wait for the page to load
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Task.Delay(2000); // Wait for Blazor to initialize
@@ -274,14 +274,14 @@ public class DebateSetupTests : IAsyncLifetime
         // Assert - Verify no "Selected rapper(s) not found" error appears
         var errorAlert = page.Locator(".alert-error");
         var hasError = await errorAlert.IsVisibleAsync();
-        
+
         if (hasError)
         {
             var errorText = await errorAlert.TextContentAsync();
             Assert.False(errorText?.Contains("Selected rapper(s) not found") == true,
                 $"Unexpected error appeared: {errorText}");
         }
-        
+
         await page.CloseAsync();
     }
 }

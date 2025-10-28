@@ -99,15 +99,15 @@ namespace PoDebateRap.ServerApi.Services.News
 
         private class NewsApiResponse
         {
-            public string Status { get; set; }
+            public required string Status { get; set; }
             public int TotalResults { get; set; }
-            public List<Article> Articles { get; set; }
+            public required List<Article> Articles { get; set; }
         }
 
         private class Article
         {
-            public string Title { get; set; }
-            public string Url { get; set; }
+            public required string Title { get; set; }
+            public required string Url { get; set; }
             // Add other properties if needed, e.g., Description, Author, Source
         }
     }

@@ -1,26 +1,33 @@
-Coding Rules for Blazor WebAssembly / .NET (Check PRD.MD for app description / Check STEPS.MD for 10 high level steps to complete the app, Check Diagram folder for quick overview of app)
-1. Guiding Philosophy & Standards
-Enforce Strict Technology & Ports: Use .NET 9.0 exclusively. The API must run on HTTP 5000/HTTPS 5001 and host the Blazor Wasm application.
-Prioritize Simplicity & Principles: Enforce SOLID principles and Design Patterns (GoF, etc.) throughout the codebase. Maintain simplicity, conciseness, and ease of understanding via proactive refactoring.
-Automate Everything: Automate all operations (build, deploy, etc.) using CLI tools (dotnet, az, gh, azd, etc.).
-
-2. Architecture & Maintenance
-Strictly Enforce Architectural Style: Employ Vertical Slice Architecture with Clean Architecture boundaries where complexity dictates.
-Single Responsibility: Limit all files to ≤500 lines by refactoring into focused components.
-Project Structure & Naming: Use the standard layout (/src, /tests, /docs, /scripts). Prefix all projects with **Po.AppName** (e.g., Po.AppName.Api).
-Do not create additional .md files beyond PRD.MD STEPS.MD README.MD or .ps1 files
-
-3. API, Observability, & Error Handling
-Mandate API Observability: Enable Swagger/OpenAPI documentation from inception and expose a mandatory /api/health endpoint for readiness/liveness checks.
-Fix and Enforce Error Handling: Implement global error-handling using RFC 7807 Problem Details (via Serilog). NEVER return raw exception messages or stack traces to callers.
-
-4. Data Persistence & Frontend
-Default Data Persistence & Naming: Default to Azure Table Storage (use Azurite locally); only use Azure SQL/Cosmos DB with tech-lead approval. Name tables using the pattern: PoAppName[TableName].
-Frontend Components: Start with built-in Blazor components; adopt Radzen.Blazor only for advanced scenarios.
-
-5. Testing & Workflow
-Mandate Test-Driven Development (TDD): Always follow the TDD cycle: Write a failing xUnit test first before implementing code. Maintain separate unit, integration, and functional tests.
-Execution and Documentation Directive: Always run the API project for execution. Refer to and mark steps complete in STEPS.MD as development progresses (if the file exists).
-Create E2E tests with Playwright MCP as needed to cover the main application functionality
+1. Core Constraints
+SDK Specification: .NET 9.0 (builds must fail if major version differs)
+Ports Specification: API must bind to HTTP 5000 and HTTPS 5001 only
+Naming Specification: Project and table names must use the Po.AppName.* prefix exactly
+Storage Specification: Azure Table Storage by default; use Azurite locally
+Testing Specification: xUnit (Unit/Integration); Playwright MCP TypeScript (E2E, manual execution only)
+Code Style Specification: Use dotnet format; files ≤ 500 lines
+Specification: Automate with one-line CLI commands only
+2.  Architecture & Project Layout
+Architectural Style: Use Vertical Slice Architecture with Clean Architecture boundaries where complexity requires separation.
+Code Philosophy: Enforce SOLID and appropriate GoF patterns; prioritize simple, small, and well-factored code.
+Repository layout at root:
+/src/PoAppName.Api (PLUS other projects required for the Vertical Slice/Onion Architecture)
+/src/PoAppName.Client (Blazor Wasm hosted inside the API project)
+/src/PoAppName.Shared (for classes used by the Client and Server)
+/tests/PoAppName.UnitTests
+/tests/PoAppName.IntegrationTests
+/tests/PoAppName.E2ETests
+3.  Backend
+Error Standard: Implement global exception handling middleware that transforms all errors into RFC 7807 Problem Details responses.
+Health Check: Expose the mandatory .NET health check endpoint with readiness and liveness semantics.
+API Interface: Expose Swagger/OpenAPI from project start to document endpoints for manual testing and allow them to be called from .http files
+Logging: Use Serilog for structured logging and configure sensible local sinks; follow .NET best practices for telemetry.
+4.  Frontend
+UX Focus: Prioritize an excellent mobile portrait UX and fully responsive layout (fluid grid, touch controls). Test on portrait mobile emulation.
+Component Libraries: Start with built-in Blazor components. Adopt Radzen.Blazor only for advanced scenarios explicitly justified by UX necessity.
+5.  Testing Workflow
+TDD Practice: Follow Test-Driven Development (TDD): write a failing test first, then implement code.
+Test Isolation: Maintain separate Unit and Integration and E2E test projects.
+Database Isolation: Integration tests must run against Azurite or isolated disposable test tables, including setup and teardown to ensure no lingering data.
+E2E Workflow: Playwright MCP tests are run manually by the user and are explicitly excluded from CI/CD.
 
 

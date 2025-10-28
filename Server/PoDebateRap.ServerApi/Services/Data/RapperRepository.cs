@@ -53,18 +53,18 @@ namespace PoDebateRap.ServerApi.Services.Data
         public async Task SeedInitialRappersAsync()
         {
             _logger.LogInformation("Checking if initial rappers need to be seeded...");
-            
+
             try
             {
                 var existingRappers = await GetAllRappersAsync();
                 _logger.LogInformation("Found {Count} existing rappers in storage", existingRappers.Count);
-                
+
                 if (existingRappers.Count > 0)
                 {
-                    _logger.LogInformation("Existing rappers: {Names}", 
+                    _logger.LogInformation("Existing rappers: {Names}",
                         string.Join(", ", existingRappers.Select(r => r.Name)));
                 }
-                
+
                 if (!existingRappers.Any())
                 {
                     _logger.LogInformation("No rappers found. Seeding initial data.");
@@ -140,8 +140,8 @@ namespace PoDebateRap.ServerApi.Services.Data
         // Table Entity for Rapper
         public class RapperEntity : ITableEntity
         {
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; } // Rapper Name
+            public string PartitionKey { get; set; } = string.Empty;
+            public string RowKey { get; set; } = string.Empty; // Rapper Name
             public int Wins { get; set; }
             public int Losses { get; set; }
             public DateTimeOffset? Timestamp { get; set; }

@@ -87,7 +87,7 @@
 
 @code {
     private DotNetObjectReference<Home>? objRef;
-    private DebateState _latestDebateState = new();
+    private DebateState _latestDebateState = CreateEmptyDebateState();
     private int _lastPlayedTurnNumber = -1; // Track which turn's audio we've already played
 
     private List<Rapper>? Rappers;
@@ -165,7 +165,7 @@
                 var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("News/headlines", cts.Token);
                 if (headlines != null && headlines.Count > 0 && !string.IsNullOrWhiteSpace(headlines[0].Title))
                 {
-                    DebateTopicInput = headlines[0].Title.Trim();
+                    DebateTopicInput = headlines[0].Title!.Trim();
                     InitialTopicFetchError = null;
                     Logger.LogInformation("Pre-populated topic from news: {NewsTopic}", DebateTopicInput);
                 }
@@ -231,7 +231,7 @@
             if (newState == null)
             {
                 Logger.LogWarning("Received null debate state from API. Stopping polling.");
-                _latestDebateState = new DebateState(); // Reset state
+                _latestDebateState = CreateEmptyDebateState(); // Reset state
                 LoadingErrorMessage = "Debate state could not be retrieved.";
                 await InvokeAsync(StateHasChanged);
                 return;
@@ -318,7 +318,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error polling debate state.");
-            _latestDebateState = new DebateState(); // Reset state
+            _latestDebateState = CreateEmptyDebateState(); // Reset state
             LoadingErrorMessage = $"Error during debate: {ex.Message}";
             await InvokeAsync(StateHasChanged);
         }
@@ -466,7 +466,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error during debate setup or start.");
-            _latestDebateState = new DebateState(); // Reset state
+            _latestDebateState = CreateEmptyDebateState(); // Reset state
             LoadingErrorMessage = $"Error starting debate: {ex.Message}";
             StateHasChanged();
         }
@@ -531,10 +531,25 @@
     private void ResetDebateState()
     {
         Logger.LogInformation("ResetDebateState called. Resetting UI state.");
-        _latestDebateState = new DebateState();
+        _latestDebateState = CreateEmptyDebateState();
         _lastPlayedTurnNumber = -1; // Reset audio tracking
         ShowVotingModal = false;
         StateHasChanged();
+    }
+
+    private static DebateState CreateEmptyDebateState()
+    {
+        return new DebateState
+        {
+            Rapper1 = new Rapper(),
+            Rapper2 = new Rapper(),
+            Topic = new Topic(),
+            CurrentTurnAudio = Array.Empty<byte>(),
+            WinnerName = string.Empty,
+            JudgeReasoning = string.Empty,
+            Stats = new DebateStats(),
+            ErrorMessage = string.Empty
+        };
     }
 
     public void Dispose()

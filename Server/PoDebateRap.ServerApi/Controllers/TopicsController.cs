@@ -22,7 +22,7 @@ namespace PoDebateRap.ServerApi.Controllers
             try
             {
                 var headlines = await _newsService.GetTopHeadlinesAsync(10);
-                var topics = headlines.Select(h => new TopicDto { Title = h.Title, Category = "Current Events" }).ToList();
+                var topics = headlines.Select(h => new TopicDto { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
                 _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
                 return Ok(topics);
             }
@@ -41,7 +41,7 @@ namespace PoDebateRap.ServerApi.Controllers
                 var headlines = await _newsService.GetTopHeadlinesAsync(1);
                 if (headlines.Any())
                 {
-                    var latestTopic = new TopicDto { Title = headlines.First().Title, Category = "Breaking News" };
+                    var latestTopic = new TopicDto { Title = headlines.First().Title ?? string.Empty, Category = "Breaking News" };
                     _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
                     return Ok(latestTopic);
                 }
