@@ -10,15 +10,40 @@ using PoDebateRap.ServerApi.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
+using Serilog;
+using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure Serilog BEFORE creating the builder
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "PoDebateRap")
+    .WriteTo.Console()
+    .WriteTo.Debug()
+    .CreateBootstrapLogger();
 
-// Configure Logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+try
+{
+    Log.Information("Starting PoDebateRap API");
 
-// Configure User Secrets for Development
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Configure Serilog with Application Insights
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "PoDebateRap")
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName)
+        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+        .WriteTo.Debug()
+        .WriteTo.ApplicationInsights(
+            services.GetRequiredService<Microsoft.ApplicationInsights.TelemetryClient>(),
+            TelemetryConverter.Traces));
+
+    // Configure User Secrets for Development
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddUserSecrets<Program>();
@@ -52,6 +77,9 @@ builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
 
 // Add Application Insights for telemetry and logging
 builder.Services.AddApplicationInsightsTelemetry();
+
+// Register Custom Telemetry Service
+builder.Services.AddScoped<PoDebateRap.ServerApi.Services.Telemetry.CustomTelemetryService>();
 
 // Add Health Checks
 builder.Services.AddHealthChecks()
@@ -213,3 +241,14 @@ using (var scope = app.Services.CreateScope())
 // --- End Data Seeding ---
 
 app.Run();
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.Information("Shutting down PoDebateRap API");
+    Log.CloseAndFlush();
+}
