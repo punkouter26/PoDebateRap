@@ -1,0 +1,67 @@
+graph TB
+    subgraph "Client Layer"
+        Client[PoDebateRap.Client<br/>Blazor WebAssembly]
+    end
+    
+    subgraph "Server Layer"
+        Server[PoDebateRap.ServerApi<br/>ASP.NET Core Web API]
+    end
+    
+    subgraph "Shared Layer"
+        Shared[PoDebateRap.Shared<br/>DTOs & Models]
+    end
+    
+    subgraph "Test Layer"
+        UnitTests[PoDebateRap.UnitTests<br/>Business Logic Tests]
+        ApiTests[PoDebateRap.ApiTests<br/>Endpoint Tests]
+        IntegrationTests[PoDebateRap.IntegrationTests<br/>Azure Service Tests]
+        SystemTests[PoDebateRap.SystemTests<br/>E2E Playwright Tests]
+    end
+    
+    subgraph "Azure Services"
+        OpenAI[Azure OpenAI<br/>GPT-4]
+        Speech[Azure Speech<br/>Neural TTS]
+        Storage[Azure Table Storage<br/>Debate Data]
+        AppInsights[Application Insights<br/>Telemetry]
+    end
+    
+    subgraph "External APIs"
+        NewsAPI[NewsAPI<br/>Trending Topics]
+    end
+    
+    %% Dependencies
+    Server -->|hosts| Client
+    Client -.->|references| Shared
+    Server -.->|references| Shared
+    
+    %% Azure integrations
+    Server -->|AI verse generation| OpenAI
+    Server -->|text-to-speech| Speech
+    Server -->|persist data| Storage
+    Server -->|telemetry| AppInsights
+    Server -->|fetch news| NewsAPI
+    
+    %% Test dependencies
+    UnitTests -.->|tests| Server
+    ApiTests -.->|tests| Server
+    IntegrationTests -.->|tests| Server
+    IntegrationTests -->|validates| OpenAI
+    IntegrationTests -->|validates| Speech
+    IntegrationTests -->|validates| Storage
+    SystemTests -.->|tests| Client
+    SystemTests -.->|tests| Server
+    
+    %% Styling
+    classDef clientStyle fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
+    classDef serverStyle fill:#512bd4,stroke:#333,stroke-width:2px,color:#fff
+    classDef sharedStyle fill:#ffcc00,stroke:#333,stroke-width:2px,color:#000
+    classDef testStyle fill:#7fc97f,stroke:#333,stroke-width:2px,color:#000
+    classDef azureStyle fill:#0078d4,stroke:#333,stroke-width:2px,color:#fff
+    classDef externalStyle fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
+    
+    class Client clientStyle
+    class Server serverStyle
+    class Shared sharedStyle
+    class UnitTests,ApiTests,IntegrationTests,SystemTests testStyle
+    class OpenAI,Speech,Storage,AppInsights azureStyle
+    class NewsAPI externalStyle

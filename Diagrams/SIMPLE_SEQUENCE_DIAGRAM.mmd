@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor User
+    participant Client
+    participant API as Server API
+    participant AI as Azure OpenAI
+    participant TTS as Azure Speech
+    participant Storage
+    
+    User->>Client: Start Debate
+    Client->>API: POST /api/debate/start
+    API->>Storage: Save debate
+    API-->>Client: debateId
+    
+    loop Each Turn
+        Client->>API: POST /debate/turn
+        API->>AI: Generate verse
+        AI-->>API: verse text
+        API->>TTS: Convert to audio
+        TTS-->>API: MP3 audio
+        API->>Storage: Save turn
+        API-->>Client: verse + audio
+        Client->>User: Play audio
+    end
+    
+    Client->>API: POST /debate/judge
+    API->>AI: Judge debate
+    AI-->>API: winner + reasoning
+    API-->>Client: judgment
+    Client->>User: Show winner

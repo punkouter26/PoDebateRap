@@ -1,0 +1,22 @@
+graph LR
+    Client[Client] -->|hosts| Server[Server]
+    Server -->|uses| Shared[Shared DTOs]
+    Client -->|uses| Shared
+    
+    Server --> OpenAI[Azure OpenAI]
+    Server --> Speech[Azure Speech]
+    Server --> Storage[Azure Storage]
+    
+    Tests[Tests] -.->|validate| Server
+    
+    classDef blue fill:#61dafb,stroke:#333,stroke-width:2px
+    classDef purple fill:#512bd4,stroke:#333,stroke-width:2px,color:#fff
+    classDef yellow fill:#ffcc00,stroke:#333,stroke-width:2px
+    classDef azure fill:#0078d4,stroke:#333,stroke-width:2px,color:#fff
+    classDef green fill:#7fc97f,stroke:#333,stroke-width:2px
+    
+    class Client blue
+    class Server purple
+    class Shared yellow
+    class OpenAI,Speech,Storage azure
+    class Tests green

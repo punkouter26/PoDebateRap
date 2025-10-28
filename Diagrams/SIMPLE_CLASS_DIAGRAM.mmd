@@ -1,0 +1,34 @@
+classDiagram
+    class Rapper {
+        +string Id
+        +string Name
+        +string Style
+    }
+    
+    class DebateRequest {
+        +string Rapper1Id
+        +string Rapper2Id
+        +string Topic
+    }
+    
+    class DebateResponse {
+        +string DebateId
+        +DateTime StartedAt
+    }
+    
+    class DebateTurn {
+        +string DebateId
+        +int TurnNumber
+        +string Verse
+        +string AudioBase64
+    }
+    
+    class JudgmentResponse {
+        +string WinnerId
+        +string Reasoning
+    }
+    
+    DebateRequest --> Rapper
+    DebateResponse --> DebateRequest
+    DebateTurn --> DebateResponse
+    JudgmentResponse --> DebateResponse

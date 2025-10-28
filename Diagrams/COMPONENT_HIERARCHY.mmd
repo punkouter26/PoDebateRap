@@ -1,0 +1,123 @@
+graph TB
+    subgraph "App.razor"
+        App[App Component]
+    end
+    
+    subgraph "Router & Layout"
+        Router[Router]
+        RouteView[RouteView]
+        MainLayout[MainLayout]
+        NavMenu[NavMenu]
+    end
+    
+    subgraph "Pages"
+        Home[Home.razor<br/>Route: /]
+        Diag[Diag.razor<br/>Route: /diag]
+    end
+    
+    subgraph "Debate Components"
+        DebateSetup[DebateSetup.razor<br/>Rapper & Topic Selection]
+        DebateArena[DebateArena.razor<br/>Live Debate Display]
+        
+        subgraph "DebateSetup Child Elements"
+            RapperDropdown1[Rapper 1 Dropdown]
+            RapperDropdown2[Rapper 2 Dropdown]
+            TopicRadio[Topic Type Radio Buttons]
+            NewsHeadlines[NewsAPI Headlines List]
+            CustomTopicInput[Custom Topic TextBox]
+            StartButton[BEGIN DEBATE Button]
+        end
+        
+        subgraph "DebateArena Child Elements"
+            RapperProfiles[Rapper Profile Cards]
+            TurnDisplay[Turn Display Container]
+            VerseCard[Individual Verse Card]
+            AudioPlayer[Audio Playback Controls]
+            TurnCounter[Turn Number Badge]
+            JudgmentDisplay[Judgment Result Display]
+            NewDebateButton[NEW DEBATE Button]
+        end
+    end
+    
+    subgraph "Diagnostics Components"
+        HealthCards[Service Health Status Cards]
+        TestAudioButton[Test Audio Button]
+        ByteInspector[Audio Byte Inspector]
+    end
+    
+    subgraph "Services (Injected)"
+        HttpClient[HttpClient<br/>API Communication]
+        JSRuntime[IJSRuntime<br/>JavaScript Interop]
+        NavigationManager[NavigationManager<br/>Routing]
+        HubConnection[HubConnection<br/>SignalR Real-time]
+    end
+    
+    %% Component Hierarchy
+    App --> Router
+    Router --> RouteView
+    RouteView --> MainLayout
+    MainLayout --> NavMenu
+    MainLayout --> Home
+    MainLayout --> Diag
+    
+    %% Home page components
+    Home --> DebateSetup
+    Home --> DebateArena
+    
+    %% DebateSetup children
+    DebateSetup --> RapperDropdown1
+    DebateSetup --> RapperDropdown2
+    DebateSetup --> TopicRadio
+    DebateSetup --> NewsHeadlines
+    DebateSetup --> CustomTopicInput
+    DebateSetup --> StartButton
+    
+    %% DebateArena children
+    DebateArena --> RapperProfiles
+    DebateArena --> TurnDisplay
+    TurnDisplay --> VerseCard
+    VerseCard --> AudioPlayer
+    DebateArena --> TurnCounter
+    DebateArena --> JudgmentDisplay
+    DebateArena --> NewDebateButton
+    
+    %% Diag children
+    Diag --> HealthCards
+    Diag --> TestAudioButton
+    Diag --> ByteInspector
+    
+    %% Service Dependencies
+    DebateSetup -.->|inject| HttpClient
+    DebateArena -.->|inject| HttpClient
+    DebateArena -.->|inject| JSRuntime
+    DebateArena -.->|inject| HubConnection
+    Diag -.->|inject| HttpClient
+    Diag -.->|inject| JSRuntime
+    Home -.->|inject| NavigationManager
+    
+    %% Conditional Rendering
+    Home -.->|shows when| DebateSetup
+    Home -.->|shows when| DebateArena
+    
+    note1[Conditional: DebateSetup shown<br/>when showArena == false]
+    note2[Conditional: DebateArena shown<br/>when showArena == true]
+    note3[Parameters: DebateArena receives<br/>debateId from Home]
+    note4[Events: DebateSetup raises<br/>OnDebateStarted event]
+    note5[SignalR: DebateArena listens for<br/>ReceiveTurn and ReceiveJudgment]
+    
+    %% Styling
+    classDef rootStyle fill:#ff6b6b,stroke:#333,stroke-width:3px,color:#fff
+    classDef layoutStyle fill:#ffd700,stroke:#333,stroke-width:2px,color:#000
+    classDef pageStyle fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
+    classDef componentStyle fill:#512bd4,stroke:#333,stroke-width:2px,color:#fff
+    classDef elementStyle fill:#90ee90,stroke:#333,stroke-width:1px,color:#000
+    classDef serviceStyle fill:#0078d4,stroke:#333,stroke-width:2px,color:#fff
+    classDef noteStyle fill:#fff,stroke:#999,stroke-width:1px,color:#666,stroke-dasharray: 5 5
+    
+    class App rootStyle
+    class Router,RouteView,MainLayout,NavMenu layoutStyle
+    class Home,Diag pageStyle
+    class DebateSetup,DebateArena,HealthCards componentStyle
+    class RapperDropdown1,RapperDropdown2,TopicRadio,NewsHeadlines,CustomTopicInput,StartButton,RapperProfiles,TurnDisplay,VerseCard,AudioPlayer,TurnCounter,JudgmentDisplay,NewDebateButton,TestAudioButton,ByteInspector elementStyle
+    class HttpClient,JSRuntime,NavigationManager,HubConnection serviceStyle
+    class note1,note2,note3,note4,note5 noteStyle

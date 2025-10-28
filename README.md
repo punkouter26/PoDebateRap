@@ -190,26 +190,48 @@ The project includes comprehensive test coverage:
 ## 📚 Documentation
 
 - **[PRD.MD](./PRD.MD)** - Complete Product Requirements Document
-- **[STEPS.MD](./STEPS.MD)** - Development roadmap and progress tracking
-- **[Diagrams/](./Diagrams/)** - Architecture and flow diagrams
+- **[AGENTS.MD](./AGENTS.MD)** - Machine-readable documentation for AI coding agents
+- **[DOCS/KQL_QUERIES.md](./DOCS/KQL_QUERIES.md)** - Essential Application Insights queries for monitoring
+- **[Diagrams/](./Diagrams/)** - Architecture and flow diagrams (Mermaid SVG format)
 
 ## 🚢 Deployment
 
-The application is configured for Azure App Service deployment via GitHub Actions.
+The application is configured for Azure App Service deployment via GitHub Actions using Azure Developer CLI (azd).
 
-### Manual Deployment
-```bash
-# Build the application
-dotnet publish Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj -c Release -o ./publish
+### Live Production URL
+🌐 **https://podebaterap.azurewebsites.net**
 
-# Deploy to Azure (requires Azure CLI)
-az webapp deploy --resource-group <resource-group> --name <app-name> --src-path ./publish
-```
+### Azure Resources
+- **App Service**: PoDebateRap (F1 Free tier, shared plan from PoShared resource group)
+- **Application Insights**: appi-PoDebateRap-* (monitoring and telemetry)
+- **Log Analytics**: law-PoDebateRap-* (structured logging)
+- **Storage Account**: stdebaterap* (Azure Table Storage)
 
 ### CI/CD Pipeline
+The deployment pipeline uses GitHub Actions with federated credentials (no secrets required):
+
+**Workflow**: Build → Test → Deploy
 - **Trigger**: Push to `main` branch
-- **Actions**: Build → Test → Deploy to Azure App Service
-- **Environment**: Production with Azure App Settings
+- **Build**: Compile .NET 9 application, create release artifacts
+- **Test**: Run unit tests and integration tests
+- **Deploy**: Provision infrastructure (Bicep) and deploy to Azure App Service
+
+**Pipeline Status**: [View GitHub Actions](https://github.com/punkouter26/PoDebateRap/actions)
+
+### Manual Deployment with Azure Developer CLI
+```bash
+# Provision infrastructure + deploy application
+azd up
+
+# Or run separately:
+azd provision  # Create/update Azure resources
+azd deploy     # Deploy application code
+```
+
+### Infrastructure as Code
+All Azure resources are defined in Bicep templates (`/infra` folder):
+- `main.bicep` - Subscription-level deployment
+- `resources.bicep` - Resource definitions (App Service, Application Insights, Storage)
 
 ## 🤝 Contributing
 
@@ -234,4 +256,4 @@ This project is for educational and entertainment purposes.
 
 **Built with ❤️ using .NET 9, Blazor, and Azure AI Services**
 
-*Last Updated: October 5, 2025*
+*Last Updated: October 28, 2025 - Phase 5 Complete*

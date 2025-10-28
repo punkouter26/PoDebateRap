@@ -1,0 +1,76 @@
+sequenceDiagram
+    actor User
+    participant Client as Blazor Client
+    participant Controller as DebateController
+    participant Orchestrator as DebateOrchestrator
+    participant AI as AzureOpenAIService
+    participant TTS as TextToSpeechService
+    participant Storage as TableStorageService
+    participant Hub as SignalR Hub
+    participant Telemetry as CustomTelemetryService
+    
+    User->>Client: Click "BEGIN DEBATE"
+    Client->>Controller: POST /api/debate/start<br/>{rapper1, rapper2, topic}
+    
+    Controller->>Telemetry: TrackDebateStarted()
+    Controller->>Storage: CreateDebate(request)
+    Storage-->>Controller: debateId
+    
+    Controller->>Hub: BroadcastDebateStarted(debateId)
+    Hub-->>Client: DebateStarted event
+    Controller-->>Client: DebateResponse {debateId}
+    
+    Note over Client: For each turn (alternating rappers)
+    
+    Client->>Controller: POST /api/debate/{debateId}/turn
+    Controller->>Orchestrator: OrchestrateDebateTurnAsync()
+    
+    Orchestrator->>AI: GenerateVerseAsync(rapperId, topic, context)
+    Note over AI: Call Azure OpenAI GPT-4<br/>with rapper style prompt
+    AI-->>Orchestrator: VerseResponse {verse, tokenCount}
+    
+    Orchestrator->>Telemetry: TrackAIModelUsage(tokens, responseTime)
+    
+    Orchestrator->>TTS: GenerateSpeechAsync(verse, rapperId)
+    Note over TTS: Call Azure Speech Services<br/>with neural TTS voice
+    TTS-->>Orchestrator: byte[] audioData
+    
+    Orchestrator->>Telemetry: TrackTextToSpeechUsage(charCount, duration)
+    
+    Orchestrator->>Storage: SaveDebateTurn(debateId, turn, audio)
+    Note over Storage: Insert into Azure Table Storage<br/>PartitionKey: Debate-{debateId}<br/>RowKey: Turn-{turnNumber}
+    Storage-->>Orchestrator: success
+    
+    Orchestrator->>Telemetry: TrackStorageOperation(duration)
+    
+    Orchestrator->>Hub: BroadcastTurnCompleted(turn)
+    Hub-->>Client: ReceiveTurn event
+    
+    Orchestrator-->>Controller: DebateTurn {verse, audioBase64}
+    Controller-->>Client: DebateTurn
+    
+    Client->>Client: PlayAudio(audioBase64)
+    Note over Client: Convert base64 to Blob<br/>Create Audio element<br/>Play sound
+    
+    Note over Client: After N turns
+    
+    Client->>Controller: POST /api/debate/{debateId}/judge
+    Controller->>Orchestrator: JudgeDebateAsync(debateId)
+    
+    Orchestrator->>Storage: GetAllTurns(debateId)
+    Storage-->>Orchestrator: List<DebateTurn>
+    
+    Orchestrator->>AI: JudgeDebateAsync(turns, topic)
+    Note over AI: Analyze all verses<br/>Evaluate lyrical skill,<br/>argumentation, style
+    AI-->>Orchestrator: JudgmentResponse {winner, reasoning}
+    
+    Orchestrator->>Storage: SaveJudgment(debateId, judgment)
+    Orchestrator->>Telemetry: TrackDebateCompleted(winner, duration, turns)
+    
+    Orchestrator->>Hub: BroadcastJudgment(judgment)
+    Hub-->>Client: ReceiveJudgment event
+    
+    Orchestrator-->>Controller: JudgmentResponse
+    Controller-->>Client: JudgmentResponse
+    
+    Client->>User: Display winner and reasoning
