@@ -2,11 +2,13 @@ using Xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PoDebateRap.ServerApi.Services.AI;
-using System.Threading.Tasks;
-using System;
 
 namespace PoDebateRap.IntegrationTests
 {
+    /// <summary>
+    /// Integration tests for AzureOpenAIService (verse generation only).
+    /// Speech synthesis tests are in TextToSpeechServiceIntegrationTests.
+    /// </summary>
     public class AzureOpenAIServiceIntegrationTests
     {
         private readonly IConfiguration _configuration;
@@ -37,22 +39,6 @@ namespace PoDebateRap.IntegrationTests
             // Assert
             Assert.False(string.IsNullOrEmpty(response));
             Assert.True(response.Length > 0);
-        }
-
-        [Fact]
-        public async Task GenerateSpeechAsync_ReturnsAudioBytes_WhenApiCallIsSuccessful()
-        {
-            // Arrange
-            var service = new AzureOpenAIService(_configuration, _logger);
-            var text = "Hello, this is a test speech.";
-            var voice = "en-US-DavisNeural"; // A common default voice
-
-            // Act
-            var audioBytes = await service.GenerateSpeechAsync(text, voice, CancellationToken.None);
-
-            // Assert
-            Assert.NotNull(audioBytes);
-            Assert.True(audioBytes.Length > 0);
         }
     }
 }

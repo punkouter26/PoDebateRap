@@ -31,9 +31,9 @@ public class NewsApiHealthCheck : IHealthCheck
                 return HealthCheckResult.Degraded("News API key not configured");
             }
 
-            // Simple connectivity check to News API
+            // Simple connectivity check to News API with API key
             var response = await _httpClient.GetAsync(
-                "https://newsapi.org/v2/top-headlines?country=us&pageSize=1",
+                $"https://newsapi.org/v2/top-headlines?country=us&pageSize=1&apiKey={apiKey}",
                 cancellationToken);
 
             if (response.IsSuccessStatusCode)
@@ -42,7 +42,9 @@ public class NewsApiHealthCheck : IHealthCheck
                 return HealthCheckResult.Healthy("News API is accessible");
             }
 
-            _logger.LogWarning("News API health check failed with status {StatusCode}", response.StatusCode);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("News API health check failed with status {StatusCode}: {Content}", 
+                response.StatusCode, responseContent);
             return HealthCheckResult.Degraded($"News API returned status {response.StatusCode}");
         }
         catch (Exception ex)

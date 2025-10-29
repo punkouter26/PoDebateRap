@@ -8,6 +8,5 @@ namespace PoDebateRap.ServerApi.Services.AI
     {
         Task<string> GenerateDebateTurnAsync(string prompt, int maxTokens, CancellationToken cancellationToken);
         Task<JudgeDebateResponse> JudgeDebateAsync(string debateTranscript, string rapper1Name, string rapper2Name, string topic, CancellationToken cancellationToken);
-        Task<byte[]> GenerateSpeechAsync(string text, string voiceName, CancellationToken cancellationToken);
     }
 }

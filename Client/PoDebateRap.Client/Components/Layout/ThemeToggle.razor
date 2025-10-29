@@ -1,0 +1,58 @@
+@inject IJSRuntime JS
+@inject ILogger<ThemeToggle> Logger
+
+<button class="theme-toggle-btn" @onclick="ToggleTheme" title="Toggle Theme">
+    <span class="theme-icon">@GetThemeIcon()</span>
+</button>
+
+@code {
+    private string _currentTheme = "dark";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Get saved theme or system preference
+                _currentTheme = await JS.InvokeAsync<string>("getTheme");
+                await ApplyTheme(_currentTheme);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error loading theme preference");
+            }
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        _currentTheme = _currentTheme == "dark" ? "light" : "dark";
+        await ApplyTheme(_currentTheme);
+        
+        try
+        {
+            await JS.InvokeVoidAsync("saveTheme", _currentTheme);
+            Logger.LogInformation("Theme switched to: {Theme}", _currentTheme);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving theme preference");
+        }
+    }
+
+    private async Task ApplyTheme(string theme)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("applyTheme", theme);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error applying theme");
+        }
+    }
+
+    private string GetThemeIcon() => _currentTheme == "dark" ? "☀️" : "🌙";
+}

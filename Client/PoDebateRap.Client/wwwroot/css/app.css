@@ -6,6 +6,124 @@ html, body {
     padding: 0;
     height: 100%;
     overflow-x: hidden; /* Prevent horizontal scroll */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme (default) */
+:root, :root[data-theme="dark"] {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-elevated: #2a2a2a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #999;
+    --text-tertiary: #666;
+    --accent-gold: #FFD700;
+    --accent-bronze: #CD7F32;
+    --accent-green: #4CAF50;
+    --accent-red: #FF6B6B;
+    --border-color: rgba(255, 215, 0, 0.2);
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.5);
+    
+    /* Component system variables */
+    --color-gold: #FFD700;
+    --color-orange: #FFA500;
+    --color-bronze: #CD7F32;
+    --color-bronze-light: #E59866;
+    --color-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-dark: #121212;
+    --color-primary: #FFD700;
+    --text-muted: #999;
+    
+    /* Spacing scale */
+    --spacing-1: 4px;
+    --spacing-2: 8px;
+    --spacing-3: 12px;
+    --spacing-4: 16px;
+    --spacing-5: 24px;
+    
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-glow-gold: 0 5px 15px rgba(255, 215, 0, 0.4);
+    
+    /* Transitions */
+    --transition-base: all 0.3s ease;
+    --transition-fast: all 0.15s ease;
+}
+
+/* Light theme */
+:root[data-theme="light"] {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-elevated: #fafafa;
+    --text-primary: #212121;
+    --text-secondary: #666;
+    --text-tertiary: #999;
+    --accent-gold: #D4AF37;
+    --accent-bronze: #CD7F32;
+    --accent-green: #388E3C;
+    --accent-red: #D32F2F;
+    --border-color: rgba(205, 127, 50, 0.3);
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.2);
+    
+    /* Component system variables for light theme */
+    --color-gold: #D4AF37;
+    --color-orange: #FF8C00;
+    --color-bronze: #CD7F32;
+    --color-bronze-light: #E59866;
+    --color-dark: #212121;
+    --bg-card: #ffffff;
+    --bg-dark: #f5f5f5;
+    --color-primary: #D4AF37;
+    --text-muted: #666;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --shadow-glow-gold: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* Smooth theme transitions */
+:root.theme-transitioning,
+:root.theme-transitioning * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Apply theme colors */
+:root[data-theme="light"] html,
+:root[data-theme="light"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] h1,
+:root[data-theme="light"] h2,
+:root[data-theme="light"] h3,
+:root[data-theme="light"] h4,
+:root[data-theme="light"] h5,
+:root[data-theme="light"] h6 {
+    color: var(--accent-gold);
+}
+
+:root[data-theme="light"] a {
+    color: #1976D2;
+}
+
+:root[data-theme="light"] code {
+    color: var(--accent-gold);
+    background-color: #e0e0e0;
 }
 
 h1, h2, h3, h4, h5, h6 {

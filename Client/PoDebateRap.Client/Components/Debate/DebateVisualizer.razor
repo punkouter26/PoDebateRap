@@ -1,7 +1,9 @@
 @using PoDebateRap.Shared.Models
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 @* Removed: @using MudBlazor *@
 
-<div class="debate-visualizer">
+<div class="debate-visualizer" id="debate-visualizer-@_instanceId">
     <div class="rapper-profiles">
         <!-- Rapper 1 Profile Area -->
         <div class="rapper-profile @(IsRapper1Active ? "active-border" : "")">
@@ -21,9 +23,30 @@
         </div>
     </div>
 
-    <!-- Debate Text Display Area -->
+    <!-- Debate Text Display Area with Navigation -->
     <div class="debate-text-area">
-        <pre class="lyrics @(IsNewLyrics ? "fade-in" : "")">@CurrentTurnText</pre>
+        @if (ShowNavigation && CurrentTurnNumber > 1)
+        {
+            <button class="turn-nav-btn turn-nav-prev" @onclick="OnPreviousTurn" title="Previous Turn (Swipe Right)">
+                ‹
+            </button>
+        }
+        
+        <pre class="lyrics @(IsNewLyrics ? "fade-in" : "") @(IsSwiping ? "swiping" : "")">@CurrentTurnText</pre>
+        
+        @if (ShowNavigation && CurrentTurnNumber < TotalTurns)
+        {
+            <button class="turn-nav-btn turn-nav-next" @onclick="OnNextTurn" title="Next Turn (Swipe Left)">
+                ›
+            </button>
+        }
+        
+        @if (ShowNavigation)
+        {
+            <div class="swipe-hint">
+                <small>💡 Swipe left/right to navigate turns</small>
+            </div>
+        }
     </div>
 
     <!-- Progress Indicator Area -->
@@ -75,13 +98,111 @@
     [Parameter] public bool IsRapper2Active { get; set; } = false;
     [Parameter] public int CurrentTurnNumber { get; set; } = 0;
     [Parameter] public int TotalTurns { get; set; } = 10;
+    [Parameter] public bool ShowNavigation { get; set; } = false;
+    [Parameter] public EventCallback<int> OnTurnChanged { get; set; }
 
     private string _previousText = string.Empty;
     private bool IsNewLyrics => CurrentTurnText != _previousText;
+    private bool IsSwiping = false;
+    private string _instanceId = Guid.NewGuid().ToString("N");
+    private DotNetObjectReference<DebateVisualizer>? _dotNetRef;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         _previousText = CurrentTurnText;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ShowNavigation)
+        {
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("initializeGestures", _dotNetRef, $"#debate-visualizer-{_instanceId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing gestures: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSwipeLeft()
+    {
+        if (CurrentTurnNumber < TotalTurns)
+        {
+            await OnNextTurn();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSwipeRight()
+    {
+        if (CurrentTurnNumber > 1)
+        {
+            await OnPreviousTurn();
+        }
+    }
+
+    [JSInvokable]
+    public Task OnSwipeDown()
+    {
+        // Could be used to minimize/collapse the debate view
+        Console.WriteLine("Swipe down detected - could minimize debate");
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task OnSwipeUp()
+    {
+        // Could be used to expand or show additional details
+        Console.WriteLine("Swipe up detected - could expand debate");
+        return Task.CompletedTask;
+    }
+
+    private async Task OnNextTurn()
+    {
+        if (CurrentTurnNumber < TotalTurns)
+        {
+            IsSwiping = true;
+            StateHasChanged();
+            await Task.Delay(200);
+            
+            await OnTurnChanged.InvokeAsync(CurrentTurnNumber + 1);
+            
+            IsSwiping = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnPreviousTurn()
+    {
+        if (CurrentTurnNumber > 1)
+        {
+            IsSwiping = true;
+            StateHasChanged();
+            await Task.Delay(200);
+            
+            await OnTurnChanged.InvokeAsync(CurrentTurnNumber - 1);
+            
+            IsSwiping = false;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("destroyGestures", $"#debate-visualizer-{_instanceId}");
+            _dotNetRef?.Dispose();
+        }
+        catch
+        {
+            // Ignore disposal errors
+        }
     }
 }

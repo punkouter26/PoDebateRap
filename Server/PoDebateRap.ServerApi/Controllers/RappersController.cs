@@ -22,31 +22,15 @@ namespace PoDebateRap.ServerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Rapper>>> Get()
         {
-            try
-            {
-                var rappers = await _rapperRepository.GetAllRappersAsync();
-                return Ok(rappers);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting all rappers.");
-                return StatusCode(500, "Internal server error");
-            }
+            var rappers = await _rapperRepository.GetAllRappersAsync();
+            return Ok(rappers);
         }
 
         [HttpPost("update-win-loss")]
         public async Task<IActionResult> UpdateWinLossRecord([FromQuery] string winnerName, [FromQuery] string loserName)
         {
-            try
-            {
-                await _rapperRepository.UpdateWinLossRecordAsync(winnerName, loserName);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating win/loss record for winner {Winner} and loser {Loser}.", winnerName, loserName);
-                return StatusCode(500, "Internal server error");
-            }
+            await _rapperRepository.UpdateWinLossRecordAsync(winnerName, loserName);
+            return Ok();
         }
     }
 }

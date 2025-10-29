@@ -54,7 +54,7 @@ public class CustomTelemetryService
         };
 
         _telemetryClient.TrackEvent("DebateCompleted", properties, metrics);
-        _logger.LogInformation("Debate completed: {Winner} won after {TotalTurns} turns in {Duration:F1}s", 
+        _logger.LogInformation("Debate completed: {Winner} won after {TotalTurns} turns in {Duration:F1}s",
             winner, totalTurns, duration.TotalSeconds);
     }
 
@@ -122,7 +122,7 @@ public class CustomTelemetryService
         };
 
         _telemetryClient.TrackEvent("StorageOperation", properties, metrics);
-        
+
         if (!success)
         {
             _logger.LogWarning("Storage operation failed: {Operation} on {TableName} took {Duration:F0}ms",

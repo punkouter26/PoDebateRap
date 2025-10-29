@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.News;
 using PoDebateRap.Shared.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -22,16 +20,31 @@ namespace PoDebateRap.ServerApi.Controllers
         [HttpGet("headlines")]
         public async Task<ActionResult<IEnumerable<NewsHeadline>>> GetHeadlines()
         {
-            try
+            var headlines = await _newsService.GetTopHeadlinesAsync(1);
+            return Ok(headlines);
+        }
+
+        [HttpGet("topics")]
+        public async Task<ActionResult<IEnumerable<Topic>>> GetTopics()
+        {
+            var headlines = await _newsService.GetTopHeadlinesAsync(10);
+            var topics = headlines.Select(h => new Topic { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
+            _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
+            return Ok(topics);
+        }
+
+        [HttpGet("topics/latest")]
+        public async Task<ActionResult<Topic>> GetLatestTopic()
+        {
+            var headlines = await _newsService.GetTopHeadlinesAsync(1);
+            if (headlines.Any())
             {
-                var headlines = await _newsService.GetTopHeadlinesAsync(1); // Call with count
-                return Ok(headlines);
+                var latestTopic = new Topic { Title = headlines.First().Title ?? string.Empty, Category = "Breaking News" };
+                _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
+                return Ok(latestTopic);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting news headlines.");
-                return StatusCode(500, "Internal server error");
-            }
+            _logger.LogWarning("No news headlines available for topic generation.");
+            return NotFound("No current news topics available");
         }
     }
 }

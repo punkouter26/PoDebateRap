@@ -234,9 +234,9 @@ public async Task TableStorage_CreateAndRetrieve_Succeeds()
 
 ---
 
-### 4. PoDebateRap.SystemTests (E2E)
+### 4. PoDebateRap.E2ETests (TypeScript Playwright)
 
-**Purpose**: End-to-end browser automation tests using Playwright.
+**Purpose**: Comprehensive end-to-end browser automation tests using TypeScript and Playwright.
 
 **Coverage**:
 - Full user flows (debate setup → execution → results)
@@ -250,16 +250,52 @@ public async Task TableStorage_CreateAndRetrieve_Succeeds()
 
 **Key Test Files**:
 - `DebateSetupTests.cs` - UI setup flow
-- `AudioPlaybackTests.cs` - Audio functionality
+- `AudioPlaybackTests.cs` - Audio functionality (see `AUDIO_TESTING.md`)
 - `FULL_DEBATE_FLOW_TESTS.md` - Test scenarios documentation
+
+**Audio Testing Documentation**: See `AUDIO_TESTING.md` for comprehensive guide to audio playback E2E tests.
+
+---
+
+### 5. PoDebateRap.E2ETests (E2E - TypeScript)
+
+**Purpose**: Comprehensive TypeScript Playwright E2E tests covering all main UI functionality.
+
+**Coverage**:
+- Debate setup form validation (desktop & mobile)
+- Full debate flow (initialization, verses, audio)
+- Audio playback and controls
+- Diagnostics/health check page
+- Mobile responsiveness and touch interactions
+- Desktop and mobile viewports (Chromium only)
+
+**Requirements**:
+- Node.js 18+ and npm
+- Playwright for Node
+- Server running on `http://localhost:5000`
+
+**Key Test Files**:
+- `tests/debate-setup.spec.ts` - Form validation and setup
+- `tests/debate-flow.spec.ts` - Complete debate flows
+- `tests/audio-playback.spec.ts` - Audio generation and playback
+- `tests/diagnostics.spec.ts` - Health check page
+- `tests/helpers/page-objects.ts` - Page Object Models
+
+**Documentation**: See `PoDebateRap.E2ETests/README.md` for detailed setup and usage.
 
 **Run Command**:
 ```bash
 # 1. Start the server
 dotnet run --project Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj
 
-# 2. In a separate terminal, run E2E tests
+# 2. In a separate terminal, run C# E2E tests
 dotnet test Tests/PoDebateRap.SystemTests
+```
+
+**Installation**:
+```bash
+# Install Playwright browsers
+pwsh Tests/PoDebateRap.SystemTests/bin/Debug/net9.0/playwright.ps1 install
 ```
 
 **Example Test**:
@@ -316,7 +352,44 @@ public async Task AudioPlayback_TestButton_PlaysSound()
 }
 ```
 
-**Note**: E2E tests are **manually executed** and excluded from CI/CD.
+**Note**: C# E2E tests (SystemTests) are **manually executed** and excluded from CI/CD.
+
+**Run Command**:
+```bash
+cd Tests/PoDebateRap.E2ETests
+npm install
+npx playwright install chromium
+npm test
+```
+
+**Features**:
+- ✅ Page Object Model pattern
+- ✅ Desktop viewport (1280x720)
+- ✅ Mobile viewport (Pixel 5 - 393x851)
+- ✅ Chromium only for consistency
+- ✅ Auto-start server via webServer config
+- ✅ Screenshot/video on failure
+- ✅ HTML test reports
+
+**Test Tags**:
+- `@desktop` - Desktop viewport tests
+- `@mobile` - Mobile viewport tests
+
+```bash
+# Run only desktop tests
+npm run test:desktop
+
+# Run only mobile tests
+npm run test:mobile
+
+# Run in headed mode (see browser)
+npm run test:headed
+
+# Open interactive UI
+npm run test:ui
+```
+
+**Note**: TypeScript E2E tests can be integrated into CI/CD or run manually.
 
 ---
 
@@ -605,8 +678,9 @@ PWDEBUG=1 dotnet test Tests/PoDebateRap.SystemTests
 | UnitTests | 4 | 4 | ✅ 100% |
 | ApiTests | 4 | 4 | ✅ 100% |
 | IntegrationTests | 16 | 12 | ⚠️ 75% (requires Azure credentials) |
-| SystemTests | 12 | 7 | ⚠️ 58% (manual execution) |
-| **Total** | **36** | **27** | **75%** |
+| SystemTests (C#) | 12 | 7 | ⚠️ 58% (manual execution) |
+| E2ETests (TypeScript) | 35+ | - | ✅ Ready (new) |
+| **Total** | **71+** | **27** | **38%** |
 
 ### Coverage Goals
 - **Unit Tests**: > 80% code coverage

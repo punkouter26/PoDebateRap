@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.News;
+using PoDebateRap.Shared.Models;
+using System.Linq;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -17,48 +19,26 @@ namespace PoDebateRap.ServerApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TopicDto>>> Get()
+        public async Task<ActionResult<IEnumerable<Topic>>> Get()
         {
-            try
-            {
-                var headlines = await _newsService.GetTopHeadlinesAsync(10);
-                var topics = headlines.Select(h => new TopicDto { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
-                _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
-                return Ok(topics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting topics from latest news.");
-                return StatusCode(500, "Internal server error");
-            }
+            var headlines = await _newsService.GetTopHeadlinesAsync(10);
+            var topics = headlines.Select(h => new Topic { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
+            _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
+            return Ok(topics);
         }
 
         [HttpGet("latest")]
-        public async Task<ActionResult<TopicDto>> GetLatest()
+        public async Task<ActionResult<Topic>> GetLatest()
         {
-            try
+            var headlines = await _newsService.GetTopHeadlinesAsync(1);
+            if (headlines.Any())
             {
-                var headlines = await _newsService.GetTopHeadlinesAsync(1);
-                if (headlines.Any())
-                {
-                    var latestTopic = new TopicDto { Title = headlines.First().Title ?? string.Empty, Category = "Breaking News" };
-                    _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
-                    return Ok(latestTopic);
-                }
-                _logger.LogWarning("No news headlines available for topic generation.");
-                return NotFound("No current news topics available");
+                var latestTopic = new Topic { Title = headlines.First().Title ?? string.Empty, Category = "Breaking News" };
+                _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
+                return Ok(latestTopic);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting latest topic from news.");
-                return StatusCode(500, "Internal server error");
-            }
+            _logger.LogWarning("No news headlines available for topic generation.");
+            return NotFound("No current news topics available");
         }
-    }
-
-    public record TopicDto
-    {
-        public string Title { get; init; } = string.Empty;
-        public string Category { get; init; } = string.Empty;
     }
 }

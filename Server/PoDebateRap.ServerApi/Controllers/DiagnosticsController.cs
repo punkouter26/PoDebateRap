@@ -20,16 +20,9 @@ namespace PoDebateRap.ServerApi.Controllers
         [HttpGet("all")]
         public async Task<ActionResult<List<DiagnosticResult>>> GetAllDiagnostics()
         {
-            try
-            {
-                var results = await _diagnosticsService.RunAllChecksAsync();
-                return Ok(results);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error running diagnostics");
-                return StatusCode(500, "Error running diagnostics");
-            }
+            // GlobalExceptionHandler handles all exceptions
+            var results = await _diagnosticsService.RunAllChecksAsync();
+            return Ok(results);
         }
     }
 }

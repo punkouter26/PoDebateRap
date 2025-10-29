@@ -1,17 +1,12 @@
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PoDebateRap.Shared.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.CognitiveServices.Speech;
-using Microsoft.CognitiveServices.Speech.Audio;
 using OpenAI.Chat;
 
 namespace PoDebateRap.ServerApi.Services.AI
@@ -20,7 +15,6 @@ namespace PoDebateRap.ServerApi.Services.AI
     {
         private readonly AzureOpenAIClient _openAIClient;
         private readonly ChatClient _chatClient;
-        private readonly SpeechConfig? _speechConfig;
         private readonly ILogger<AzureOpenAIService> _logger;
         private readonly string _openAIDeploymentName;
 
@@ -42,22 +36,6 @@ namespace PoDebateRap.ServerApi.Services.AI
             _openAIClient = new AzureOpenAIClient(new Uri(openAIEndpoint), new AzureKeyCredential(openAIApiKey));
             _chatClient = _openAIClient.GetChatClient(_openAIDeploymentName);
             _logger.LogInformation("Azure OpenAI client initialized with endpoint: {Endpoint}", openAIEndpoint);
-
-            // Azure Speech Configuration
-            var speechRegion = configuration["Azure:Speech:Region"];
-            var speechSubscriptionKey = configuration["Azure:Speech:SubscriptionKey"];
-
-            if (string.IsNullOrEmpty(speechRegion) || string.IsNullOrEmpty(speechSubscriptionKey))
-            {
-                _logger.LogWarning("Azure Speech region or subscription key is not configured. Text-to-Speech will be unavailable.");
-                _speechConfig = null;
-            }
-            else
-            {
-                _speechConfig = SpeechConfig.FromSubscription(speechSubscriptionKey, speechRegion);
-                _speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm);
-                _logger.LogInformation("Azure Speech client initialized for region: {Region}", speechRegion);
-            }
         }
 
         public async Task<string> GenerateDebateTurnAsync(string prompt, int maxTokens, CancellationToken cancellationToken)
@@ -163,13 +141,6 @@ namespace PoDebateRap.ServerApi.Services.AI
                 _logger.LogError(ex, "Error judging debate from OpenAI.");
                 throw;
             }
-        }
-
-        public Task<byte[]> GenerateSpeechAsync(string text, string voiceName, CancellationToken cancellationToken)
-        {
-            // This service is a wrapper, the actual implementation is in TextToSpeechService.
-            // This method will be removed in a future refactoring to separate concerns.
-            throw new NotImplementedException("This method should be called on TextToSpeechService directly.");
         }
     }
 }

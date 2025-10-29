@@ -171,3 +171,15 @@ window.inspectAudioData = (base64String) => {
 document.addEventListener('DOMContentLoaded', () => {
     window.testAudio();
 });
+
+// Smooth scroll to element by ID
+window.scrollToElement = (elementId) => {
+    console.log("📜 Scrolling to element:", elementId);
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        console.log("✅ Scrolled to element:", elementId);
+    } else {
+        console.warn("⚠️ Element not found:", elementId);
+    }
+};

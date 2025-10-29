@@ -41,7 +41,17 @@
                 <tbody>
                     @foreach (var check in _healthReport.Checks)
                     {
-                        <tr>
+                        // Map health check names to data-testid values
+                        var testId = check.Name.ToLowerInvariant() switch
+                        {
+                            "azure_openai" => "openai-status",
+                            "azure_tts" => "speech-status",
+                            "azure_table_storage" => "storage-status",
+                            "news_api" => "news-status",
+                            _ => $"{check.Name.ToLowerInvariant().Replace("_", "-")}-status"
+                        };
+                        
+                        <tr data-testid="@testId">
                             <td>@FormatCheckName(check.Name)</td>
                             <td class="status-cell">
                                 @if (check.Status == "Healthy")
@@ -273,17 +283,17 @@
             Logger.LogError(ex, "Error running diagnostics.");
             _healthReport = new HealthReport
             {
-                Status = "Unhealthy",
-                IsHealthy = false,
-                Timestamp = DateTime.UtcNow,
-                Checks = new List<HealthCheck>
+                status = "Unhealthy",
+                isHealthy = false,
+                timestamp = DateTime.UtcNow,
+                checks = new List<HealthCheck>
                 {
                     new HealthCheck
                     {
-                        Name = "Overall",
-                        Status = "Unhealthy",
-                        Description = $"Error: {ex.Message}",
-                        Duration = 0
+                        name = "Overall",
+                        status = "Unhealthy",
+                        description = $"Error: {ex.Message}",
+                        duration = 0
                     }
                 }
             };
@@ -375,21 +385,43 @@
         _cts?.Dispose();
     }
 
-    // Health Report Models
+    // Health Report Models (using camelCase to match server JSON response)
     public class HealthReport
     {
-        public string Status { get; set; } = string.Empty;
-        public bool IsHealthy { get; set; }
-        public DateTime Timestamp { get; set; }
-        public List<HealthCheck> Checks { get; set; } = new();
+        public string status { get; set; } = string.Empty;
+        public bool isHealthy { get; set; }
+        public DateTime timestamp { get; set; }
+        public List<HealthCheck> checks { get; set; } = new();
+        
+        // PascalCase properties for component usage (map from camelCase)
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string Status => status;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsHealthy => isHealthy;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public DateTime Timestamp => timestamp;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public List<HealthCheck> Checks => checks;
     }
 
     public class HealthCheck
     {
-        public string Name { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public double Duration { get; set; }
-        public string? Exception { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string status { get; set; } = string.Empty;
+        public string? description { get; set; }
+        public double duration { get; set; }
+        public string? exception { get; set; }
+        
+        // PascalCase properties for component usage (map from camelCase)
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string Name => name;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string Status => status;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? Description => description;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public double Duration => duration;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? Exception => exception;
     }
 }
