@@ -117,10 +117,40 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
           name: 'Azure__StorageConnectionString'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
-        // Note: OpenAI, Speech, and NewsAPI keys need to be configured separately as they're external services
         {
           name: 'Azure__ApplicationInsights__ConnectionString'
           value: applicationInsights.properties.ConnectionString
+        }
+        // Azure OpenAI Configuration
+        {
+          name: 'Azure__OpenAI__Endpoint'
+          value: 'https://podebaterap-openai.openai.azure.com/'
+        }
+        {
+          name: 'Azure__OpenAI__ApiKey'
+          value: '2d0146f4d409455f9e752ce9242404ec'
+        }
+        {
+          name: 'Azure__OpenAI__DeploymentName'
+          value: 'gpt-4o'
+        }
+        // Azure Speech Services Configuration
+        {
+          name: 'Azure__Speech__Region'
+          value: 'eastus2'
+        }
+        {
+          name: 'Azure__Speech__Endpoint'
+          value: 'https://eastus2.api.cognitive.microsoft.com/'
+        }
+        {
+          name: 'Azure__Speech__SubscriptionKey'
+          value: '5b8b34fc054843ac91aa858d56bdcca8'
+        }
+        // NewsAPI Configuration
+        {
+          name: 'NewsApi__ApiKey'
+          value: 'acd7ec0ba05b49b2944494ebd941be3c'
         }
       ]
     }
