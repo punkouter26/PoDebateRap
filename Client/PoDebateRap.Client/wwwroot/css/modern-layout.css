@@ -1,0 +1,401 @@
+/* ========================================
+   MODERN LAYOUT SYSTEM (2025)
+   CSS Container Queries, clamp(), color-mix()
+   ======================================== */
+
+/* ----------------------------------------
+   CSS Custom Properties with Modern Features
+   ---------------------------------------- */
+:root {
+    /* Modern Fluid Typography using clamp() */
+    --font-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --font-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    --font-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+    --font-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+    --font-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+    --font-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+    --font-3xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+    --font-4xl: clamp(2.5rem, 2rem + 3vw, 4rem);
+
+    /* Fluid Spacing */
+    --space-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+    --space-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+    --space-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+    --space-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+    --space-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+    --space-2xl: clamp(3rem, 2rem + 5vw, 5rem);
+
+    /* Color System with color-mix() */
+    --color-gold-base: #FFD700;
+    --color-gold-light: color-mix(in srgb, var(--color-gold-base) 70%, white);
+    --color-gold-dark: color-mix(in srgb, var(--color-gold-base) 70%, black);
+    --color-gold-muted: color-mix(in srgb, var(--color-gold-base) 50%, transparent);
+
+    --color-bronze-base: #CD7F32;
+    --color-bronze-light: color-mix(in srgb, var(--color-bronze-base) 70%, white);
+    --color-bronze-dark: color-mix(in srgb, var(--color-bronze-base) 70%, black);
+
+    --color-surface-base: #1a1a2e;
+    --color-surface-elevated: color-mix(in srgb, var(--color-surface-base) 85%, white);
+    --color-surface-sunken: color-mix(in srgb, var(--color-surface-base) 85%, black);
+
+    --color-success: #4ECDC4;
+    --color-error: #FF6B6B;
+    --color-warning: #FFE66D;
+
+    /* Radzen Theme Overrides */
+    --rz-primary: var(--color-gold-base);
+    --rz-primary-light: var(--color-gold-light);
+    --rz-primary-dark: var(--color-gold-dark);
+    --rz-secondary: var(--color-bronze-base);
+    --rz-success: var(--color-success);
+    --rz-danger: var(--color-error);
+    --rz-warning: var(--color-warning);
+}
+
+/* ----------------------------------------
+   Container Query Enabled Components
+   ---------------------------------------- */
+
+/* Container for responsive components */
+.container-responsive {
+    container-type: inline-size;
+    container-name: responsive-container;
+}
+
+/* Results Section Container Query */
+.inline-results {
+    container-type: inline-size;
+    container-name: results;
+}
+
+@container results (max-width: 600px) {
+    .stats-table {
+        font-size: var(--font-sm);
+    }
+
+    .stats-table th,
+    .stats-table td {
+        padding: var(--space-sm);
+    }
+
+    .results-header h3 {
+        font-size: var(--font-xl);
+    }
+
+    .winner-announcement {
+        font-size: var(--font-lg);
+        flex-direction: column;
+    }
+}
+
+/* Debate Arena Container Query */
+.debate-arena-container {
+    container-type: inline-size;
+    container-name: arena;
+}
+
+@container arena (max-width: 500px) {
+    .rapper-profiles {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .vs-separator {
+        transform: rotate(90deg);
+    }
+}
+
+/* Mini Leaderboard Container Query */
+.mini-leaderboard {
+    container-type: inline-size;
+    container-name: mini-lb;
+}
+
+@container mini-lb (max-width: 350px) {
+    .mini-leaderboard-item {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+
+    .rapper-stats {
+        justify-content: center;
+    }
+}
+
+/* ----------------------------------------
+   Radzen Component Customizations
+   ---------------------------------------- */
+
+/* Notification Toast Customizations */
+.rz-notification {
+    --rz-notification-background-color: var(--color-surface-elevated);
+    --rz-notification-color: #e0e0e0;
+    --rz-notification-border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.rz-notification-success {
+    border-left: 4px solid var(--color-success);
+}
+
+.rz-notification-error {
+    border-left: 4px solid var(--color-error);
+}
+
+.rz-notification-warning {
+    border-left: 4px solid var(--color-warning);
+}
+
+.rz-notification-info {
+    border-left: 4px solid var(--color-gold-base);
+}
+
+/* Progress Bar Customizations */
+.rz-progressbar {
+    --rz-progressbar-background-color: rgba(255, 215, 0, 0.1);
+    --rz-progressbar-value-background-color: linear-gradient(90deg, var(--color-gold-base), var(--color-bronze-base));
+    height: 12px;
+    border-radius: 6px;
+}
+
+.rz-progressbar-circular {
+    --rz-progressbar-circular-stroke: var(--color-gold-base);
+}
+
+/* Tabs Customizations */
+.rz-tabview {
+    --rz-tabview-background-color: transparent;
+}
+
+.rz-tabview-nav {
+    border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+    gap: var(--space-sm);
+}
+
+.rz-tabview-nav-link {
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 8px 8px 0 0;
+    transition: all 0.3s ease;
+}
+
+.rz-tabview-nav-link:hover {
+    color: var(--color-gold-base);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.rz-tabview-nav-link.rz-state-active {
+    color: var(--color-gold-base);
+    background: rgba(255, 215, 0, 0.15);
+    border-bottom: 3px solid var(--color-gold-base);
+}
+
+.rz-tabview-panel {
+    padding: var(--space-lg) 0;
+}
+
+/* Tooltip Customizations */
+.rz-tooltip {
+    --rz-tooltip-background-color: var(--color-surface-elevated);
+    --rz-tooltip-color: #e0e0e0;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+/* Skeleton Customizations */
+.rz-skeleton {
+    --rz-skeleton-background-color: rgba(255, 215, 0, 0.05);
+    --rz-skeleton-animation-background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+}
+
+/* Breadcrumb Customizations */
+.rz-breadcrumb {
+    padding: var(--space-sm) 0;
+}
+
+.rz-breadcrumb-item {
+    color: #999;
+}
+
+.rz-breadcrumb-item a {
+    color: var(--color-gold-base);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.rz-breadcrumb-item a:hover {
+    color: var(--color-gold-light);
+}
+
+/* Button Customizations */
+.rz-button {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.rz-button-primary {
+    background: linear-gradient(135deg, var(--color-gold-base), var(--color-bronze-base));
+    color: #000;
+    border: none;
+}
+
+.rz-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* ----------------------------------------
+   Mobile Bottom Sheet Pattern
+   ---------------------------------------- */
+
+@media (max-width: 768px) {
+    .mobile-bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--color-surface-elevated);
+        border-radius: 24px 24px 0 0;
+        padding: var(--space-lg);
+        box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5);
+        transform: translateY(calc(100% - 80px));
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .mobile-bottom-sheet.expanded {
+        transform: translateY(0);
+    }
+
+    .bottom-sheet-handle {
+        width: 40px;
+        height: 5px;
+        background: rgba(255, 215, 0, 0.4);
+        border-radius: 3px;
+        margin: 0 auto var(--space-md);
+        cursor: grab;
+    }
+
+    .bottom-sheet-handle:active {
+        cursor: grabbing;
+    }
+
+    .bottom-sheet-peek {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-sm);
+        color: var(--color-gold-base);
+        font-weight: 600;
+    }
+}
+
+/* ----------------------------------------
+   Page Transitions
+   ---------------------------------------- */
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-container {
+    animation: pageEnter 0.4s ease-out;
+}
+
+/* ----------------------------------------
+   Scroll-Linked Animations (Modern CSS)
+   ---------------------------------------- */
+
+@supports (animation-timeline: scroll()) {
+    .scroll-fade-in {
+        animation: scrollFadeIn linear;
+        animation-timeline: view();
+        animation-range: entry 0% entry 100%;
+    }
+
+    @keyframes scrollFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+/* ----------------------------------------
+   Utility Classes using Modern CSS
+   ---------------------------------------- */
+
+/* Fluid text sizes */
+.text-fluid-sm { font-size: var(--font-sm); }
+.text-fluid-base { font-size: var(--font-base); }
+.text-fluid-lg { font-size: var(--font-lg); }
+.text-fluid-xl { font-size: var(--font-xl); }
+.text-fluid-2xl { font-size: var(--font-2xl); }
+.text-fluid-3xl { font-size: var(--font-3xl); }
+
+/* Fluid spacing */
+.p-fluid { padding: var(--space-md); }
+.m-fluid { margin: var(--space-md); }
+.gap-fluid { gap: var(--space-md); }
+
+/* Color utilities with color-mix */
+.bg-gold-muted { background-color: var(--color-gold-muted); }
+.text-gold-light { color: var(--color-gold-light); }
+.border-gold-muted { border-color: var(--color-gold-muted); }
+
+/* ----------------------------------------
+   Dark Mode Enhancements
+   ---------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-surface-base: #0f0f23;
+        --color-surface-elevated: color-mix(in srgb, var(--color-surface-base) 80%, white);
+    }
+}
+
+/* ----------------------------------------
+   Print Styles
+   ---------------------------------------- */
+
+@media print {
+    .fab-new-debate,
+    .mobile-bottom-sheet,
+    .theme-toggle-btn,
+    .rz-notification {
+        display: none !important;
+    }
+
+    .page-container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .stats-table {
+        break-inside: avoid;
+    }
+}

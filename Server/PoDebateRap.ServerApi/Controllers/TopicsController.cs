@@ -5,8 +5,12 @@ using System.Linq;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
+    /// <summary>
+    /// Controller for managing debate topics derived from news headlines.
+    /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
+    [Produces("application/json")]
     public class TopicsController : ControllerBase
     {
         private readonly INewsService _newsService;
@@ -18,8 +22,14 @@ namespace PoDebateRap.ServerApi.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves a list of available debate topics from current news headlines.
+        /// </summary>
+        /// <returns>A list of topics suitable for rap debates.</returns>
+        /// <response code="200">Returns the list of topics.</response>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Topic>>> Get()
+        [ProducesResponseType(typeof(IEnumerable<Topic>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<Topic>>> GetAllTopics()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(10);
             var topics = headlines.Select(h => new Topic { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
@@ -27,8 +37,16 @@ namespace PoDebateRap.ServerApi.Controllers
             return Ok(topics);
         }
 
+        /// <summary>
+        /// Retrieves the latest breaking news topic for a debate.
+        /// </summary>
+        /// <returns>The most recent topic from breaking news.</returns>
+        /// <response code="200">Returns the latest topic.</response>
+        /// <response code="404">No current news topics available.</response>
         [HttpGet("latest")]
-        public async Task<ActionResult<Topic>> GetLatest()
+        [ProducesResponseType(typeof(Topic), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Topic>> GetLatestTopic()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(1);
             if (headlines.Any())

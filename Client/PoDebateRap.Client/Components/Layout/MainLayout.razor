@@ -1,28 +1,45 @@
 @inherits LayoutComponentBase
 @using PoDebateRap.Client.Components.Diagnostics
+@inject NotificationService NotificationService
 
-<PageTitle>PoDebateRap</PageTitle> @* Set global page title *@
+<PageTitle>PoDebateRap</PageTitle>
 
-<!-- Theme Toggle -->
-<ThemeToggle />
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row">
-            <h1 class="app-title">PoDebateRap</h1>
-        </div>
-
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="header-content">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <span class="app-logo">🎤</span>
+                <RadzenLink Path="/" class="app-title-link">
+                    <h1 class="app-title">PoDebateRap</h1>
+                </RadzenLink>
+            </RadzenStack>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="nav-actions">
+                <nav class="top-nav">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <RadzenIcon Icon="home" /> 
+                        <span class="nav-text">Home</span>
+                    </NavLink>
+                    <NavLink class="nav-link" href="leaderboard">
+                        <RadzenIcon Icon="emoji_events" />
+                        <span class="nav-text">Leaderboard</span>
+                    </NavLink>
+                    <NavLink class="nav-link" href="diag">
+                        <RadzenIcon Icon="build" />
+                        <span class="nav-text">Diagnostics</span>
+                    </NavLink>
+                </nav>
+                <ThemeToggle />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+    
+    <RadzenBody>
         <article class="content">
             @Body
         </article>
-
-        @* Diagnostics modal removed - navigate to /diag page instead *@
-    </main>
-</div>
+    </RadzenBody>
+</RadzenLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
@@ -31,5 +48,5 @@
 </div>
 
 @code {
-    // Diagnostics modal code removed - using dedicated /diag page
+    // Layout uses RadzenLayout for responsive design
 }

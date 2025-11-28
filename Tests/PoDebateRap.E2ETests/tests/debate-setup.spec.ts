@@ -2,15 +2,15 @@ import { test, expect } from '@playwright/test';
 import { DebateSetupPage, TestData } from './helpers/page-objects';
 
 /**
- * Debate Setup Tests - Streamlined
- * Core tests for debate setup functionality
- * Reduced from 12 to 5 tests to keep execution under 1 minute
+ * Debate Setup Tests - Quick Battle UI
+ * Core tests for quick battle functionality
+ * Updated for simplified UI with auto-selected rappers
  * 
  * @desktop - Tests for desktop viewport
  * @mobile - Tests for mobile viewport
  */
 
-test.describe('Debate Setup - Core Functionality', () => {
+test.describe('Debate Setup - Quick Battle', () => {
   let setupPage: DebateSetupPage;
 
   test.beforeEach(async ({ page }) => {
@@ -18,44 +18,33 @@ test.describe('Debate Setup - Core Functionality', () => {
     await setupPage.goto();
   });
 
-  test('should enable Begin Debate button when all fields are valid @desktop', async () => {
-    // Setup complete debate - covers: rapper selection, topic input, button state
-    await setupPage.setupDebate(
-      TestData.rappers.eminem,
-      TestData.rappers.kendrick,
-      TestData.topics.medium
-    );
+  test('should enable Start Battle button when topic is entered @desktop', async () => {
+    // Enter topic - rappers are auto-selected in quick battle
+    await setupPage.enterTopic(TestData.topics.medium);
     
     // Button should be enabled
-    await setupPage.assertBeginDebateButtonEnabled();
+    await setupPage.assertStartBattleButtonEnabled();
     
     // No error should be visible
     await setupPage.assertNoErrorMessage();
   });
 
   test('should display all essential UI elements @desktop', async ({ page }) => {
-    // Verify all core elements are present
-    await expect(setupPage.rapper1Container).toBeVisible();
-    await expect(setupPage.rapper2Container).toBeVisible();
+    // Verify quick battle UI elements are present
     await expect(setupPage.topicInput).toBeVisible();
-    await expect(setupPage.beginDebateButton).toBeVisible();
+    await expect(setupPage.startBattleButton).toBeVisible();
     
-    // Verify key rappers are available
-    await expect(page.locator('heading:has-text("Eminem")')).toBeVisible();
-    await expect(page.locator('heading:has-text("Tupac Shakur")')).toBeVisible();
+    // Verify title/branding
+    await expect(page.locator('h1').first()).toBeVisible();
   });
 
-  test('should accept user input and validate form @desktop', async () => {
+  test('should accept user input in topic field @desktop', async () => {
     // Test topic input
     const testTopic = TestData.topics.medium;
     await setupPage.enterTopic(testTopic);
     await expect(setupPage.topicInput).toHaveValue(testTopic);
     
-    // Complete form
-    await setupPage.selectRapper1(TestData.rappers.nas);
-    await setupPage.selectRapper2(TestData.rappers.jayz);
-    
-    // Should be enabled when valid
-    await setupPage.assertBeginDebateButtonEnabled();
+    // Should be enabled when topic is entered
+    await setupPage.assertStartBattleButtonEnabled();
   });
 });

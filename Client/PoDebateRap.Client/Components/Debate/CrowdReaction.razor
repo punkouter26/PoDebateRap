@@ -1,0 +1,121 @@
+@using PoDebateRap.Shared.Models
+
+<div class="crowd-reaction-container @(IsActive ? "active" : "")">
+    @if (IsActive)
+    {
+        @switch (ReactionType)
+        {
+            case CrowdReactionType.Fireworks:
+                <div class="fireworks-container">
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        <div class="firework firework-@i">
+                            <div class="explosion">
+                                @for (int j = 0; j < 12; j++)
+                                {
+                                    <div class="spark spark-@j"></div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="reaction-emoji">🔥💥🎆</div>
+                </div>
+                break;
+
+            case CrowdReactionType.Confetti:
+                <div class="confetti-container">
+                    @for (int i = 0; i < 50; i++)
+                    {
+                        <div class="confetti confetti-@(i % 10)" style="--delay: @(i * 0.05)s; --x: @(_random.Next(-50, 50))px;"></div>
+                    }
+                    <div class="reaction-emoji">🎉✨🎊</div>
+                </div>
+                break;
+
+            case CrowdReactionType.Cheers:
+                <div class="cheers-container">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        <div class="clap clap-@i">👏</div>
+                    }
+                    <div class="reaction-emoji">👏💪</div>
+                </div>
+                break;
+
+            case CrowdReactionType.ThumbsDown:
+                <div class="thumbsdown-container">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="thumbsdown thumbsdown-@i">👎</div>
+                    }
+                    <div class="reaction-emoji negative">😬👎</div>
+                </div>
+                break;
+        }
+
+        @if (!string.IsNullOrEmpty(ScoreText))
+        {
+            <div class="score-popup @GetScoreClass()">
+                @ScoreText
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public CrowdReactionType ReactionType { get; set; } = CrowdReactionType.None;
+    [Parameter] public bool IsActive { get; set; } = false;
+    [Parameter] public double Score { get; set; } = 0;
+    [Parameter] public EventCallback OnAnimationComplete { get; set; }
+
+    private Random _random = new Random();
+    private System.Timers.Timer? _timer;
+
+    private string ScoreText => Score switch
+    {
+        >= 80 => "🔥 FIRE! 🔥",
+        >= 60 => "Nice Flow!",
+        >= 40 => "Solid",
+        _ => "Weak..."
+    };
+
+    private string GetScoreClass() => Score switch
+    {
+        >= 80 => "score-fire",
+        >= 60 => "score-good",
+        >= 40 => "score-ok",
+        _ => "score-weak"
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (IsActive && ReactionType != CrowdReactionType.None)
+        {
+            StartAnimationTimer();
+        }
+    }
+
+    private void StartAnimationTimer()
+    {
+        _timer?.Dispose();
+        _timer = new System.Timers.Timer(3000); // 3 second animation
+        _timer.Elapsed += async (sender, args) =>
+        {
+            _timer?.Dispose();
+            await InvokeAsync(async () =>
+            {
+                if (OnAnimationComplete.HasDelegate)
+                {
+                    await OnAnimationComplete.InvokeAsync();
+                }
+            });
+        };
+        _timer.AutoReset = false;
+        _timer.Start();
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

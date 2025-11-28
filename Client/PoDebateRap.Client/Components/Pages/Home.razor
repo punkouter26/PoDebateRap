@@ -1,5 +1,6 @@
 @page "/"
 @using PoDebateRap.Shared.Models
+@using PoDebateRap.Shared.Services
 @using PoDebateRap.Client.Components.Debate
 @using Microsoft.JSInterop
 @using System.Net.Http.Json
@@ -7,9 +8,17 @@
 @inject HttpClient Http
 @inject ILogger<Home> Logger
 @inject IJSRuntime JSRuntime
+@inject NotificationService NotificationService
+@inject TooltipService TooltipService
 @implements IDisposable
 
 <PageTitle>PoDebateRap</PageTitle>
+
+<!-- Crowd Reaction Overlay -->
+<CrowdReaction ReactionType="_currentReactionType" 
+               IsActive="_showCrowdReaction" 
+               Score="_currentReactionScore"
+               OnAnimationComplete="OnCrowdReactionComplete" />
 
 <div class="page-container">
     <!-- Header Section -->
@@ -100,103 +109,13 @@
             <!-- Inline Results Section -->
             @if (ShowVotingModal && _latestDebateState.IsDebateFinished)
             {
-                <div class="inline-results" id="debate-results">
-                    <div class="results-header">
-                        <h3>� Debate Results</h3>
-                    </div>
-                    
-                    <div class="results-body">
-                        <p class="results-intro">
-                            The debate on '<strong>@(_latestDebateState.Topic?.Title ?? "the topic")</strong>' between 
-                            <strong>@(_latestDebateState.Rapper1?.Name ?? "Rapper 1")</strong> and 
-                            <strong>@(_latestDebateState.Rapper2?.Name ?? "Rapper 2")</strong> has concluded.
-                        </p>
-                        
-                        <div class="judge-decision">
-                            <h4>Judge's Decision:</h4>
-                            @{
-                                var winner = _latestDebateState.WinnerName switch
-                                {
-                                    { Length: > 0 } name when name is not ("Draw" or "Undecided" or "Error Judging" or "Error Parsing" or "Stats Error") => name,
-                                    _ => null
-                                };
-                            }
-                            @if (winner is not null)
-                            {
-                                <p class="winner-announcement">
-                                    <span class="winner-icon">👑</span>
-                                    <strong>@winner wins!</strong>
-                                </p>
-                            }
-                            else
-                            {
-                                <p class="@(_latestDebateState.WinnerName switch
-                                {
-                                    "Draw" => "draw-announcement",
-                                    "Undecided" => "undecided-announcement",
-                                    _ => "error-announcement"
-                                })">
-                                    @(_latestDebateState.WinnerName switch
-                                    {
-                                        "Draw" => "⚖️ It's a Draw!",
-                                        "Undecided" => "🤔 The judge was undecided.",
-                                        _ => "⚠️ There was an error determining the winner."
-                                    })
-                                </p>
-                            }
-                            
-                            @if (_latestDebateState.JudgeReasoning is { Length: > 0 } reasoning)
-                            {
-                                <div class="judge-reasoning">
-                                    <p>"@reasoning"</p>
-                                </div>
-                            }
-                        </div>
-                        
-                        @if (_latestDebateState.Stats != null)
-                        {
-                            <div class="debate-stats">
-                                <h5>Debate Stats (1-5)</h5>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Metric</th>
-                                            <th>@(_latestDebateState.Rapper1?.Name ?? "Rapper 1")</th>
-                                            <th>@(_latestDebateState.Rapper2?.Name ?? "Rapper 2")</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Logic</td>
-                                            <td>@_latestDebateState.Stats.Rapper1LogicScore</td>
-                                            <td>@_latestDebateState.Stats.Rapper2LogicScore</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sentiment</td>
-                                            <td>@_latestDebateState.Stats.Rapper1SentimentScore</td>
-                                            <td>@_latestDebateState.Stats.Rapper2SentimentScore</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Adherence</td>
-                                            <td>@_latestDebateState.Stats.Rapper1AdherenceScore</td>
-                                            <td>@_latestDebateState.Stats.Rapper2AdherenceScore</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Rebuttal</td>
-                                            <td>@_latestDebateState.Stats.Rapper1RebuttalScore</td>
-                                            <td>@_latestDebateState.Stats.Rapper2RebuttalScore</td>
-                                        </tr>
-                                        <tr class="total-row">
-                                            <td><strong>TOTAL</strong></td>
-                                            <td><strong>@_latestDebateState.Stats.Rapper1TotalScore</strong></td>
-                                            <td><strong>@_latestDebateState.Stats.Rapper2TotalScore</strong></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                    </div>
-                </div>
+                <DebateResults Topic="@_latestDebateState.Topic"
+                               Rapper1Name="@_latestDebateState.Rapper1?.Name"
+                               Rapper2Name="@_latestDebateState.Rapper2?.Name"
+                               WinnerName="@_latestDebateState.WinnerName"
+                               JudgeReasoning="@_latestDebateState.JudgeReasoning"
+                               Stats="@_latestDebateState.Stats"
+                               RhymeAnalytics="@_latestDebateState.RhymeAnalytics" />
             }
         }
         else
@@ -204,16 +123,10 @@
             <div class="empty-state">
                 <div class="empty-state-icon">🎤</div>
                 <h3>Ready to Battle?</h3>
-                <p>Select two rappers and choose a debate topic to start an epic AI rap battle!</p>
+                <p>Enter a topic and click START BATTLE</p>
             </div>
         }
     </div>
-
-    <!-- Mini Leaderboard Widget -->
-    <MiniLeaderboard Rappers="Rappers" IsLoading="IsLoading" />
-
-    <!-- Remove the old modal - results are now inline -->
-    @* Results Modal removed - using inline display instead *@
 
 </div> @* End page-container *@
 
@@ -229,6 +142,12 @@
     private record TurnHistory(int TurnNumber, string TurnText, bool IsRapper1Turn);
     private List<TurnHistory> _turnHistory = new();
     private int _displayedTurnNumber = 0; // Track which turn is currently displayed (0 = live)
+
+    // Crowd reaction state
+    private CrowdReactionType _currentReactionType = CrowdReactionType.None;
+    private bool _showCrowdReaction = false;
+    private double _currentReactionScore = 0;
+    private int _lastReactionTurn = -1; // Track which turn we showed a reaction for
 
     private List<Rapper>? Rappers;
     private string? SelectedRapper1Name;
@@ -258,13 +177,6 @@
 #pragma warning restore CS0414
 
     private bool ShowVotingModal = false;
-
-    private static class ThemeVariables
-    {
-        public const string HeaderFont = "'Impact', Haettenschweiler, 'Arial Narrow Bold', sans-serif";
-        public const string PrimaryColor = "#FFD700"; // Using Gold for primary theme accent
-        public const string AccentColor = "#CD7F32"; // Bronze for VS separator
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -500,6 +412,9 @@
         Logger.LogInformation("NotifyAudioPlaybackComplete called from JavaScript.");
         try
         {
+            // Trigger crowd reaction for the completed turn
+            await TriggerCrowdReactionAsync();
+
             Logger.LogInformation("Signaling audio playback complete to server.");
             var response = await Http.PostAsync("Debate/signal-audio-complete", null);
             response.EnsureSuccessStatusCode();
@@ -509,6 +424,13 @@
             {
                 Logger.LogInformation("Audio playback complete AND debate is finished. Showing results modal.");
                 ShowVotingModal = true;
+                
+                // Show victory notification
+                var winnerName = !string.IsNullOrEmpty(_latestDebateState.WinnerName) 
+                    ? _latestDebateState.WinnerName 
+                    : "It's a tie!";
+                NotificationService.Notify(NotificationSeverity.Success, "🏆 Battle Complete!", 
+                    !string.IsNullOrEmpty(_latestDebateState.WinnerName) ? $"{winnerName} wins!" : winnerName, 5000);
                 
                 // Trigger victory haptic feedback
                 try
@@ -539,6 +461,32 @@
         {
             Logger.LogError(ex, "Error signaling audio playback completion to orchestrator.");
         }
+    }
+
+    private async Task TriggerCrowdReactionAsync()
+    {
+        // Only trigger if we have turn analytics and haven't shown reaction for this turn
+        if (_latestDebateState.CurrentTurnAnalytics != null && 
+            _latestDebateState.CurrentTurnNumber > 0 &&
+            _latestDebateState.CurrentTurnNumber != _lastReactionTurn)
+        {
+            _currentReactionType = _latestDebateState.CurrentTurnAnalytics.GetReactionType();
+            _currentReactionScore = _latestDebateState.CurrentTurnAnalytics.OverallScore;
+            _showCrowdReaction = true;
+            _lastReactionTurn = _latestDebateState.CurrentTurnNumber;
+
+            Logger.LogInformation("🎭 Triggering crowd reaction: {Reaction} (Score: {Score}) for turn {Turn}",
+                _currentReactionType, _currentReactionScore, _latestDebateState.CurrentTurnNumber);
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void OnCrowdReactionComplete()
+    {
+        _showCrowdReaction = false;
+        _currentReactionType = CrowdReactionType.None;
+        StateHasChanged();
     }
 
     private bool IsStartDisabled()
@@ -607,6 +555,8 @@
         LoadingErrorMessage = null;
         InitialTopicFetchError = null;
         _isSetupCollapsed = true; // Collapse setup when debate starts
+        _turnHistory.Clear(); // Clear turn history for new debate
+        _displayedTurnNumber = 0;
         StateHasChanged();
 
         var rapper1 = Rappers?.FirstOrDefault(r => r.Name == SelectedRapper1Name);
@@ -634,6 +584,7 @@
         {
             Logger.LogError("Failed to find selected rappers.");
             LoadingErrorMessage = "Selected rapper(s) not found.";
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Could not find selected rappers", 5000);
             _latestDebateState.IsGeneratingTurn = false;
             StateHasChanged();
             return;
@@ -641,6 +592,10 @@
 
         Logger.LogInformation("Begin Debate clicked. Rapper1: {R1}, Rapper2: {R2}, Topic: {T}",
             rapper1.Name, rapper2.Name, topic.Title);
+
+        // Show notification for battle start
+        NotificationService.Notify(NotificationSeverity.Info, "🎤 Battle Starting!", 
+            $"{rapper1.Name} vs {rapper2.Name} - Topic: {topic.Title.Substring(0, Math.Min(30, topic.Title.Length))}...", 4000);
 
         try
         {
@@ -666,6 +621,7 @@
             Logger.LogError(ex, "Error during debate setup or start.");
             _latestDebateState = CreateEmptyDebateState(); // Reset state
             LoadingErrorMessage = $"Error starting debate: {ex.Message}";
+            NotificationService.Notify(NotificationSeverity.Error, "Battle Failed", ex.Message, 6000);
             StateHasChanged();
         }
     }
@@ -682,6 +638,7 @@
             Logger.LogError(ex, "Error invoking JS stopAudio function.");
         }
         await Http.PostAsync("Debate/reset", null);
+        NotificationService.Notify(NotificationSeverity.Warning, "Battle Stopped", "The debate has been cancelled", 3000);
         ResetDebateState();
     }
 
@@ -717,30 +674,6 @@
         await StartDebate();
     }
 
-    private void HandleResultsModalClosed()
-    {
-        ShowVotingModal = false;
-        Logger.LogInformation("Results display acknowledged.");
-
-        var (winnerRapper, loserRapper) = (_latestDebateState.WinnerName, _latestDebateState.Rapper1, _latestDebateState.Rapper2) switch
-        {
-            ({ Length: > 0 } winnerName, { } r1, { } r2) when winnerName is not ("Draw" or "Undecided" or "Error Judging" or "Error Parsing" or "Stats Error") =>
-                winnerName == r1.Name ? (r1, r2) : winnerName == r2.Name ? (r2, r1) : (null, null),
-            _ => (null, null)
-        };
-
-        if (winnerRapper is not null && loserRapper is not null)
-        {
-            _ = Task.Run(async () => await UpdateWinLossRecord(winnerRapper, loserRapper));
-        }
-        else
-        {
-            Logger.LogInformation("No valid winner determined by AI judge ({WinnerName}). Skipping win/loss update.", _latestDebateState.WinnerName ?? "N/A");
-        }
-
-        ResetDebateState();
-    }
-
     private async Task UpdateWinLossRecord(Rapper winner, Rapper loser)
     {
         try
@@ -763,6 +696,13 @@
         _turnHistory.Clear(); // Clear turn history
         _displayedTurnNumber = 0; // Reset to live view
         ShowVotingModal = false;
+        
+        // Reset crowd reaction state
+        _showCrowdReaction = false;
+        _currentReactionType = CrowdReactionType.None;
+        _currentReactionScore = 0;
+        _lastReactionTurn = -1;
+        
         StateHasChanged();
     }
 
@@ -844,7 +784,9 @@
             WinnerName = string.Empty,
             JudgeReasoning = string.Empty,
             Stats = new DebateStats(),
-            ErrorMessage = string.Empty
+            ErrorMessage = string.Empty,
+            RhymeAnalytics = null,
+            CurrentTurnAnalytics = null
         };
     }
 

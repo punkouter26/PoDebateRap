@@ -32,9 +32,11 @@ public class NewsApiHealthCheck : IHealthCheck
             }
 
             // Simple connectivity check to News API with API key
-            var response = await _httpClient.GetAsync(
-                $"https://newsapi.org/v2/top-headlines?country=us&pageSize=1&apiKey={apiKey}",
-                cancellationToken);
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"https://newsapi.org/v2/top-headlines?country=us&pageSize=1&apiKey={apiKey}");
+            request.Headers.Add("User-Agent", "PoDebateRap/1.0");
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -43,7 +45,7 @@ public class NewsApiHealthCheck : IHealthCheck
             }
 
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning("News API health check failed with status {StatusCode}: {Content}", 
+            _logger.LogWarning("News API health check failed with status {StatusCode}: {Content}",
                 response.StatusCode, responseContent);
             return HealthCheckResult.Degraded($"News API returned status {response.StatusCode}");
         }

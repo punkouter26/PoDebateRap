@@ -1,127 +1,145 @@
-.page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
+/* ========================================
+   RadzenLayout-based Header & Navigation
+   ======================================== */
 
-main {
-    flex: 1;
-    background: linear-gradient(135deg, var(--background-color) 0%, var(--surface-color) 100%);
-    background-attachment: fixed;
-}
-
-.sidebar {
-    background: linear-gradient(180deg, var(--surface-color) 0%, var(--elevated-color) 100%);
-    border-right: 1px solid var(--border-color);
-    box-shadow: var(--shadow-medium);
-}
-
-.top-row {
+/* Header Content */
+.header-content {
+    width: 100%;
     justify-content: space-between;
-    align-items: center;
-    height: 4rem;
-    display: flex;
-    background: linear-gradient(135deg, var(--surface-color) 0%, var(--elevated-color) 100%);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-light);
-    padding: 0 2rem;
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 0 var(--space-lg, 1.5rem);
+    height: 100%;
+}
+
+.app-logo {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.app-title-link {
+    text-decoration: none;
 }
 
 .app-title {
     font-family: var(--header-font);
     color: var(--primary-color);
-    font-size: 1.8rem;
+    font-size: clamp(1.3rem, 1rem + 1.5vw, 1.8rem);
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     margin: 0;
     letter-spacing: 1px;
 }
 
-.top-row ::deep a, .top-row ::deep .btn-link {
-    white-space: nowrap;
-    margin-left: 1.5rem;
+.nav-actions {
+    margin-left: auto;
+}
+
+/* Top Navigation */
+.top-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.top-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     text-decoration: none;
     color: var(--text-color);
-    transition: var(--transition);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+.top-nav .nav-link:hover {
     color: var(--primary-color);
-    text-decoration: none;
+    background: rgba(255, 215, 0, 0.1);
 }
 
-.top-row ::deep a:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
+.top-nav .nav-link.active {
+    color: var(--primary-color);
+    background: rgba(255, 215, 0, 0.15);
+}
+
+/* RadzenLayout Overrides */
+::deep .rz-header {
+    background: linear-gradient(135deg, var(--surface-color) 0%, var(--elevated-color) 100%);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-light);
+    height: 4rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+::deep .rz-body {
+    background: linear-gradient(135deg, var(--background-color) 0%, var(--surface-color) 100%);
+    background-attachment: fixed;
+    min-height: calc(100vh - 4rem);
 }
 
 .content {
-    padding: 2rem;
+    padding: var(--space-lg, 2rem);
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
 }
 
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
+/* Responsive: Mobile */
+@media (max-width: 640px) {
+    .header-content {
         padding: 0 1rem;
     }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
+    
+    .app-logo {
+        font-size: 1.4rem;
     }
     
     .app-title {
-        font-size: 1.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .top-nav {
+        gap: 0.25rem;
+    }
+    
+    .top-nav .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+    
+    .top-nav .nav-text {
+        display: none;
     }
     
     .content {
         padding: 1rem;
     }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 280px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        overflow-y: auto;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        height: 4rem;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem;
-        padding-right: 2rem;
+    
+    ::deep .rz-header {
+        height: 3.5rem;
     }
     
-    .content {
-        padding: 2rem;
+    ::deep .rz-body {
+        min-height: calc(100vh - 3.5rem);
     }
 }
 
+/* Medium screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .header-content {
+        padding: 0 1.5rem;
+    }
+    
+    .top-nav .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Error UI */
 #blazor-error-ui {
     background: linear-gradient(135deg, var(--accent-color) 0%, #FF5252 100%);
     color: white;

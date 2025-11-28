@@ -1,0 +1,133 @@
+### PoDebateRap API - HTTP Requests for Manual Testing
+### Base URL for local development
+
+@baseUrl = https://localhost:5001
+@contentType = application/json
+
+### ============================================================
+### Health Checks
+### ============================================================
+
+### Overall Health Status
+GET {{baseUrl}}/api/health
+Accept: application/json
+
+###
+
+### Liveness Check (is the app running?)
+GET {{baseUrl}}/api/health/live
+Accept: application/json
+
+###
+
+### Readiness Check (are all dependencies ready?)
+GET {{baseUrl}}/api/health/ready
+Accept: application/json
+
+### ============================================================
+### Rapper Endpoints
+### ============================================================
+
+### Get All Rappers
+GET {{baseUrl}}/Rappers
+Accept: application/json
+
+###
+
+### Get Rapper by ID
+GET {{baseUrl}}/Rappers/eminem
+Accept: application/json
+
+###
+
+### Get Random Rapper
+GET {{baseUrl}}/Rappers/random
+Accept: application/json
+
+### ============================================================
+### Topics Endpoints
+### ============================================================
+
+### Get Available Topics
+GET {{baseUrl}}/Topics
+Accept: application/json
+
+###
+
+### Get Random Topic
+GET {{baseUrl}}/Topics/random
+Accept: application/json
+
+### ============================================================
+### Debate Endpoints
+### ============================================================
+
+### Start a New Debate
+POST {{baseUrl}}/Debate/start
+Content-Type: {{contentType}}
+
+{
+    "rapper1": "eminem",
+    "rapper2": "tupac",
+    "topic": "Who is the greatest rapper of all time?"
+}
+
+###
+
+### Get Current Debate State
+GET {{baseUrl}}/Debate/state
+Accept: application/json
+
+###
+
+### Signal Audio Playback Complete
+POST {{baseUrl}}/Debate/signal-audio-complete
+Content-Type: {{contentType}}
+
+###
+
+### Reset Debate
+POST {{baseUrl}}/Debate/reset
+Content-Type: {{contentType}}
+
+### ============================================================
+### News Endpoints
+### ============================================================
+
+### Get Trending Topics from News
+GET {{baseUrl}}/News/trending
+Accept: application/json
+
+### ============================================================
+### Diagnostics Endpoints
+### ============================================================
+
+### Get Diagnostics Overview
+GET {{baseUrl}}/Diagnostics
+Accept: application/json
+
+###
+
+### Check OpenAI Service Health
+GET {{baseUrl}}/Diagnostics/openai
+Accept: application/json
+
+###
+
+### Check Speech Service Health
+GET {{baseUrl}}/Diagnostics/speech
+Accept: application/json
+
+###
+
+### Check Storage Service Health
+GET {{baseUrl}}/Diagnostics/storage
+Accept: application/json
+
+### ============================================================
+### Swagger/OpenAPI
+### ============================================================
+
+### Get OpenAPI Specification
+GET {{baseUrl}}/swagger/v1/swagger.json
+Accept: application/json

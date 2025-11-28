@@ -6,6 +6,21 @@
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
     color: #e0e0e0;
+    container-type: inline-size;
+    container-name: diagnostics;
+}
+
+/* Breadcrumb styling */
+::deep .breadcrumb-nav {
+    margin-bottom: 1.5rem;
+}
+
+::deep .breadcrumb-nav .rz-breadcrumb-item a {
+    color: #FFD700 !important;
+}
+
+::deep .breadcrumb-nav .rz-breadcrumb-item:last-child {
+    color: #bbb;
 }
 
 .diagnostics-header {
@@ -15,175 +30,111 @@
     padding-bottom: 15px;
 }
 
-.diagnostics-header h5 {
-    color: #FFD700; /* Primary color */
-    font-size: 2.2em;
+::deep .diagnostics-title {
+    color: #FFD700 !important;
     font-family: 'Montserrat', sans-serif;
     font-weight: bold;
+}
+
+::deep .diagnostics-subtitle {
+    color: #bbb !important;
 }
 
 .diagnostics-body {
     min-height: 200px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    gap: 1rem;
 }
 
-.loading-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+/* Skeleton loading styles */
+::deep .health-summary-skeleton {
+    background-color: #2a2a2a !important;
+    padding: 1.5rem;
 }
 
-.loading-indicator p {
-    color: #bbb;
-    font-size: 1.1em;
+.skeleton-table {
+    margin-top: 1rem;
 }
 
-.spinner {
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-top: 5px solid #FFD700; /* Gold spinner */
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
+::deep .skeleton-row {
+    background-color: #2a2a2a !important;
+    padding: 1rem;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.no-results {
-    color: #ffc107; /* Warning color */
-    font-style: italic;
-    font-size: 1.1em;
-}
-
-.health-summary {
+/* Health summary card */
+::deep .health-summary {
     width: 100%;
-    margin-bottom: 20px;
+    padding: 1.5rem;
+    background-color: #2a2a2a !important;
 }
 
-.health-status {
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
+::deep .health-summary.healthy {
+    border-left: 4px solid #28a745;
 }
 
-.health-status.healthy {
-    background-color: rgba(40, 167, 69, 0.2);
-    border: 2px solid #28a745;
+::deep .health-summary.unhealthy {
+    border-left: 4px solid #dc3545;
 }
 
-.health-status.unhealthy {
-    background-color: rgba(220, 53, 69, 0.2);
-    border: 2px solid #dc3545;
+.health-icon {
+    font-size: 2em;
 }
 
-.health-status h6 {
-    margin: 0 0 10px 0;
-    font-size: 1.3em;
-    font-weight: bold;
+::deep .timestamp-text {
+    color: #888 !important;
 }
 
-.health-status p {
-    margin: 0;
-    font-size: 0.9em;
-    color: #bbb;
-}
-
-.diagnostics-table {
+/* DataGrid styling */
+::deep .diagnostics-grid {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 25px;
+    margin-top: 1rem;
+    background-color: transparent !important;
 }
 
-.diagnostics-table th,
-.diagnostics-table td {
-    border: 1px solid #555;
-    padding: 12px;
-    text-align: left;
-}
-
-.diagnostics-table th {
-    background-color: #333;
-    color: #FFD700; /* Primary color */
-    font-family: 'Montserrat', sans-serif;
+::deep .diagnostics-grid .rz-datatable-thead th {
+    background-color: #333 !important;
+    color: #FFD700 !important;
     font-weight: bold;
+    border-bottom: 2px solid #FFD700;
 }
 
-.status-cell {
-    text-align: center !important;
+::deep .diagnostics-grid .rz-datatable-data tr {
+    background-color: #2a2a2a;
 }
 
-.status-icon {
-    font-weight: bold;
-    font-size: 1.5em;
+::deep .diagnostics-grid .rz-datatable-data tr:nth-child(odd) {
+    background-color: #2f2f2f;
 }
 
-.status-icon.success {
-    color: #28a745; /* Green for success */
+::deep .check-name {
+    font-weight: 500;
 }
 
-.status-icon.degraded {
-    color: #ffc107; /* Yellow/orange for degraded */
+::deep .status-badge {
+    font-size: 1.2em !important;
+    min-width: 32px;
 }
 
-.status-icon.failed {
-    color: #dc3545; /* Red for failure */
-}
-
+/* Footer buttons */
 .diagnostics-footer {
-    margin-top: 30px;
-    text-align: center;
+    margin-top: 2rem;
     border-top: 1px solid #444;
-    padding-top: 20px;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    align-items: center;
+    padding-top: 1.5rem;
 }
 
-.btn-test-audio {
-    display: inline-block;
-    padding: 12px 25px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    font-size: 1.1em;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.btn-test-audio:hover:not(:disabled) {
-    background-color: #218838;
-    transform: translateY(-2px);
-}
-
-.btn-test-audio:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-home-link {
-    display: inline-block;
-    padding: 12px 25px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-
-.btn-home-link:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+/* Container query for mobile */
+@container diagnostics (max-width: 500px) {
+    .diagnostics-page {
+        padding: 15px;
+        margin: 15px;
+    }
+    
+    .diagnostics-footer {
+        flex-direction: column;
+    }
+    
+    ::deep .diagnostics-footer .rz-button {
+        width: 100%;
+    }
 }

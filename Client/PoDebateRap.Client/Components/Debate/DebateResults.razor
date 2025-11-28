@@ -1,0 +1,150 @@
+@using PoDebateRap.Shared.Models
+@using PoDebateRap.Client.Components.Debate
+@using Radzen
+@using Radzen.Blazor
+
+<div class="inline-results" id="debate-results">
+    <div class="results-header">
+        <h3>Debate Results</h3>
+    </div>
+    
+    <div class="results-body">
+        <p class="results-intro">
+            The debate on '<strong>@(Topic?.Title ?? "the topic")</strong>' between 
+            <strong>@(Rapper1Name ?? "Rapper 1")</strong> and 
+            <strong>@(Rapper2Name ?? "Rapper 2")</strong> has concluded.
+        </p>
+        
+        <RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+            <Tabs>
+                <RadzenTabsItem Text="Winner">
+                    <div class="judge-decision">
+                        <h4>Judge's Decision:</h4>
+                        @{
+                            var winner = WinnerName switch
+                            {
+                                { Length: > 0 } name when name is not ("Draw" or "Undecided" or "Error Judging" or "Error Parsing" or "Stats Error") => name,
+                                _ => null
+                            };
+                        }
+                        @if (winner is not null)
+                        {
+                            <p class="winner-announcement">
+                                <strong>@winner wins!</strong>
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="@(WinnerName switch
+                            {
+                                "Draw" => "draw-announcement",
+                                "Undecided" => "undecided-announcement",
+                                _ => "error-announcement"
+                            })">
+                                @(WinnerName switch
+                                {
+                                    "Draw" => "It's a Draw!",
+                                    "Undecided" => "The judge was undecided.",
+                                    _ => "Error determining the winner."
+                                })
+                            </p>
+                        }
+                        
+                        @if (JudgeReasoning is { Length: > 0 } reasoning)
+                        {
+                            <div class="judge-reasoning">
+                                <p>"@reasoning"</p>
+                            </div>
+                        }
+                    </div>
+                </RadzenTabsItem>
+                
+                <RadzenTabsItem Text="Stats">
+                    @if (Stats != null)
+                    {
+                        <div class="debate-stats">
+                            <h5>Debate Stats (1-5)</h5>
+                            <table class="stats-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>@(Rapper1Name ?? "Rapper 1")</th>
+                                        <th>@(Rapper2Name ?? "Rapper 2")</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><RadzenTooltip Text="How well-structured and logical the arguments were">Logic</RadzenTooltip></td>
+                                        <td>@Stats.Rapper1LogicScore</td>
+                                        <td>@Stats.Rapper2LogicScore</td>
+                                    </tr>
+                                    <tr>
+                                        <td><RadzenTooltip Text="Emotional impact and delivery style">Sentiment</RadzenTooltip></td>
+                                        <td>@Stats.Rapper1SentimentScore</td>
+                                        <td>@Stats.Rapper2SentimentScore</td>
+                                    </tr>
+                                    <tr>
+                                        <td><RadzenTooltip Text="How well they stayed on topic">Adherence</RadzenTooltip></td>
+                                        <td>@Stats.Rapper1AdherenceScore</td>
+                                        <td>@Stats.Rapper2AdherenceScore</td>
+                                    </tr>
+                                    <tr>
+                                        <td><RadzenTooltip Text="Quality of counter-arguments and comebacks">Rebuttal</RadzenTooltip></td>
+                                        <td>@Stats.Rapper1RebuttalScore</td>
+                                        <td>@Stats.Rapper2RebuttalScore</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td><strong>TOTAL</strong></td>
+                                        <td><strong>@Stats.Rapper1TotalScore</strong></td>
+                                        <td><strong>@Stats.Rapper2TotalScore</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No stats available for this debate.</p>
+                    }
+                </RadzenTabsItem>
+                
+                <RadzenTabsItem Text="Analytics">
+                    @if (RhymeAnalytics != null)
+                    {
+                        <SpiderChart Rapper1Metrics="@RhymeAnalytics.Rapper1Metrics"
+                                     Rapper2Metrics="@RhymeAnalytics.Rapper2Metrics"
+                                     Rapper1Name="@(Rapper1Name ?? "Rapper 1")"
+                                     Rapper2Name="@(Rapper2Name ?? "Rapper 2")" />
+                    }
+                    else
+                    {
+                        <p class="text-muted">No rhyme analytics available for this debate.</p>
+                    }
+                </RadzenTabsItem>
+            </Tabs>
+        </RadzenTabs>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Topic? Topic { get; set; }
+
+    [Parameter]
+    public string? Rapper1Name { get; set; }
+
+    [Parameter]
+    public string? Rapper2Name { get; set; }
+
+    [Parameter]
+    public string? WinnerName { get; set; }
+
+    [Parameter]
+    public string? JudgeReasoning { get; set; }
+
+    [Parameter]
+    public DebateStats? Stats { get; set; }
+
+    [Parameter]
+    public RhymeAnalytics? RhymeAnalytics { get; set; }
+}

@@ -35,7 +35,7 @@ namespace PoDebateRap.IntegrationTests
             var services = new ServiceCollection();
             services.AddLogging(builder => builder.AddConsole());
             services.AddSingleton<IConfiguration>(_configuration);
-            
+
             // Register HttpClientFactory required by NewsApiHealthCheck
             services.AddHttpClient();
 

@@ -1,0 +1,276 @@
+.spider-chart-container {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.chart-title {
+    text-align: center;
+    color: #FFD700;
+    font-family: 'Montserrat', 'Impact', sans-serif;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.chart-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.spider-svg {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Grid polygons */
+.grid-polygon {
+    fill: none;
+    stroke: rgba(255, 215, 0, 0.3);
+    stroke-width: 1;
+}
+
+/* Axis lines */
+.axis-line {
+    stroke: rgba(255, 215, 0, 0.4);
+    stroke-width: 1;
+    stroke-dasharray: 4 2;
+}
+
+/* Axis labels */
+.axis-label {
+    fill: #FFD700;
+    font-size: 12px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Data polygons */
+.data-polygon {
+    stroke-width: 0;
+    transition: all 0.5s ease;
+}
+
+.data-polygon-stroke {
+    fill: none;
+    stroke-width: 3;
+    transition: all 0.5s ease;
+}
+
+/* Rapper 1 - Gold/Orange theme */
+.rapper1-polygon {
+    fill: rgba(255, 165, 0, 0.3);
+}
+
+.rapper1-stroke {
+    stroke: #FFA500;
+}
+
+.rapper1-point {
+    fill: #FFA500;
+    stroke: #FFD700;
+    stroke-width: 2;
+    transition: all 0.3s ease;
+}
+
+.rapper1-point:hover {
+    r: 10;
+    filter: drop-shadow(0 0 8px #FFA500);
+}
+
+/* Rapper 2 - Cyan/Blue theme */
+.rapper2-polygon {
+    fill: rgba(78, 205, 196, 0.3);
+}
+
+.rapper2-stroke {
+    stroke: #4ECDC4;
+}
+
+.rapper2-point {
+    fill: #4ECDC4;
+    stroke: #00FFFF;
+    stroke-width: 2;
+    transition: all 0.3s ease;
+}
+
+.rapper2-point:hover {
+    r: 10;
+    filter: drop-shadow(0 0 8px #4ECDC4);
+}
+
+/* Data points */
+.data-point {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Legend */
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.rapper1-color {
+    background: linear-gradient(135deg, #FFA500, #FFD700);
+}
+
+.rapper2-color {
+    background: linear-gradient(135deg, #4ECDC4, #00FFFF);
+}
+
+.legend-text {
+    color: #EAEAEA;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Stats breakdown table */
+.stats-breakdown {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+}
+
+.analytics-table th {
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+}
+
+.analytics-table th:first-child {
+    text-align: left;
+}
+
+.analytics-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.analytics-table tbody tr:hover {
+    background: rgba(255, 215, 0, 0.05);
+}
+
+/* Winner/loser highlighting */
+.stat-winner {
+    color: #4ECDC4;
+    font-weight: 700;
+    position: relative;
+}
+
+.stat-winner::after {
+    content: "▲";
+    font-size: 0.7rem;
+    margin-left: 4px;
+    color: #4ECDC4;
+}
+
+.stat-loser {
+    color: #888;
+}
+
+.stat-tie {
+    color: #EAEAEA;
+}
+
+.total-row {
+    background: rgba(255, 215, 0, 0.08);
+}
+
+.total-row td {
+    font-weight: 700;
+    border-top: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .spider-chart-container {
+        padding: 15px;
+    }
+    
+    .spider-svg {
+        max-width: 280px;
+    }
+    
+    .axis-label {
+        font-size: 10px;
+    }
+    
+    .chart-legend {
+        gap: 15px;
+    }
+    
+    .legend-text {
+        font-size: 0.85rem;
+    }
+    
+    .analytics-table {
+        font-size: 0.8rem;
+    }
+    
+    .analytics-table th,
+    .analytics-table td {
+        padding: 8px 6px;
+    }
+}
+
+/* Animation for chart appearance */
+@keyframes chart-draw {
+    from {
+        stroke-dashoffset: 1000;
+        opacity: 0;
+    }
+    to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+}
+
+.data-polygon-stroke {
+    stroke-dasharray: 1000;
+    animation: chart-draw 1.5s ease-out forwards;
+}
+
+.rapper2-stroke {
+    animation-delay: 0.3s;
+}

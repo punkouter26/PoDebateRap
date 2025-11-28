@@ -1,38 +1,72 @@
 import { Page, expect } from '@playwright/test';
 
 /**
- * Page Object Model for the Debate Setup page
+ * Page Object Model for the Debate Setup page (Quick Battle UI)
+ * Updated for simplified UI - topic input + quick battle button only
  */
 export class DebateSetupPage {
   constructor(private page: Page) {}
 
-  // Locators
-  get rapper1Container() {
-    return this.page.locator('text=Select Rapper 1').locator('..').locator('..');
+  // Locators - Updated for new Quick Battle UI
+  get topicLabel() {
+    return this.page.locator('text=What should they debate?');
   }
 
-  get rapper2Container() {
-    return this.page.locator('text=Select Rapper 2').locator('..').locator('..');
+  get topicHint() {
+    return this.page.locator('text=Enter a topic and two random rappers will argue Pro vs Con');
   }
 
   get topicInput() {
-    return this.page.locator('input[placeholder="Enter debate topic..."]');
+    return this.page.locator('input#debateTopicInput, input[placeholder*="topic"]');
   }
 
-  get beginDebateButton() {
-    return this.page.locator('button:has-text("Begin Debate")');
+  get startBattleButton() {
+    return this.page.locator('button:has-text("START BATTLE")');
   }
 
-  get errorMessage() {
-    return this.page.locator('.error-message, .alert-danger');
+  get stopDebateButton() {
+    return this.page.locator('button:has-text("STOP DEBATE")');
+  }
+
+  get quickBattleHint() {
+    return this.page.locator('text=Two random legendary rappers will face off');
   }
 
   get loadingIndicator() {
     return this.page.locator('.loading, .spinner');
   }
 
+  get mainTitle() {
+    return this.page.locator('h1:has-text("PoDebateRap")');
+  }
+
+  get subtitle() {
+    return this.page.locator('text=AI-Powered Rap Battle Arena');
+  }
+
+  get emptyStateMessage() {
+    return this.page.locator('text=Ready to Battle?');
+  }
+
+  // Legacy locators - kept for backwards compatibility (these won't find elements in new UI)
+  get rapper1Container() {
+    return this.page.locator('[data-testid="rapper1-container"]');
+  }
+
+  get rapper2Container() {
+    return this.page.locator('[data-testid="rapper2-container"]');
+  }
+
+  get beginDebateButton() {
+    return this.startBattleButton; // Alias for backwards compatibility
+  }
+
+  get errorMessage() {
+    return this.page.locator('.error-message, .alert-danger, .alert-error');
+  }
+
   get quickBattleButton() {
-    return this.page.locator('button:has-text("Quick Battle")');
+    return this.startBattleButton; // Same button now
   }
 
   // Actions
@@ -43,48 +77,56 @@ export class DebateSetupPage {
     await this.page.waitForTimeout(2000);
   }
 
-  async selectRapper1(rapperName: string) {
-    // The rapper selection uses card-based UI. The cards have class="rapper-card"
-    // and contain the rapper name. Click on the card, not the heading.
-    const rapperCard = this.rapper1Container.locator(`.rapper-card:has-text("${rapperName}")`).first();
-    await rapperCard.scrollIntoViewIfNeeded();  // Ensure visible on mobile
-    await rapperCard.click({ timeout: 10000 });
-    await this.page.waitForTimeout(500);
-  }
-
-  async selectRapper2(rapperName: string) {
-    // The rapper selection uses card-based UI. The cards have class="rapper-card"
-    // and contain the rapper name. Click on the card, not the heading.
-    const rapperCard = this.rapper2Container.locator(`.rapper-card:has-text("${rapperName}")`).first();
-    await rapperCard.scrollIntoViewIfNeeded();  // Ensure visible on mobile
-    await rapperCard.click({ timeout: 10000 });
-    await this.page.waitForTimeout(500);
-  }
-
   async enterTopic(topic: string) {
-    await this.topicInput.scrollIntoViewIfNeeded();  // Ensure visible on mobile
+    await this.topicInput.scrollIntoViewIfNeeded();
     await this.topicInput.fill(topic);
     await this.page.waitForTimeout(500);
   }
 
+  async clickStartBattle() {
+    await this.startBattleButton.scrollIntoViewIfNeeded();
+    await this.startBattleButton.click();
+  }
+
+  async clickStopDebate() {
+    await this.stopDebateButton.scrollIntoViewIfNeeded();
+    await this.stopDebateButton.click();
+  }
+
+  // Legacy methods - simplified for quick battle (rappers are auto-selected)
+  async selectRapper1(rapperName: string) {
+    console.log(`selectRapper1 called with ${rapperName} - skipped (auto-selection in quick battle)`);
+  }
+
+  async selectRapper2(rapperName: string) {
+    console.log(`selectRapper2 called with ${rapperName} - skipped (auto-selection in quick battle)`);
+  }
+
   async clickBeginDebate() {
-    await this.beginDebateButton.scrollIntoViewIfNeeded();  // Ensure visible on mobile
-    await this.beginDebateButton.click();
+    await this.clickStartBattle();
   }
 
   async setupDebate(rapper1: string, rapper2: string, topic: string) {
-    await this.selectRapper1(rapper1);
-    await this.selectRapper2(rapper2);
+    // Simplified - just enter topic, rappers are auto-selected
     await this.enterTopic(topic);
   }
 
   // Assertions
+  async assertStartBattleButtonEnabled() {
+    await expect(this.startBattleButton).toBeEnabled();
+  }
+
+  async assertStartBattleButtonDisabled() {
+    await expect(this.startBattleButton).toBeDisabled();
+  }
+
+  // Legacy aliases
   async assertBeginDebateButtonEnabled() {
-    await expect(this.beginDebateButton).toBeEnabled();
+    await this.assertStartBattleButtonEnabled();
   }
 
   async assertBeginDebateButtonDisabled() {
-    await expect(this.beginDebateButton).toBeDisabled();
+    await this.assertStartBattleButtonDisabled();
   }
 
   async assertErrorMessageVisible(message?: string) {

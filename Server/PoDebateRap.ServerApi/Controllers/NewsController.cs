@@ -4,8 +4,12 @@ using PoDebateRap.Shared.Models;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
+    /// <summary>
+    /// Controller for retrieving news headlines and converting them to debate topics.
+    /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
+    [Produces("application/json")]
     public class NewsController : ControllerBase
     {
         private readonly INewsService _newsService;
@@ -17,14 +21,26 @@ namespace PoDebateRap.ServerApi.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves the latest news headlines.
+        /// </summary>
+        /// <returns>A list of current news headlines.</returns>
+        /// <response code="200">Returns the list of headlines.</response>
         [HttpGet("headlines")]
+        [ProducesResponseType(typeof(IEnumerable<NewsHeadline>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<NewsHeadline>>> GetHeadlines()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(1);
             return Ok(headlines);
         }
 
+        /// <summary>
+        /// Retrieves topics derived from current news headlines.
+        /// </summary>
+        /// <returns>A list of topics suitable for rap debates.</returns>
+        /// <response code="200">Returns the list of topics.</response>
         [HttpGet("topics")]
+        [ProducesResponseType(typeof(IEnumerable<Topic>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Topic>>> GetTopics()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(10);
@@ -33,7 +49,15 @@ namespace PoDebateRap.ServerApi.Controllers
             return Ok(topics);
         }
 
+        /// <summary>
+        /// Retrieves the latest breaking news topic for a debate.
+        /// </summary>
+        /// <returns>The most recent topic from breaking news.</returns>
+        /// <response code="200">Returns the latest topic.</response>
+        /// <response code="404">No current news topics available.</response>
         [HttpGet("topics/latest")]
+        [ProducesResponseType(typeof(Topic), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Topic>> GetLatestTopic()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(1);

@@ -28,5 +28,15 @@ namespace PoDebateRap.Shared.Models
         public required DebateStats Stats { get; set; }
         public required string ErrorMessage { get; set; }
         public bool IsGeneratingTurn { get; set; }
+        
+        /// <summary>
+        /// Rhyme analytics data computed for both rappers. Available after debate ends.
+        /// </summary>
+        public RhymeAnalytics? RhymeAnalytics { get; set; }
+        
+        /// <summary>
+        /// Analytics for the current turn, used for crowd reactions.
+        /// </summary>
+        public TurnAnalytics? CurrentTurnAnalytics { get; set; }
     }
 }

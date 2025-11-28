@@ -1,195 +1,85 @@
 @using PoDebateRap.Shared.Models
 
 <div class="setup-section">
-    <!-- Quick Battle Button -->
-    <div class="quick-battle-container">
-        <button class="btn-quick-battle" @onclick="HandleQuickBattle" disabled="@(IsQuickBattleDisabled())">
-            @if (IsLoading || IsFetchingTopic)
-            {
-                <span class="spinner"></span>
-                <span>Loading...</span>
-            }
-            else
-            {
-                <span class="quick-icon">⚡</span>
-                <span>Quick Battle</span>
-            }
-        </button>
-        <p class="quick-battle-hint">Random rappers, instant debate!</p>
+    <!-- Topic Input Section - Now Primary -->
+    <div class="topic-input-section-primary">
+        <label for="debateTopicInput" class="topic-label">What should they debate?</label>
+        <div class="topic-input-wrapper">
+            <input type="text" id="debateTopicInput" 
+                   placeholder="@TopicPlaceholder"
+                   value="@DebateTopicInput" 
+                   @oninput="HandleTopicInput"
+                   maxlength="150" 
+                   disabled="@IsDisabled"
+                   class="topic-input-large" />
+        </div>
+        @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
+        {
+            <div class="text-warning mt-1"><small>@InitialTopicFetchError</small></div>
+        }
     </div>
 
-    <!-- Divider -->
-    <div class="setup-divider">
-        <span>OR CUSTOMIZE</span>
-    </div>
-
-    <!-- Visual Rapper Selection -->
-    <div class="rapper-selection-section">
-        <div class="selection-group">
-            <label class="selection-label">Select Rapper 1</label>
-            <div class="rapper-cards-grid">
-                @if (Rappers != null && Rappers.Any())
+    <!-- Quick Battle Button - Main Action -->
+    <div class="quick-battle-container-primary">
+        @if (!IsDebateInProgress)
+        {
+            <button class="btn-quick-battle-large" @onclick="HandleQuickBattle" disabled="@(IsQuickBattleDisabled())">
+                @if (IsLoading || IsFetchingTopic)
                 {
-                    foreach (var rapper in Rappers.OrderBy(r => r.Name))
-                    {
-                        <RapperCard 
-                            Rapper="@rapper"
-                            IsSelected="@(SelectedRapper1Name == rapper.Name)"
-                            IsDisabled="@(IsDisabled || SelectedRapper2Name == rapper.Name)"
-                            SelectionLabel="Rapper 1"
-                            OnSelect="@((r) => SelectRapper1(r))" />
-                    }
+                    <span class="spinner"></span>
+                    <span>Loading...</span>
+                }
+                else if (IsStarting)
+                {
+                    <span class="spinner"></span>
+                    <span>Starting Battle...</span>
                 }
                 else
                 {
-                    <div class="loading-cards">Loading rappers...</div>
+                    <span class="quick-icon">⚡</span>
+                    <span>START BATTLE</span>
                 }
-            </div>
-        </div>
-
-        <!-- VS Separator -->
-        <div class="vs-separator-large">
-            <span class="vs-text">VS</span>
-        </div>
-
-        <div class="selection-group">
-            <label class="selection-label">Select Rapper 2</label>
-            <div class="rapper-cards-grid">
-                @if (Rappers != null && Rappers.Any())
+            </button>
+            <p class="quick-battle-hint">Two random legendary rappers will face off!</p>
+        }
+        else
+        {
+            <!-- Show Stop Button -->
+            <button class="btn-danger-large" @onclick="OnStopDebate" disabled="@IsVoting">
+                @if (IsStarting)
                 {
-                    foreach (var rapper in Rappers.OrderBy(r => r.Name))
-                    {
-                        <RapperCard 
-                            Rapper="@rapper"
-                            IsSelected="@(SelectedRapper2Name == rapper.Name)"
-                            IsDisabled="@(IsDisabled || SelectedRapper1Name == rapper.Name)"
-                            SelectionLabel="Rapper 2"
-                            OnSelect="@((r) => SelectRapper2(r))" />
-                    }
+                    <span class="spinner"></span>
+                    <span>Generating...</span>
                 }
                 else
                 {
-                    <div class="loading-cards">Loading rappers...</div>
+                    <span>⏹️ STOP DEBATE</span>
                 }
-            </div>
-        </div>
-    </div>
-
-    <!-- Topic Input Section -->
-    <div class="topic-input-section">
-        <!-- Topic Input Area -->
-        <div class="form-field-topic">
-            <label for="debateTopicInput">Debate Topic</label>
-            <input type="text" id="debateTopicInput" placeholder="@TopicPlaceholder"
-                    value="@DebateTopicInput" 
-                    @oninput="HandleTopicInput"
-                    maxlength="150" disabled="@IsDisabled" />
-            @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
-            {
-                <div class="text-danger mt-1"><small>@InitialTopicFetchError</small></div>
-            }
-        </div>
-    </div>
-
-    <!-- Begin/Stop Debate Button -->
-    <div class="action-buttons-section">
-        <div class="button-group">
-            @if (!IsDebateInProgress)
-            {
-                <!-- Show Begin Link (acts as button) -->
-                <a href="javascript:void(0)" 
-                   class="btn-primary @(IsStartDisabled ? "disabled-link" : "enabled-link")" 
-                   role="button" 
-                   aria-disabled="@IsStartDisabled"
-                   @onclick="HandleBeginClick" 
-                   @onclick:preventDefault="true">
-                    @if (IsLoading)
-                    {
-                        <span class="spinner"></span>
-                        <span>@(IsStarting ? "Starting..." : (IsFetchingTopic ? "Fetching Topic..." : "Loading..."))</span>
-                    }
-                    else
-                    {
-                        <span>Begin Debate</span>
-                    }
-                </a>
-            }
-            else
-            {
-                <!-- Show Stop Button -->
-                <button class="btn-danger" @onclick="OnStopDebate" disabled="@IsVoting">
-                    @if (IsStarting)
-                    {
-                            <span class="spinner"></span>
-                            <span>Generating...</span>
-                    }
-                    else
-                    {
-                        <span>STOP DEBATE</span>
-                    }
-                </button>
-            }
-        </div>
+            </button>
+        }
     </div>
 </div>
 
 @code {
-    private void SelectRapper1(Rapper rapper)
-    {
-        if (!IsDisabled && SelectedRapper2Name != rapper.Name)
-        {
-            SelectedRapper1Name = rapper.Name;
-            _ = SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
-        }
-    }
-
-    private void SelectRapper2(Rapper rapper)
-    {
-        if (!IsDisabled && SelectedRapper1Name != rapper.Name)
-        {
-            SelectedRapper2Name = rapper.Name;
-            _ = SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
-        }
-    }
-
     [Parameter] public List<Rapper>? Rappers { get; set; }
     
+    // Keep these for compatibility but they're now set automatically
     private string? _selectedRapper1Name;
-#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
     [Parameter] 
     public string? SelectedRapper1Name 
     { 
         get => _selectedRapper1Name;
-        set
-        {
-            if (_selectedRapper1Name != value)
-            {
-                _selectedRapper1Name = value;
-                Console.WriteLine($"[DebateSetup] Rapper1 changed to: '{value}'");
-                _ = OnRapper1Changed();
-            }
-        }
+        set => _selectedRapper1Name = value;
     }
-#pragma warning restore BL0007
     [Parameter] public EventCallback<string> SelectedRapper1NameChanged { get; set; }
     
     private string? _selectedRapper2Name;
-#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
     [Parameter] 
     public string? SelectedRapper2Name 
     { 
         get => _selectedRapper2Name;
-        set
-        {
-            if (_selectedRapper2Name != value)
-            {
-                _selectedRapper2Name = value;
-                Console.WriteLine($"[DebateSetup] Rapper2 changed to: '{value}'");
-                _ = OnRapper2Changed();
-            }
-        }
+        set => _selectedRapper2Name = value;
     }
-#pragma warning restore BL0007
     [Parameter] public EventCallback<string> SelectedRapper2NameChanged { get; set; }
     [Parameter] public string? DebateTopicInput { get; set; }
     [Parameter] public EventCallback<string> DebateTopicInputChanged { get; set; }
@@ -201,44 +91,21 @@
     [Parameter] public bool IsVoting { get; set; }
     [Parameter] public bool IsStartDisabled { get; set; }
     [Parameter] public string? InitialTopicFetchError { get; set; }
-    [Parameter] public string TopicPlaceholder { get; set; } = "Enter debate topic...";
+    [Parameter] public string TopicPlaceholder { get; set; } = "e.g., Is AI good for humanity?";
     [Parameter] public EventCallback OnStartDebate { get; set; }
     [Parameter] public EventCallback OnStopDebate { get; set; }
     [Parameter] public EventCallback OnQuickBattle { get; set; }
 
-    private async Task OnRapper1Changed()
-    {
-        Console.WriteLine($"[DebateSetup] OnRapper1Changed invoking parent callback with: '{SelectedRapper1Name}'");
-        await SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
-    }
-
-    private async Task OnRapper2Changed()
-    {
-        Console.WriteLine($"[DebateSetup] OnRapper2Changed invoking parent callback with: '{SelectedRapper2Name}'");
-        await SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
-    }
-
     private async Task HandleTopicInput(ChangeEventArgs e)
     {
         var newValue = e.Value?.ToString();
-        Console.WriteLine($"[DebateSetup] HandleTopicInput called. Old value: '{DebateTopicInput}', New value: '{newValue}'");
         DebateTopicInput = newValue;
-        Console.WriteLine($"[DebateSetup] Invoking parent callback with: '{DebateTopicInput}'");
         await DebateTopicInputChanged.InvokeAsync(DebateTopicInput);
-        Console.WriteLine($"[DebateSetup] Parent callback completed");
-    }
-
-    private async Task HandleBeginClick()
-    {
-        if (!IsStartDisabled)
-        {
-            await OnStartDebate.InvokeAsync();
-        }
     }
 
     private bool IsQuickBattleDisabled()
     {
-        return IsLoading || IsFetchingTopic || IsDisabled || Rappers == null || Rappers.Count < 2 || string.IsNullOrWhiteSpace(DebateTopicInput);
+        return IsLoading || IsFetchingTopic || IsDisabled || IsStarting || Rappers == null || Rappers.Count < 2 || string.IsNullOrWhiteSpace(DebateTopicInput);
     }
 
     private async Task HandleQuickBattle()

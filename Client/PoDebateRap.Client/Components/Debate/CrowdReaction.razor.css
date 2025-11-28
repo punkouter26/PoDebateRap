@@ -1,0 +1,338 @@
+.crowd-reaction-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.crowd-reaction-container.active {
+    opacity: 1;
+}
+
+/* ========== FIREWORKS ========== */
+.fireworks-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.firework {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.firework-0 { top: 20%; left: 15%; animation: launch 0.8s ease-out forwards; animation-delay: 0s; }
+.firework-1 { top: 30%; left: 45%; animation: launch 0.8s ease-out forwards; animation-delay: 0.2s; }
+.firework-2 { top: 25%; left: 75%; animation: launch 0.8s ease-out forwards; animation-delay: 0.4s; }
+.firework-3 { top: 15%; left: 25%; animation: launch 0.8s ease-out forwards; animation-delay: 0.6s; }
+.firework-4 { top: 20%; left: 55%; animation: launch 0.8s ease-out forwards; animation-delay: 0.8s; }
+.firework-5 { top: 35%; left: 85%; animation: launch 0.8s ease-out forwards; animation-delay: 0.3s; }
+.firework-6 { top: 18%; left: 35%; animation: launch 0.8s ease-out forwards; animation-delay: 0.5s; }
+.firework-7 { top: 22%; left: 65%; animation: launch 0.8s ease-out forwards; animation-delay: 0.7s; }
+.firework-8 { top: 28%; left: 20%; animation: launch 0.8s ease-out forwards; animation-delay: 0.9s; }
+.firework-9 { top: 32%; left: 50%; animation: launch 0.8s ease-out forwards; animation-delay: 0.1s; }
+.firework-10 { top: 24%; left: 80%; animation: launch 0.8s ease-out forwards; animation-delay: 0.35s; }
+.firework-11 { top: 26%; left: 40%; animation: launch 0.8s ease-out forwards; animation-delay: 0.55s; }
+
+.explosion {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.spark {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: explode 1.5s ease-out forwards;
+    animation-delay: inherit;
+}
+
+.spark-0 { background: #ff0000; transform: rotate(0deg); }
+.spark-1 { background: #ff7700; transform: rotate(30deg); }
+.spark-2 { background: #ffff00; transform: rotate(60deg); }
+.spark-3 { background: #00ff00; transform: rotate(90deg); }
+.spark-4 { background: #00ffff; transform: rotate(120deg); }
+.spark-5 { background: #0077ff; transform: rotate(150deg); }
+.spark-6 { background: #ff00ff; transform: rotate(180deg); }
+.spark-7 { background: #ff0077; transform: rotate(210deg); }
+.spark-8 { background: #ffaa00; transform: rotate(240deg); }
+.spark-9 { background: #00ffaa; transform: rotate(270deg); }
+.spark-10 { background: #aa00ff; transform: rotate(300deg); }
+.spark-11 { background: #ff00aa; transform: rotate(330deg); }
+
+@keyframes launch {
+    0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes explode {
+    0% {
+        transform: translateX(0) translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(cos(var(--angle, 0deg)) * 150px)) 
+                   translateY(calc(sin(var(--angle, 0deg)) * 150px)) scale(0);
+        opacity: 0;
+    }
+}
+
+.spark-0 { --angle: 0deg; animation: spark-fly-0 1.2s ease-out forwards; }
+.spark-1 { --angle: 30deg; animation: spark-fly-1 1.2s ease-out forwards; }
+.spark-2 { --angle: 60deg; animation: spark-fly-2 1.2s ease-out forwards; }
+.spark-3 { --angle: 90deg; animation: spark-fly-3 1.2s ease-out forwards; }
+.spark-4 { --angle: 120deg; animation: spark-fly-4 1.2s ease-out forwards; }
+.spark-5 { --angle: 150deg; animation: spark-fly-5 1.2s ease-out forwards; }
+.spark-6 { --angle: 180deg; animation: spark-fly-6 1.2s ease-out forwards; }
+.spark-7 { --angle: 210deg; animation: spark-fly-7 1.2s ease-out forwards; }
+.spark-8 { --angle: 240deg; animation: spark-fly-8 1.2s ease-out forwards; }
+.spark-9 { --angle: 270deg; animation: spark-fly-9 1.2s ease-out forwards; }
+.spark-10 { --angle: 300deg; animation: spark-fly-10 1.2s ease-out forwards; }
+.spark-11 { --angle: 330deg; animation: spark-fly-11 1.2s ease-out forwards; }
+
+@keyframes spark-fly-0 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(80px, 0) scale(0); opacity: 0; } }
+@keyframes spark-fly-1 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(69px, 40px) scale(0); opacity: 0; } }
+@keyframes spark-fly-2 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(40px, 69px) scale(0); opacity: 0; } }
+@keyframes spark-fly-3 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(0, 80px) scale(0); opacity: 0; } }
+@keyframes spark-fly-4 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(-40px, 69px) scale(0); opacity: 0; } }
+@keyframes spark-fly-5 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(-69px, 40px) scale(0); opacity: 0; } }
+@keyframes spark-fly-6 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(-80px, 0) scale(0); opacity: 0; } }
+@keyframes spark-fly-7 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(-69px, -40px) scale(0); opacity: 0; } }
+@keyframes spark-fly-8 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(-40px, -69px) scale(0); opacity: 0; } }
+@keyframes spark-fly-9 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(0, -80px) scale(0); opacity: 0; } }
+@keyframes spark-fly-10 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(40px, -69px) scale(0); opacity: 0; } }
+@keyframes spark-fly-11 { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(69px, -40px) scale(0); opacity: 0; } }
+
+/* ========== CONFETTI ========== */
+.confetti-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.confetti {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    top: -20px;
+    left: 50%;
+    transform: translateX(var(--x, 0));
+    animation: confetti-fall 3s ease-in forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+.confetti-0 { background: #ff0000; border-radius: 50%; left: 10%; }
+.confetti-1 { background: #ff7700; border-radius: 2px; left: 20%; }
+.confetti-2 { background: #ffff00; border-radius: 50%; left: 30%; }
+.confetti-3 { background: #00ff00; border-radius: 2px; left: 40%; }
+.confetti-4 { background: #00ffff; border-radius: 50%; left: 50%; }
+.confetti-5 { background: #0077ff; border-radius: 2px; left: 60%; }
+.confetti-6 { background: #ff00ff; border-radius: 50%; left: 70%; }
+.confetti-7 { background: #FFD700; border-radius: 2px; left: 80%; }
+.confetti-8 { background: #ff69b4; border-radius: 50%; left: 90%; }
+.confetti-9 { background: #00ff88; border-radius: 2px; left: 15%; }
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateX(var(--x, 0)) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(var(--x, 0) + 50px)) translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* ========== CHEERS ========== */
+.cheers-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.clap {
+    position: absolute;
+    font-size: 3rem;
+    animation: clap-pop 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+.clap-0 { bottom: 20%; left: 10%; animation-delay: 0s; }
+.clap-1 { bottom: 25%; left: 25%; animation-delay: 0.15s; }
+.clap-2 { bottom: 18%; left: 40%; animation-delay: 0.3s; }
+.clap-3 { bottom: 22%; left: 55%; animation-delay: 0.1s; }
+.clap-4 { bottom: 20%; left: 70%; animation-delay: 0.25s; }
+.clap-5 { bottom: 25%; left: 85%; animation-delay: 0.05s; }
+.clap-6 { bottom: 30%; left: 30%; animation-delay: 0.35s; }
+.clap-7 { bottom: 28%; left: 65%; animation-delay: 0.2s; }
+
+@keyframes clap-pop {
+    0% {
+        transform: scale(0) rotate(-10deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.3) rotate(10deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg) translateY(-30px);
+        opacity: 0;
+    }
+}
+
+/* ========== THUMBS DOWN ========== */
+.thumbsdown-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.thumbsdown {
+    position: absolute;
+    font-size: 3rem;
+    animation: thumbsdown-drop 1.5s ease-in forwards;
+    opacity: 0;
+}
+
+.thumbsdown-0 { top: 10%; left: 15%; animation-delay: 0s; }
+.thumbsdown-1 { top: 8%; left: 35%; animation-delay: 0.2s; }
+.thumbsdown-2 { top: 12%; left: 55%; animation-delay: 0.1s; }
+.thumbsdown-3 { top: 10%; left: 75%; animation-delay: 0.3s; }
+.thumbsdown-4 { top: 15%; left: 25%; animation-delay: 0.15s; }
+.thumbsdown-5 { top: 14%; left: 65%; animation-delay: 0.25s; }
+
+@keyframes thumbsdown-drop {
+    0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100px) rotate(20deg);
+        opacity: 0;
+    }
+}
+
+/* ========== REACTION EMOJI ========== */
+.reaction-emoji {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5rem;
+    animation: emoji-pulse 2s ease-in-out forwards;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+    z-index: 10000;
+}
+
+.reaction-emoji.negative {
+    animation: emoji-shake 0.5s ease-in-out 3;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes emoji-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes emoji-shake {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+    25% { transform: translate(-50%, -50%) rotate(-10deg); }
+    75% { transform: translate(-50%, -50%) rotate(10deg); }
+}
+
+/* ========== SCORE POPUP ========== */
+.score-popup {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    font-size: 2.5rem;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 15px;
+    animation: score-pop 2.5s ease-out forwards;
+    z-index: 10001;
+    white-space: nowrap;
+}
+
+.score-fire {
+    background: linear-gradient(135deg, #ff6b00, #ff0000);
+    color: #fff;
+    text-shadow: 0 0 20px #ff0000;
+    box-shadow: 0 0 40px rgba(255, 107, 0, 0.8);
+}
+
+.score-good {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+.score-ok {
+    background: linear-gradient(135deg, #4ECDC4, #44A08D);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+}
+
+.score-weak {
+    background: linear-gradient(135deg, #666, #444);
+    color: #ccc;
+    box-shadow: 0 0 15px rgba(100, 100, 100, 0.5);
+}
+
+@keyframes score-pop {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.8) translateY(-50px);
+        opacity: 0;
+    }
+}

@@ -195,3 +195,10 @@ __azurite_db_*.json
 __blobstorage__/
 __queuestorage__/
 AzuriteConfig/
+
+# Playwright test artifacts
+**/playwright-report/
+**/test-results/
+
+# Coverage reports
+docs/coverage/

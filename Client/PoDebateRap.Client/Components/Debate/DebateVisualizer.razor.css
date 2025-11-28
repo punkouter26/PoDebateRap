@@ -8,6 +8,8 @@
     background-color: #222;
     color: #eee;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+    container-type: inline-size;
+    container-name: debate-visualizer;
 }
 
 .rapper-profiles {
@@ -17,44 +19,46 @@
     gap: 30px;
 }
 
+/* Container query for mobile portrait */
+@container debate-visualizer (max-width: 500px) {
+    .rapper-profiles {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .vs-separator {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+    }
+}
+
 .rapper-profile {
     flex: 1;
     text-align: center;
     padding: 20px;
-    border: 2px solid #444;
-    border-radius: 10px;
-    background-color: #333;
+    background-color: #333 !important;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    border: 2px solid #444;
 }
 
 .rapper-profile:hover {
     transform: translateY(-5px);
 }
 
-.rapper-profile h5 {
-    margin-bottom: 12px;
-    color: #FFD700; /* Primary color */
-    font-size: 1.6em;
+::deep .rapper-name {
+    color: #FFD700 !important;
+    margin-bottom: 0.5rem;
 }
 
 .active-border {
-    border-color: #CD7F32; /* Accent color */
+    border-color: #CD7F32 !important;
     box-shadow: 0 0 20px rgba(205, 127, 50, 0.8);
 }
 
 .rapper-mic {
-    font-size: 2.5em;
-    display: block;
-    margin-top: 15px;
-}
-
-.inactive-mic {
-    color: #888;
-}
-
-.active-mic {
-    color: #CD7F32; /* Accent color */
+    font-size: 1.5em !important;
+    padding: 0.5rem 1rem !important;
 }
 
 .vs-separator {
@@ -63,9 +67,10 @@
     justify-content: center;
 }
 
-.gavel-icon {
-    font-size: 3.5em;
-    color: #FFD700; /* Primary color */
+::deep .vs-badge {
+    font-size: 1.5em !important;
+    padding: 0.75rem 1.25rem !important;
+    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
 }
 
 .debate-text-area {
@@ -146,7 +151,17 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     margin: 0;
+    padding: 1rem;
     color: #eee;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .progress-indicator {
@@ -154,36 +169,27 @@
     margin-top: 25px;
 }
 
-.turn-text {
-    margin-bottom: 12px;
+::deep .progress-text {
+    color: #FFD700 !important;
+    font-weight: bold;
+}
+
+::deep .turn-label {
     color: #bbb;
-    font-size: 1.1em;
 }
 
-.debate-progress {
-    width: 100%;
-    height: 18px;
-    -webkit-appearance: none;
-    appearance: none;
-    border: none;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #444;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+::deep .progress-bar-linear {
+    width: 200px;
+    height: 8px;
 }
 
-.debate-progress::-webkit-progress-bar {
-    background-color: #444;
+/* Override Radzen progress bar colors */
+::deep .rz-progressbar-value {
+    background: linear-gradient(90deg, #FFD700, #FFA500) !important;
 }
 
-.debate-progress::-webkit-progress-value {
-    background-color: #FFD700; /* Primary color */
-    transition: width 0.4s ease-in-out;
-}
-
-.debate-progress::-moz-progress-bar {
-    background-color: #FFD700; /* Primary color */
-    transition: width 0.4s ease-in-out;
+::deep .rz-progressbar-circular-value {
+    stroke: #FFD700 !important;
 }
 
 @keyframes blink {

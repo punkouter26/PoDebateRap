@@ -10,6 +10,8 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .setup-section:hover {
@@ -18,39 +20,102 @@
 }
 
 /* ========================================
-   Quick Battle Button Section
+   Primary Topic Input Section
    ======================================== */
 
-.quick-battle-container {
+.topic-input-section-primary {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-.btn-quick-battle {
-    padding: 20px 50px;
-    border: none;
+.topic-label {
+    color: #FFD700;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.topic-hint {
+    color: rgba(255, 215, 0, 0.7);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.topic-input-wrapper {
+    width: 100%;
+}
+
+.topic-input-large {
+    background: rgba(20, 20, 20, 0.8);
+    border: 3px solid rgba(255, 215, 0, 0.3);
     border-radius: 16px;
+    color: #e0e0e0;
+    padding: 18px 24px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    text-align: center;
+}
+
+.topic-input-large:focus {
+    border-color: #FFD700;
+    background: rgba(30, 30, 30, 0.9);
+    box-shadow: 0 0 0 0.3rem rgba(255, 215, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.topic-input-large:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(50, 50, 50, 0.5);
+    border-color: rgba(255, 215, 0, 0.1);
+}
+
+.topic-input-large::placeholder {
+    color: rgba(224, 224, 224, 0.4);
+    font-style: italic;
+}
+
+/* ========================================
+   Primary Quick Battle Button Section
+   ======================================== */
+
+.quick-battle-container-primary {
+    text-align: center;
+}
+
+.btn-quick-battle-large {
+    padding: 24px 60px;
+    border: none;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
     position: relative;
     overflow: hidden;
-    min-width: 280px;
+    min-width: 320px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 1rem;
     font-family: 'Impact', 'Arial Black', sans-serif;
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
     color: #000;
-    border: 3px solid rgba(255, 215, 0, 0.6);
+    border: 4px solid rgba(255, 215, 0, 0.6);
 }
 
-.btn-quick-battle::before {
+.btn-quick-battle-large::before {
     content: '';
     position: absolute;
     top: 0;
@@ -61,17 +126,54 @@
     transition: left 0.6s;
 }
 
-.btn-quick-battle:hover:not(:disabled)::before {
+.btn-quick-battle-large:hover:not(:disabled)::before {
     left: 100%;
 }
 
-.btn-quick-battle:hover:not(:disabled) {
+.btn-quick-battle-large:hover:not(:disabled) {
     background: linear-gradient(135deg, #FFA500 0%, #FFD700 100%);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.6);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 45px rgba(255, 215, 0, 0.6);
 }
 
-.btn-quick-battle:disabled {
+.btn-quick-battle-large:disabled {
+    background: linear-gradient(135deg, #555 0%, #444 100%) !important;
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    border-color: #444 !important;
+}
+
+.btn-danger-large {
+    padding: 24px 60px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255, 82, 82, 0.4);
+    min-width: 320px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+    color: white;
+    border: 4px solid rgba(255, 82, 82, 0.6);
+}
+
+.btn-danger-large:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FF5252 0%, #FF6B6B 100%);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 45px rgba(255, 82, 82, 0.6);
+}
+
+.btn-danger-large:disabled {
     background: linear-gradient(135deg, #555 0%, #444 100%) !important;
     transform: none !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
@@ -81,7 +183,7 @@
 }
 
 .quick-icon {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
@@ -98,409 +200,35 @@
 
 .quick-battle-hint {
     color: rgba(255, 215, 0, 0.7);
-    font-size: 0.9rem;
-    margin-top: 0.75rem;
+    font-size: 1rem;
+    margin-top: 1rem;
     font-style: italic;
     font-weight: 500;
 }
 
 /* ========================================
-   Setup Divider
+   Warning Messages
    ======================================== */
 
-.setup-divider {
-    text-align: center;
-    position: relative;
-    margin: 2rem 0;
-}
-
-.setup-divider span {
-    background: linear-gradient(145deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.8) 100%);
-    color: rgba(205, 127, 50, 0.8);
-    padding: 0.5rem 1.5rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-}
-
-.setup-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(205, 127, 50, 0.3), transparent);
-}
-
-/* ========================================
-   Form Layout
-   ======================================== */
-
-.rapper-selection-section {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.selection-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.selection-label {
-    color: #FFD700;
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-}
-
-/* ========================================
-   Rapper Cards Grid
-   ======================================== */
-
-.rapper-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
-    width: 100%;
-}
-
-@media (max-width: 968px) {
-    .rapper-cards-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 0.875rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .rapper-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .rapper-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-}
-
-.loading-cards {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2rem;
-    color: #999;
-    font-style: italic;
-}
-
-/* ========================================
-   VS Separator Large
-   ======================================== */
-
-.vs-separator-large {
-    text-align: center;
-    padding: 1.5rem 0;
-    position: relative;
-}
-
-.vs-text {
-    font-size: 3rem;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-    color: #CD7F32;
-    font-weight: 900;
-    text-shadow: 0 4px 8px rgba(0,0,0,0.5), 0 0 30px rgba(205, 127, 50, 0.4);
-    position: relative;
-    z-index: 1;
+.text-warning {
+    color: #FFA500;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 165, 0, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid #FFA500;
     display: inline-block;
-    padding: 0 2rem;
-    background: linear-gradient(145deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.8) 100%);
-}
-
-.vs-separator-large::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(205, 127, 50, 0.4), transparent);
+    font-weight: 500;
 }
 
 /* ========================================
-   Topic Input Section
+   Spinner
    ======================================== */
-
-.topic-input-section {
-    margin-bottom: 2rem;
-}
-
-.form-field-topic {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.form-field-topic label {
-    color: #FFD700;
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-}
-
-.form-field-topic input[type="text"] {
-    background: rgba(20, 20, 20, 0.8);
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    border-radius: 12px;
-    color: #e0e0e0;
-    padding: 14px 18px;
-    font-size: 1.05rem;
-    transition: all 0.3s ease;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    text-align: center;
-}
-
-.form-field-topic input[type="text"]:focus {
-    border-color: #FFD700;
-    background: rgba(30, 30, 30, 0.9);
-    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    outline: none;
-    transform: translateY(-2px);
-}
-
-.form-field-topic input[type="text"]:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: rgba(50, 50, 50, 0.5);
-    border-color: rgba(255, 215, 0, 0.1);
-}
-
-.form-field-topic input[type="text"]::placeholder {
-    color: rgba(224, 224, 224, 0.4);
-    font-style: italic;
-}
-
-/* ========================================
-   Action Buttons Section
-   ======================================== */
-
-.action-buttons-section {
-    margin-top: 2rem;
-}
-
-/* Remove old form-group styles as they're no longer needed */
-
-/* ========================================
-   Form Field (Legacy - Keep for compatibility)
-   ======================================== */
-
-.form-group {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 1.5rem;
-    align-items: end;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-    .form-group {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        text-align: center;
-    }
-}
-
-.form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-field label {
-    color: var(--primary-color);
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-}
-
-.form-field select,
-.form-field input[type="text"] {
-    background: var(--surface-color);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-color);
-    padding: 14px 16px;
-    font-size: 1rem;
-    transition: var(--transition);
-    box-shadow: var(--shadow-light);
-    font-family: var(--body-font);
-}
-
-.form-field select:focus,
-.form-field input[type="text"]:focus {
-    border-color: var(--primary-color);
-    background: var(--elevated-color);
-    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
-    outline: none;
-    transform: translateY(-1px);
-}
-
-.form-field select:disabled,
-.form-field input[type="text"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: var(--border-color);
-}
-
-.vs-separator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    font-family: var(--header-font);
-    color: var(--secondary-color);
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    position: relative;
-}
-
-.vs-separator::before,
-.vs-separator::after {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
-    top: 50%;
-}
-
-.vs-separator::before {
-    left: -50px;
-}
-
-.vs-separator::after {
-    right: -50px;
-}
-
-/* ========================================
-   Buttons
-   ======================================== */
-
-.button-group {
-    display: flex;
-    justify-content: center;
-    margin-top: 2.5rem;
-}
-
-.btn-primary,
-.btn-danger {
-    padding: 18px 40px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 1.15rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-    min-width: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000;
-    border: 2px solid rgba(255, 215, 0, 0.5);
-}
-
-.btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s;
-}
-
-.btn-primary:hover:not(:disabled)::before {
-    left: 100%;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #FFA500 0%, #FFD700 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
-    color: white;
-    border: 2px solid rgba(255, 82, 82, 0.5);
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: linear-gradient(135deg, #FF5252 0%, #FF6B6B 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(255, 82, 82, 0.4);
-}
-
-.btn-primary:disabled,
-.btn-danger:disabled {
-    background: linear-gradient(135deg, #555 0%, #444 100%) !important;
-    transform: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    border-color: #444 !important;
-}
-
-/* Link-based button styles */
-.btn-primary.disabled-link {
-    background: linear-gradient(135deg, #555 0%, #444 100%) !important;
-    transform: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    border-color: #444 !important;
-    pointer-events: none;
-}
-
-.btn-primary.enabled-link {
-    text-decoration: none;
-    color: #000;
-}
-
-.btn-primary.enabled-link:hover {
-    text-decoration: none;
-}
 
 .spinner {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border: 3px solid transparent;
     border-top: 3px solid currentColor;
     border-radius: 50%;
@@ -513,84 +241,52 @@
 }
 
 /* ========================================
-   Error Messages
-   ======================================== */
-
-.text-danger {
-    color: #FF6B6B;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(255, 82, 82, 0.1);
-    border-radius: 8px;
-    border-left: 3px solid #FF5252;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-}
-
-.text-danger::before {
-    content: "⚠️";
-    font-size: 1rem;
-}
-
-/* ========================================
    Responsive Design
    ======================================== */
-
-@media (max-width: 968px) {
-    .rapper-selection-section {
-        gap: 1.5rem;
-    }
-    
-    .vs-separator-large .vs-text {
-        font-size: 2.5rem;
-    }
-}
 
 @media (max-width: 768px) {
     .setup-section {
         padding: 1.5rem;
     }
     
-    .btn-primary,
-    .btn-danger {
+    .topic-label {
+        font-size: 1.3rem;
+    }
+    
+    .topic-input-large {
+        padding: 14px 18px;
+        font-size: 1.1rem;
+    }
+    
+    .btn-quick-battle-large,
+    .btn-danger-large {
         min-width: 100%;
-        padding: 16px 24px;
-        font-size: 1rem;
+        padding: 20px 30px;
+        font-size: 1.3rem;
     }
 }
 
 @media (max-width: 480px) {
-    .form-field label {
-        font-size: 0.8rem;
+    .topic-label {
+        font-size: 1.1rem;
     }
     
-    .form-field select,
-    .form-field input[type="text"] {
+    .topic-hint {
+        font-size: 0.9rem;
+    }
+    
+    .topic-input-large {
         padding: 12px 14px;
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
     
-    .vs-separator {
-        font-size: 2rem;
+    .btn-quick-battle-large,
+    .btn-danger-large {
+        padding: 18px 24px;
+        font-size: 1.1rem;
     }
-}
-
-/* ========================================
-   Accessibility & Additional Styles
-   ======================================== */
-
-/* Focus indicators for accessibility */
-.form-field select:focus-visible,
-.form-field input[type="text"]:focus-visible {
-    outline: 2px solid #FFD700;
-    outline-offset: 2px;
-}
-
-/* Button loading state */
-.btn-primary:disabled .spinner,
-.btn-danger:disabled .spinner {
-    border-top-color: currentColor;
+    
+    .quick-icon {
+        font-size: 1.5rem;
+    }
 }

@@ -14,6 +14,12 @@ param tags object = {}
 @description('Resource ID of the existing F1 tier App Service Plan')
 param appServicePlanId string
 
+@description('Name of the existing Key Vault')
+param keyVaultName string = 'kv-podebaterap'
+
+@description('Email address for budget alerts')
+param budgetAlertEmail string = 'punkouter26@gmail.com'
+
 // Log Analytics Workspace for Application Insights
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'law-${baseName}-${resourceToken}'
@@ -70,6 +76,11 @@ resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-05-0
   name: 'default'
 }
 
+// Reference existing Key Vault for secrets
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
+}
+
 // App Service for Blazor WebAssembly Hosted App
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: baseName
@@ -78,12 +89,15 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
     'azd-service-name': 'api'
   })
   kind: 'app'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     serverFarmId: appServicePlanId
     httpsOnly: true
     clientAffinityEnabled: false
     siteConfig: {
-      netFrameworkVersion: 'v9.0'
+      netFrameworkVersion: 'v10.0'
       use32BitWorkerProcess: true  // Required for F1 tier
       alwaysOn: false              // Must be disabled for F1 tier
       http20Enabled: true
@@ -121,38 +135,120 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
           name: 'Azure__ApplicationInsights__ConnectionString'
           value: applicationInsights.properties.ConnectionString
         }
-        // Azure OpenAI Configuration
+        {
+          name: 'Azure__KeyVault__VaultUri'
+          value: 'https://${keyVaultName}.vault.azure.net/'
+        }
+        // Azure OpenAI Configuration - Key Vault References
         {
           name: 'Azure__OpenAI__Endpoint'
-          value: 'https://podebaterap-openai.openai.azure.com/'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=OpenAI-Endpoint)'
         }
         {
           name: 'Azure__OpenAI__ApiKey'
-          value: '2d0146f4d409455f9e752ce9242404ec'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=OpenAI-ApiKey)'
         }
         {
           name: 'Azure__OpenAI__DeploymentName'
-          value: 'gpt-4o'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=OpenAI-DeploymentName)'
         }
-        // Azure Speech Services Configuration
+        // Azure Speech Services Configuration - Key Vault References
         {
           name: 'Azure__Speech__Region'
-          value: 'eastus2'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Speech-Region)'
         }
         {
           name: 'Azure__Speech__Endpoint'
-          value: 'https://eastus2.api.cognitive.microsoft.com/'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Speech-Endpoint)'
         }
         {
           name: 'Azure__Speech__SubscriptionKey'
-          value: '5b8b34fc054843ac91aa858d56bdcca8'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Speech-SubscriptionKey)'
         }
-        // NewsAPI Configuration
+        // NewsAPI Configuration - Key Vault Reference
         {
           name: 'NewsApi__ApiKey'
-          value: 'acd7ec0ba05b49b2944494ebd941be3c'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=NewsApi-ApiKey)'
         }
       ]
+    }
+  }
+}
+
+// Role Assignment: Key Vault Secrets User for App Service Managed Identity
+resource keyVaultSecretUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, appService.id, 'Key Vault Secrets User')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
+    principalId: appService.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Action Group for budget alerts
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: 'ag-${baseName}-budget'
+  location: 'global'
+  tags: tags
+  properties: {
+    groupShortName: 'BudgetAlert'
+    enabled: true
+    emailReceivers: [
+      {
+        name: 'BudgetOwner'
+        emailAddress: budgetAlertEmail
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
+// $5 Monthly Budget with 80% threshold alert
+resource budget 'Microsoft.Consumption/budgets@2023-11-01' = {
+  name: 'budget-${baseName}'
+  properties: {
+    category: 'Cost'
+    amount: 5
+    timeGrain: 'Monthly'
+    timePeriod: {
+      startDate: '2025-01-01'
+      endDate: '2030-12-31'
+    }
+    filter: {
+      dimensions: {
+        name: 'ResourceGroupName'
+        operator: 'In'
+        values: [
+          resourceGroup().name
+        ]
+      }
+    }
+    notifications: {
+      actual_GreaterThan_80_Percent: {
+        enabled: true
+        operator: 'GreaterThan'
+        threshold: 80
+        thresholdType: 'Actual'
+        contactEmails: [
+          budgetAlertEmail
+        ]
+        contactGroups: [
+          actionGroup.id
+        ]
+      }
+      forecasted_GreaterThan_100_Percent: {
+        enabled: true
+        operator: 'GreaterThan'
+        threshold: 100
+        thresholdType: 'Forecasted'
+        contactEmails: [
+          budgetAlertEmail
+        ]
+        contactGroups: [
+          actionGroup.id
+        ]
+      }
     }
   }
 }

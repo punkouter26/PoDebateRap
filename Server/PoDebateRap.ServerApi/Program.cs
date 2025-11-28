@@ -5,6 +5,7 @@ using PoDebateRap.ServerApi.Services.Orchestration;
 using PoDebateRap.ServerApi.Services.News;
 using PoDebateRap.ServerApi.Services.Diagnostics;
 using PoDebateRap.ServerApi.Services.Factories;
+using PoDebateRap.ServerApi.Configuration;
 using PoDebateRap.Shared.Models;
 using PoDebateRap.ServerApi.Hubs;
 using PoDebateRap.ServerApi.HealthChecks;
@@ -15,8 +16,15 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
+using System.Diagnostics.Metrics;
 using Serilog;
 using Serilog.Events;
+using Azure.Identity;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Azure.Monitor.OpenTelemetry.Exporter;
 
 // Configure Serilog BEFORE creating the builder
 Log.Logger = new LoggerConfiguration()
@@ -35,6 +43,56 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Configure Azure Key Vault for ALL environments (local and Azure)
+    // Use DefaultAzureCredential which works with:
+    // - Azure CLI login (local development)
+    // - Managed Identity (Azure App Service)
+    var keyVaultUri = builder.Configuration["Azure:KeyVault:VaultUri"] 
+        ?? "https://kv-podebaterap.vault.azure.net/";
+    
+    if (!string.IsNullOrEmpty(keyVaultUri))
+    {
+        Log.Information("Configuring Azure Key Vault: {KeyVaultUri}", keyVaultUri);
+        try
+        {
+            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                ExcludeEnvironmentCredential = false,
+                ExcludeWorkloadIdentityCredential = false,
+                ExcludeManagedIdentityCredential = false,
+                ExcludeVisualStudioCredential = true,
+                ExcludeVisualStudioCodeCredential = true,
+                ExcludeAzureCliCredential = false,
+                ExcludeAzurePowerShellCredential = false,
+                ExcludeAzureDeveloperCliCredential = false,
+                ExcludeInteractiveBrowserCredential = true
+            });
+            
+            // Use custom secret manager to map Key Vault secret names to config keys
+            // e.g., "OpenAI-ApiKey" -> "Azure:OpenAI:ApiKey"
+            builder.Configuration.AddAzureKeyVault(
+                new Uri(keyVaultUri),
+                credential,
+                new PoDebateRapSecretManager());
+            
+            Log.Information("Azure Key Vault configured successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to configure Azure Key Vault. Falling back to appsettings.");
+        }
+    }
+
+    // Add User Secrets for development (as fallback if Key Vault fails)
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Configuration.AddUserSecrets<Program>(optional: true);
+    }
+
+    // Configure strongly-typed settings using Options Pattern
+    builder.Services.Configure<AzureSettings>(builder.Configuration.GetSection(AzureSettings.SectionName));
+    builder.Services.Configure<NewsApiSettings>(builder.Configuration.GetSection(NewsApiSettings.SectionName));
+
     // Configure Serilog with Application Insights
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
@@ -48,11 +106,52 @@ try
             services.GetRequiredService<Microsoft.ApplicationInsights.TelemetryClient>(),
             TelemetryConverter.Traces));
 
-    // Configure User Secrets for Development
-    if (builder.Environment.IsDevelopment())
-    {
-        builder.Configuration.AddUserSecrets<Program>();
-    }
+    // Configure strongly-typed settings using Options Pattern
+    builder.Services.Configure<AzureSettings>(builder.Configuration.GetSection(AzureSettings.SectionName));
+    builder.Services.Configure<NewsApiSettings>(builder.Configuration.GetSection(NewsApiSettings.SectionName));
+
+    // Configure OpenTelemetry for modern telemetry abstractions
+    var appInsightsConnectionString = builder.Configuration["Azure:ApplicationInsights:ConnectionString"]
+        ?? builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource
+            .AddService(serviceName: "PoDebateRap", serviceVersion: "1.0.0")
+            .AddAttributes(new Dictionary<string, object>
+            {
+                ["environment"] = builder.Environment.EnvironmentName
+            }))
+        .WithTracing(tracing =>
+        {
+            tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation();
+
+            if (!string.IsNullOrEmpty(appInsightsConnectionString))
+            {
+                tracing.AddAzureMonitorTraceExporter(options =>
+                {
+                    options.ConnectionString = appInsightsConnectionString;
+                });
+            }
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddMeter("PoDebateRap.Debates")     // Custom meter for debate metrics
+                .AddMeter("PoDebateRap.AI")          // Custom meter for AI usage
+                .AddMeter("PoDebateRap.Speech");     // Custom meter for TTS usage
+
+            if (!string.IsNullOrEmpty(appInsightsConnectionString))
+            {
+                metrics.AddAzureMonitorMetricExporter(options =>
+                {
+                    options.ConnectionString = appInsightsConnectionString;
+                });
+            }
+        });
 
     // Add services to the container.
     builder.Services.AddSignalR();
@@ -95,7 +194,8 @@ try
     // Add Application Insights for telemetry and logging
     builder.Services.AddApplicationInsightsTelemetry();
 
-    // Register Custom Telemetry Service
+    // Register Custom Telemetry Services (OpenTelemetry-based Meters)
+    builder.Services.AddSingleton<PoDebateRap.ServerApi.Services.Telemetry.DebateMetrics>();
     builder.Services.AddScoped<PoDebateRap.ServerApi.Services.Telemetry.CustomTelemetryService>();
 
     // Add Health Checks

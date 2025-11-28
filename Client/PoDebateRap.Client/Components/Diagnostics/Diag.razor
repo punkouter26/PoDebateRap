@@ -1,259 +1,141 @@
 @page "/diag"
+@using Radzen
+@using Radzen.Blazor
 @inject HttpClient Http
 @inject ILogger<Diag> Logger
 @inject IJSRuntime JSRuntime
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 <div class="diagnostics-page">
-    <div class="diagnostics-header">
-        <h5>System Diagnostics</h5>
-    </div>
+    <!-- Breadcrumb Navigation -->
+    <RadzenBreadCrumb class="breadcrumb-nav">
+        <RadzenBreadCrumbItem Path="/" Text="🏠 Home" />
+        <RadzenBreadCrumbItem Text="🔧 Diagnostics" />
+    </RadzenBreadCrumb>
+
+    <RadzenStack Gap="1rem" class="diagnostics-header">
+        <RadzenText TextStyle="TextStyle.H4" class="diagnostics-title">🔧 System Diagnostics</RadzenText>
+        <RadzenText TextStyle="TextStyle.Subtitle1" class="diagnostics-subtitle">Service Health & Audio Testing</RadzenText>
+    </RadzenStack>
+    
     <div class="diagnostics-body">
         @if (_isLoading)
         {
-            <div class="loading-indicator">
-                <p>Running diagnostic checks...</p>
-                <div class="spinner"></div>
-            </div>
+            <!-- Skeleton loading state -->
+            <RadzenCard class="health-summary-skeleton">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenSkeleton style="width: 200px; height: 24px;" />
+                    <RadzenSkeleton style="width: 180px; height: 16px;" />
+                </RadzenStack>
+            </RadzenCard>
+            
+            <RadzenStack Gap="0.5rem" class="skeleton-table">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <RadzenCard class="skeleton-row">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenSkeleton style="width: 150px; height: 20px;" />
+                            <RadzenSkeleton Shape="SkeletonShape.Circle" style="width: 30px; height: 30px;" />
+                            <RadzenSkeleton style="flex: 1; height: 20px;" />
+                            <RadzenSkeleton style="width: 80px; height: 20px;" />
+                        </RadzenStack>
+                    </RadzenCard>
+                }
+            </RadzenStack>
         }
         else if (_healthReport == null)
         {
-            <p class="no-results">No diagnostic results available.</p>
+            <RadzenAlert AlertStyle="AlertStyle.Warning" Shade="Shade.Dark" AllowClose="false">
+                No diagnostic results available.
+            </RadzenAlert>
         }
         else
         {
-            <div class="health-summary">
-                <div class="health-status @(_healthReport.IsHealthy ? "healthy" : "unhealthy")">
-                    <h6>Overall Status: @(_healthReport.Status)</h6>
-                    <p>Checked at: @_healthReport.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</p>
-                </div>
-            </div>
-            
-            <table class="diagnostics-table">
-                <thead>
-                    <tr>
-                        <th>Check</th>
-                        <th>Status</th>
-                        <th>Details</th>
-                        <th>Duration (ms)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var check in _healthReport.Checks)
+            <RadzenCard class="@($"health-summary {(_healthReport.IsHealthy ? "healthy" : "unhealthy")}")">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenStack Gap="0.25rem">
+                        <RadzenText TextStyle="TextStyle.H6">
+                            Overall Status: 
+                            <RadzenBadge BadgeStyle="@(_healthReport.IsHealthy ? BadgeStyle.Success : BadgeStyle.Danger)" 
+                                         Text="@_healthReport.Status" />
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption" class="timestamp-text">
+                            Checked at: @_healthReport.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                        </RadzenText>
+                    </RadzenStack>
+                    @if (_healthReport.IsHealthy)
                     {
-                        // Map health check names to data-testid values
-                        var testId = check.Name.ToLowerInvariant() switch
-                        {
-                            "azure_openai" => "openai-status",
-                            "azure_tts" => "speech-status",
-                            "azure_table_storage" => "storage-status",
-                            "news_api" => "news-status",
-                            _ => $"{check.Name.ToLowerInvariant().Replace("_", "-")}-status"
-                        };
-                        
-                        <tr data-testid="@testId">
-                            <td>@FormatCheckName(check.Name)</td>
-                            <td class="status-cell">
-                                @if (check.Status == "Healthy")
-                                {
-                                    <span class="status-icon success" title="Healthy">✔</span>
-                                }
-                                else if (check.Status == "Degraded")
-                                {
-                                    <span class="status-icon degraded" title="Degraded">⚠</span>
-                                }
-                                else
-                                {
-                                    <span class="status-icon failed" title="Unhealthy">✖</span>
-                                }
-                            </td>
-                            <td>@(check.Description ?? "No description")</td>
-                            <td>@check.Duration.ToString("F2")</td>
-                        </tr>
+                        <span class="health-icon">✅</span>
                     }
-                </tbody>
-            </table>
+                    else
+                    {
+                        <span class="health-icon">❌</span>
+                    }
+                </RadzenStack>
+            </RadzenCard>
+            
+            <RadzenDataGrid Data="@_healthReport.Checks" 
+                            TItem="HealthCheck"
+                            AllowSorting="false"
+                            class="diagnostics-grid">
+                <Columns>
+                    <RadzenDataGridColumn TItem="HealthCheck" Property="Name" Title="Check" Width="180px">
+                        <Template Context="check">
+                            <RadzenText TextStyle="TextStyle.Body1" class="check-name">@FormatCheckName(check.Name)</RadzenText>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="HealthCheck" Property="Status" Title="Status" Width="100px" TextAlign="TextAlign.Center">
+                        <Template Context="check">
+                            @if (check.Status == "Healthy")
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Success" IsPill="true" class="status-badge">✔</RadzenBadge>
+                            }
+                            else if (check.Status == "Degraded")
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Warning" IsPill="true" class="status-badge">⚠</RadzenBadge>
+                            }
+                            else
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Danger" IsPill="true" class="status-badge">✖</RadzenBadge>
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="HealthCheck" Property="Description" Title="Details">
+                        <Template Context="check">
+                            <RadzenText TextStyle="TextStyle.Body2">@(check.Description ?? "No description")</RadzenText>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="HealthCheck" Property="Duration" Title="Duration" Width="100px" TextAlign="TextAlign.Right">
+                        <Template Context="check">
+                            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@($"{check.Duration:F2}ms")" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
         }
     </div>
-    <div class="diagnostics-footer">
-        <button class="btn-test-audio" @onclick="RunDiagnostics" disabled="@_isLoading">
-            <span>@(_isLoading ? "Running..." : "Re-run Diagnostics")</span>
-        </button>
-        <button class="btn-test-audio" @onclick="TestTextToSpeech" disabled="@_isTestingAudio" style="margin-left: 10px;">
-            <span>@(_isTestingAudio ? "Testing Audio..." : "🔊 Test Audio")</span>
-        </button>
-        <a href="/" class="btn-home-link" style="margin-left: 10px;">Back to Home</a>
-    </div>
+    
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="diagnostics-footer" Wrap="FlexWrap.Wrap">
+        <RadzenButton Icon="refresh" 
+                      Text="@(_isLoading ? "Running..." : "Re-run Diagnostics")"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@_isLoading"
+                      Click="@RunDiagnostics" />
+        <RadzenButton Icon="volume_up"
+                      Text="@(_isTestingAudio ? "Testing..." : "Test Audio")"
+                      ButtonStyle="ButtonStyle.Secondary"
+                      Disabled="@_isTestingAudio"
+                      Click="@TestTextToSpeech" />
+        <RadzenButton Icon="home"
+                      Text="Back to Home"
+                      ButtonStyle="ButtonStyle.Light"
+                      Click="@(() => NavigationManager.NavigateTo("/"))" />
+    </RadzenStack>
 </div>
 
-<!-- JavaScript for Audio Playback -->
-<script>
-    window.currentAudio = null; // Global variable to hold the current audio object
-    window.playAudio = (dotnetHelper, base64String) => {
-        // Accept dotnetHelper
-        console.log("playAudio called with base64 length:", base64String ? base64String.length : 0);
-        
-        // Inspect the audio data to help diagnose issues
-        if (typeof window.inspectAudioData === 'function') {
-            window.inspectAudioData(base64String);
-        }
-        
-        try {
-            // Stop any currently playing audio first
-            if (window.currentAudio) {
-                window.currentAudio.pause();
-                window.currentAudio.currentTime = 0;
-                console.log("Stopped previous audio.");
-            }
-            // Use only WAV format which matches what the server returns
-            const audioDataUrl = `data:audio/wav;base64,${base64String}`;
-            
-            console.log("Creating audio with WAV format");
-            try {
-                window.currentAudio = new Audio(audioDataUrl);
-                console.log("Audio object created successfully");
-            } catch (error) {
-                console.error("Failed to create audio object:", error);
-                throw error;
-            }
-            
-            // Add debugging to check if the audio is valid
-            if (window.currentAudio.error) {
-                console.error("Audio has error immediately after creation:", window.currentAudio.error);
-                throw new Error("Audio object created with error");
-            }
-
-            // Set volume to ensure it's audible
-            window.currentAudio.volume = 0.8;
-
-            window.currentAudio.addEventListener('loadstart', () => {
-                console.log("Audio loading started");
-            });
-
-            window.currentAudio.addEventListener('canplay', () => {
-                console.log("Audio can start playing");
-            });
-
-            window.currentAudio.addEventListener('ended', () => {
-                console.log("Audio playback finished.");
-                window.currentAudio = null; // Clear reference on end
-                if (dotnetHelper) {
-                    dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
-                        .catch(e => console.error("Error invoking .NET method:", e));
-                }
-            });
-
-            window.currentAudio.addEventListener('error', (e) => {
-                console.error("Error during audio playback:", e);
-                console.error("Audio error details:", window.currentAudio.error);
-                window.currentAudio = null; // Clear reference on error
-                if (dotnetHelper) {
-                    dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
-                        .catch(e => console.error("Error invoking .NET method after playback error:", e));
-                }
-            });
-
-            // Attempt to play with user interaction handling
-            const playPromise = window.currentAudio.play();
-            
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => {
-                        console.log("Audio playback started successfully");
-                    })
-                    .catch(e => {
-                        console.error("Error starting audio playback:", e);
-                        
-                        // If autoplay failed, try to enable audio on next user interaction
-                        if (e.name === 'NotAllowedError') {
-                            console.warn("Autoplay prevented by browser. Audio will play on next user interaction.");
-                            
-                            // Create a one-time click handler to enable audio
-                            const enableAudio = () => {
-                                console.log("User interaction detected, attempting to play audio");
-                                window.currentAudio.play()
-                                    .then(() => console.log("Audio started after user interaction"))
-                                    .catch(err => console.error("Still failed to play audio:", err));
-                                document.removeEventListener('click', enableAudio);
-                            };
-                            
-                            document.addEventListener('click', enableAudio);
-                        }
-                        
-                        window.currentAudio = null; // Clear reference on start error
-                        if (dotnetHelper) {
-                            dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
-                                .catch(e => console.error("Error invoking .NET method after playback start error:", e));
-                        }
-                    });
-            }
-            
-            console.log("Audio setup completed");
-        } catch (e) {
-            console.error("Error creating or playing audio:", e);
-            window.currentAudio = null; // Clear reference on creation error
-            if (dotnetHelper) {
-                dotnetHelper.invokeMethodAsync('NotifyAudioPlaybackComplete')
-                    .catch(e => console.error("Error invoking .NET method after audio creation error:", e));
-            }
-        }
-    };
-
-    window.stopAudio = () => {
-        if (window.currentAudio) {
-            window.currentAudio.pause();
-            window.currentAudio.currentTime = 0;
-            window.currentAudio = null; // Clear the reference
-            console.log("Audio stopped via JS call.");
-            return true; // Indicate audio was stopped
-        }
-        console.log("No audio playing to stop.");
-        return false; // Indicate no audio was playing
-    };
-    // Test function to verify audio capability
-    window.testAudio = () => {
-        console.log("Testing audio capability...");
-        const testAudio = new Audio();
-        console.log("Audio object created:", testAudio);
-        console.log("Can play WAV:", testAudio.canPlayType('audio/wav'));
-        console.log("Can play MP3:", testAudio.canPlayType('audio/mpeg'));
-        console.log("Can play OGG:", testAudio.canPlayType('audio/ogg'));
-    };
-    
-    // Function to inspect the base64 data to help diagnose issues
-    window.inspectAudioData = (base64String) => {
-        if (!base64String || base64String.length === 0) {
-            console.error("Empty base64 string provided");
-            return;
-        }
-        
-        // Log the first 50 characters
-        console.log("Base64 data starts with:", base64String.substring(0, 50));
-        
-        // Try to decode a small sample of the base64 to check if it's valid
-        try {
-            const sampleBytes = atob(base64String.substring(0, 100));
-            console.log("First bytes decoded successfully, length:", sampleBytes.length);
-            
-            // Check for RIFF header (common in WAV files)
-            const header = sampleBytes.substring(0, 4);
-            console.log("First 4 chars:", Array.from(header).map(c => c.charCodeAt(0)));
-            
-            if (header === 'RIFF') {
-                console.log("Valid RIFF header detected");
-            } else {
-                console.warn("No RIFF header found, might not be a standard WAV file");
-            }
-        } catch (e) {
-            console.error("Error decoding base64:", e);
-        }
-    };
-
-    // Call test on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        window.testAudio();
-    });
-</script>
+@* Audio interop is now handled by the shared audio-interop.js file loaded in index.html *@
 
 @code {
     private DotNetObjectReference<Diag>? objRef;
@@ -277,10 +159,20 @@
         {
             var response = await Http.GetFromJsonAsync<HealthReport>("api/health");
             _healthReport = response;
+            
+            if (_healthReport?.IsHealthy == true)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Diagnostics Complete", "All systems operational", 3000);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Issues Detected", "Some services may be degraded", 5000);
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error running diagnostics.");
+            NotificationService.Notify(NotificationSeverity.Error, "Diagnostics Failed", ex.Message, 5000);
             _healthReport = new HealthReport
             {
                 status = "Unhealthy",
@@ -318,6 +210,7 @@
         if (_isTestingAudio) return;
         
         _isTestingAudio = true;
+        NotificationService.Notify(NotificationSeverity.Info, "Testing Audio", "Generating speech...", 2000);
         StateHasChanged();
         
         try
@@ -337,6 +230,7 @@
                 if (audioBytes != null && audioBytes.Length > 0 && objRef != null)
                 {
                     Logger.LogInformation("✅ TTS test successful. Playing audio with {Length} bytes", audioBytes.Length);
+                    NotificationService.Notify(NotificationSeverity.Success, "Audio Ready", "Playing test audio...", 3000);
                     
                     // Log first 50 bytes for debugging
                     var first50 = string.Join(" ", audioBytes.Take(50).Select(b => b.ToString("X2")));
@@ -351,12 +245,14 @@
                 else
                 {
                     Logger.LogWarning("⚠️ TTS test returned no audio data");
+                    NotificationService.Notify(NotificationSeverity.Warning, "No Audio", "TTS returned empty audio data", 4000);
                 }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Logger.LogError("❌ TTS test failed with status {Status}: {Error}", response.StatusCode, errorContent);
+                NotificationService.Notify(NotificationSeverity.Error, "Audio Test Failed", $"Status: {response.StatusCode}", 5000);
             }
         }
         catch (Exception ex)
