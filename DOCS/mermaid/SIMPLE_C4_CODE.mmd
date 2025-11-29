@@ -1,0 +1,16 @@
+---
+title: PoDebateRap - Simple Code Diagram
+---
+classDiagram
+    class DebateOrchestrator {
+        +RunDebate()
+    }
+    class AIService {
+        +GenerateVerse()
+    }
+    class SpeechService {
+        +Speak()
+    }
+    
+    DebateOrchestrator --> AIService
+    DebateOrchestrator --> SpeechService

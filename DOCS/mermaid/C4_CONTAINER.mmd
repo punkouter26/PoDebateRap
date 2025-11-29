@@ -1,0 +1,31 @@
+---
+title: PoDebateRap - Container Diagram (C4 Level 2)
+---
+C4Container
+    title Container Diagram for PoDebateRap
+
+    Person(user, "User", "Watches AI rap battles")
+
+    System_Boundary(podebaterap, "PoDebateRap System") {
+        Container(blazorClient, "Blazor WebAssembly Client", ".NET 10, Radzen Blazor", "Single-page application providing the debate UI, rapper selection, and real-time battle visualization")
+        Container(apiServer, "ASP.NET Core API", ".NET 10, SignalR", "Hosts the Blazor client, provides REST APIs, orchestrates debates, and manages real-time updates")
+        Container(signalrHub, "SignalR Hub", "WebSocket", "Pushes real-time debate updates to connected clients")
+    }
+
+    System_Ext(azureOpenAI, "Azure OpenAI", "GPT-4 verse generation")
+    System_Ext(azureSpeech, "Azure Speech", "Neural TTS")
+    System_Ext(azureTable, "Azure Table Storage", "Data persistence")
+    System_Ext(newsAPI, "NewsAPI", "Trending topics")
+    System_Ext(appInsights, "App Insights", "Telemetry")
+
+    Rel(user, blazorClient, "Uses", "HTTPS")
+    Rel(blazorClient, apiServer, "API calls", "HTTPS/JSON")
+    Rel(blazorClient, signalrHub, "Real-time updates", "WebSocket")
+    Rel(apiServer, signalrHub, "Broadcasts events", "In-process")
+    Rel(apiServer, azureOpenAI, "Generate verses", "HTTPS")
+    Rel(apiServer, azureSpeech, "Generate audio", "HTTPS")
+    Rel(apiServer, azureTable, "CRUD operations", "HTTPS")
+    Rel(apiServer, newsAPI, "Fetch news", "HTTPS")
+    Rel(apiServer, appInsights, "Log telemetry", "HTTPS")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

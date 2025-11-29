@@ -148,8 +148,9 @@ try
 
     app.UseHttpsRedirection();
 
-    app.UseBlazorFrameworkFiles(); // Serve Blazor WebAssembly framework files
-    app.UseStaticFiles(); // Serve static files from wwwroot
+    // For hosted Blazor WebAssembly, use traditional static file serving
+    app.UseBlazorFrameworkFiles();
+    app.UseStaticFiles();
 
     app.UseRouting(); // Use routing middleware
 

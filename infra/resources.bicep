@@ -212,7 +212,7 @@ resource budget 'Microsoft.Consumption/budgets@2023-11-01' = {
     amount: 5
     timeGrain: 'Monthly'
     timePeriod: {
-      startDate: '2025-01-01'
+      startDate: '2025-11-01'
       endDate: '2030-12-31'
     }
     filter: {

@@ -9,7 +9,6 @@ services:
     project: ./Server/PoDebateRap.ServerApi
     language: dotnet
     host: appservice
-    dist: ./Server/PoDebateRap.ServerApi/bin/Release/net9.0/publish
 
 infra:
   provider: bicep

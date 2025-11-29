@@ -222,7 +222,7 @@
             
             // Use capitalized property names to match C# model (GenerateSpeechRequest)
             var requestBody = new { Text = testText, VoiceName = "en-US-JennyNeural" };
-            var response = await Http.PostAsJsonAsync("AI/generate-speech", requestBody);
+            var response = await Http.PostAsJsonAsync("api/AI/generate-speech", requestBody);
             
             if (response.IsSuccessStatusCode)
             {

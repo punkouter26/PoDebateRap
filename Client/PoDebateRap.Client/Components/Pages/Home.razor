@@ -193,7 +193,7 @@
             // Add timeout and better error handling for Rappers API
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             
-            Rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers", cts.Token);
+            Rappers = await Http.GetFromJsonAsync<List<Rapper>>("api/Rappers", cts.Token);
             Logger.LogDebug("Retrieved {LoadedRapperCount} rappers.", Rappers?.Count ?? 0);
             
             // Add detailed logging for debugging
@@ -216,7 +216,7 @@
 
             try
             {
-                var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("News/headlines", cts.Token);
+                var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("api/News/headlines", cts.Token);
                 if (headlines != null && headlines.Count > 0 && !string.IsNullOrWhiteSpace(headlines[0].Title))
                 {
                     DebateTopicInput = headlines[0].Title!.Trim();
@@ -280,7 +280,7 @@
     {
         try
         {
-            var newState = await Http.GetFromJsonAsync<DebateState>("Debate/state");
+            var newState = await Http.GetFromJsonAsync<DebateState>("api/Debate/current");
 
             if (newState == null)
             {
@@ -416,7 +416,7 @@
             await TriggerCrowdReactionAsync();
 
             Logger.LogInformation("Signaling audio playback complete to server.");
-            var response = await Http.PostAsync("Debate/signal-audio-complete", null);
+            var response = await Http.PatchAsync("api/Debate/current/audio-status", null);
             response.EnsureSuccessStatusCode();
             Logger.LogInformation("Server acknowledged audio playback complete.");
 
@@ -600,7 +600,7 @@
         try
         {
             var request = new StartDebateRequest { Rapper1 = rapper1, Rapper2 = rapper2, Topic = topic };
-            var response = await Http.PostAsJsonAsync("Debate/start", request);
+            var response = await Http.PostAsJsonAsync("api/Debate", request);
             response.EnsureSuccessStatusCode();
             var initialState = await response.Content.ReadFromJsonAsync<DebateState>();
 
@@ -759,7 +759,7 @@
         // Try to fetch a new topic
         try
         {
-            var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("News/headlines");
+            var headlines = await Http.GetFromJsonAsync<List<NewsHeadline>>("api/News/headlines");
             if (headlines?.FirstOrDefault()?.Title is { Length: > 0 } newTopic)
             {
                 DebateTopicInput = newTopic.Trim();

@@ -168,7 +168,7 @@
         
         try
         {
-            var rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers");
+            var rappers = await Http.GetFromJsonAsync<List<Rapper>>("api/Rappers");
             if (rappers != null)
             {
                 CalculateLeaderboard(rappers);

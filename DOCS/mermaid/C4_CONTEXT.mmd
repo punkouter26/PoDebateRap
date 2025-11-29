@@ -1,0 +1,24 @@
+---
+title: PoDebateRap - System Context Diagram (C4 Level 1)
+---
+C4Context
+    title System Context Diagram for PoDebateRap
+
+    Person(user, "User", "A person who wants to watch AI-powered rap battles between legendary rappers")
+    
+    System(podebaterap, "PoDebateRap", "Web application that orchestrates AI-powered rap debates between iconic hip-hop artists with TTS audio")
+    
+    System_Ext(azureOpenAI, "Azure OpenAI", "GPT-4 for generating contextual rap verses matching each artist's style")
+    System_Ext(azureSpeech, "Azure Speech Services", "Neural text-to-speech for realistic voice synthesis")
+    System_Ext(azureTable, "Azure Table Storage", "Stores rapper profiles, leaderboard data, and debate history")
+    System_Ext(newsAPI, "NewsAPI", "Provides trending news topics for debates")
+    System_Ext(appInsights, "Application Insights", "Monitoring, logging, and telemetry")
+
+    Rel(user, podebaterap, "Selects rappers, topics, watches battles", "HTTPS")
+    Rel(podebaterap, azureOpenAI, "Generates rap verses", "HTTPS/REST")
+    Rel(podebaterap, azureSpeech, "Converts text to speech", "HTTPS/REST")
+    Rel(podebaterap, azureTable, "Reads/writes data", "HTTPS/REST")
+    Rel(podebaterap, newsAPI, "Fetches trending topics", "HTTPS/REST")
+    Rel(podebaterap, appInsights, "Sends telemetry", "HTTPS")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

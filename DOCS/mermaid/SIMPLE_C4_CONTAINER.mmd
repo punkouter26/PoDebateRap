@@ -1,0 +1,18 @@
+---
+title: PoDebateRap - Simple Container Diagram
+---
+C4Container
+    title PoDebateRap Containers (Simplified)
+
+    Person(user, "User")
+    
+    System_Boundary(app, "PoDebateRap") {
+        Container(client, "Blazor Client", "UI")
+        Container(api, "API Server", "Backend")
+    }
+    
+    System_Ext(azure, "Azure", "AI + Storage")
+
+    Rel(user, client, "Uses")
+    Rel(client, api, "Calls")
+    Rel(api, azure, "Calls")

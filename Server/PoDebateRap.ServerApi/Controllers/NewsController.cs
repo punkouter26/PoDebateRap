@@ -6,7 +6,7 @@ using PoDebateRap.Shared.Models;
 namespace PoDebateRap.ServerApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class NewsController : ControllerBase
     {
         private readonly INewsService _newsService;
