@@ -1,0 +1,28 @@
+<div class="turn-display">
+    @if (IsGenerating)
+    {
+        <div class="generating-indicator">
+            <span class="generating-icon">✍️</span>
+            <span class="generating-text">Generating lyrics...</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(TurnText))
+    {
+        <div class="lyrics-container">
+            <div class="lyrics-text">@TurnText</div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <span class="empty-icon">🎵</span>
+            <span class="empty-text">Awaiting first verse...</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? TurnText { get; set; }
+    [Parameter] public bool IsGenerating { get; set; }
+    [Parameter] public string? ActiveRapperName { get; set; }
+}

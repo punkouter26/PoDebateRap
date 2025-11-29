@@ -1,94 +1,111 @@
 @using PoDebateRap.Shared.Models
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
-@* Removed: @using MudBlazor *@
 
 <div class="debate-visualizer" id="debate-visualizer-@_instanceId">
+    <!-- Rapper Profiles with Progress -->
     <div class="rapper-profiles">
         <!-- Rapper 1 Profile Area -->
         <div class="rapper-profile @(IsRapper1Active ? "active-border" : "")">
+            <div class="rapper-avatar">@GetInitial(Rapper1?.Name)</div>
             <h5>@(Rapper1?.Name ?? "Rapper 1")</h5>
-            <span class="rapper-mic @(IsRapper1Active ? "blinking active-mic" : "inactive-mic")">🎤</span>
+            <RadzenBadge BadgeStyle="@(IsRapper1Active ? BadgeStyle.Warning : BadgeStyle.Light)" 
+                         Text="@(IsRapper1Active ? "🎤 Speaking" : "Waiting")" 
+                         class="rapper-status" />
         </div>
 
-        <!-- VS Separator -->
+        <!-- VS Separator with Circular Progress -->
         <div class="vs-separator">
-             <span class="gavel-icon">⚖️</span>
+            <RadzenProgressBarCircular Value="@ProgressValue" 
+                                       ShowValue="true" 
+                                       Mode="ProgressBarMode.Determinate"
+                                       class="debate-progress-circle">
+                <Template>
+                    <div class="progress-content">
+                        <span class="turn-display">@CurrentTurnNumber</span>
+                        <span class="turn-total">/ @TotalTurns</span>
+                    </div>
+                </Template>
+            </RadzenProgressBarCircular>
         </div>
 
         <!-- Rapper 2 Profile Area -->
         <div class="rapper-profile @(IsRapper2Active ? "active-border" : "")">
+            <div class="rapper-avatar">@GetInitial(Rapper2?.Name)</div>
             <h5>@(Rapper2?.Name ?? "Rapper 2")</h5>
-            <span class="rapper-mic @(IsRapper2Active ? "blinking active-mic" : "inactive-mic")">🎤</span>
+            <RadzenBadge BadgeStyle="@(IsRapper2Active ? BadgeStyle.Warning : BadgeStyle.Light)" 
+                         Text="@(IsRapper2Active ? "🎤 Speaking" : "Waiting")" 
+                         class="rapper-status" />
         </div>
     </div>
 
-    <!-- Debate Text Display Area with Navigation -->
-    <div class="debate-text-area">
+    <!-- Debate Text Display Area -->
+    <div class="debate-text-area @(IsSwiping ? "swiping" : "")">
         @if (ShowNavigation && CurrentTurnNumber > 1)
         {
-            <button class="turn-nav-btn turn-nav-prev" @onclick="OnPreviousTurn" title="Previous Turn (Swipe Right)">
-                ‹
-            </button>
+            <RadzenButton Icon="chevron_left" ButtonStyle="ButtonStyle.Light" 
+                          Click="@OnPreviousTurn" class="turn-nav-btn turn-nav-prev"
+                          title="Previous Turn" />
         }
         
-        <pre class="lyrics @(IsNewLyrics ? "fade-in" : "") @(IsSwiping ? "swiping" : "")">@CurrentTurnText</pre>
+        <div class="lyrics-container">
+            <pre class="lyrics @(IsNewLyrics ? "fade-in" : "")">@CurrentTurnText</pre>
+        </div>
         
         @if (ShowNavigation && CurrentTurnNumber < TotalTurns)
         {
-            <button class="turn-nav-btn turn-nav-next" @onclick="OnNextTurn" title="Next Turn (Swipe Left)">
-                ›
-            </button>
+            <RadzenButton Icon="chevron_right" ButtonStyle="ButtonStyle.Light" 
+                          Click="@OnNextTurn" class="turn-nav-btn turn-nav-next"
+                          title="Next Turn" />
         }
-        
-        @if (ShowNavigation)
-        {
-            <div class="swipe-hint">
-                <small>💡 Swipe left/right to navigate turns</small>
+    </div>
+
+    <!-- Playback Controls -->
+    @if (ShowNavigation)
+    {
+        <div class="playback-controls">
+            <div class="turn-slider-container">
+                <RadzenSlider @bind-Value="@_sliderValue" 
+                              Min="1" Max="@TotalTurns" Step="1"
+                              Change="@((double val) => OnSliderChange(val))"
+                              class="turn-slider" />
+                <div class="slider-labels">
+                    <span>Turn 1</span>
+                    <span>Turn @TotalTurns</span>
+                </div>
             </div>
-        }
-    </div>
+            
+            <div class="control-buttons">
+                <RadzenButton Icon="skip_previous" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => JumpToTurn(1))" Disabled="@(CurrentTurnNumber <= 1)"
+                              title="Go to Start" />
+                <RadzenButton Icon="@(_isAutoPlaying ? "pause" : "play_arrow")" 
+                              ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Medium"
+                              Click="@ToggleAutoPlay" title="@(_isAutoPlaying ? "Pause" : "Auto-Play")" />
+                <RadzenButton Icon="skip_next" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => JumpToTurn(TotalTurns))" Disabled="@(CurrentTurnNumber >= TotalTurns)"
+                              title="Go to End" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Linear Progress Bar for Live Debate -->
+        <div class="progress-indicator">
+            <RadzenProgressBar Value="@ProgressValue" ShowValue="false" 
+                               Mode="ProgressBarMode.Determinate" class="live-progress" />
+            <p class="turn-text">Turn @CurrentTurnNumber of @TotalTurns</p>
+        </div>
+    }
 
-    <!-- Progress Indicator Area -->
-    <div class="progress-indicator">
-        <p class="turn-text">Turn @CurrentTurnNumber / @TotalTurns</p>
-        <progress class="debate-progress" value="@CurrentTurnNumber" max="@TotalTurns"></progress>
-    </div>
+    <!-- Swipe Hint for Mobile -->
+    @if (ShowNavigation)
+    {
+        <div class="swipe-hint">
+            <RadzenIcon Icon="swipe" /> Swipe left/right to navigate turns
+        </div>
+    }
 </div>
-
-<style>
-    .lyrics {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        margin: 0;
-        padding: 1rem;
-        background: transparent;
-        border: none;
-        color: inherit;
-        text-align: left;
-    }
-
-    .fade-in {
-        animation: fadeIn 0.5s ease-in;
-    }
-
-    @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .debate-text-area {
-        min-height: 200px;
-        max-height: 400px;
-        overflow-y: auto;
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-</style>
 
 @code {
     [Parameter] public Rapper? Rapper1 { get; set; }
@@ -106,11 +123,20 @@
     private bool IsSwiping = false;
     private string _instanceId = Guid.NewGuid().ToString("N");
     private DotNetObjectReference<DebateVisualizer>? _dotNetRef;
+    private double _sliderValue = 1;
+    private bool _isAutoPlaying = false;
+    private System.Timers.Timer? _autoPlayTimer;
+
+    private double ProgressValue => TotalTurns > 0 ? (double)CurrentTurnNumber / TotalTurns * 100 : 0;
+
+    private string GetInitial(string? name) => 
+        string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         _previousText = CurrentTurnText;
+        _sliderValue = CurrentTurnNumber > 0 ? CurrentTurnNumber : 1;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -148,20 +174,10 @@
     }
 
     [JSInvokable]
-    public Task OnSwipeDown()
-    {
-        // Could be used to minimize/collapse the debate view
-        Console.WriteLine("Swipe down detected - could minimize debate");
-        return Task.CompletedTask;
-    }
+    public Task OnSwipeDown() => Task.CompletedTask;
 
     [JSInvokable]
-    public Task OnSwipeUp()
-    {
-        // Could be used to expand or show additional details
-        Console.WriteLine("Swipe up detected - could expand debate");
-        return Task.CompletedTask;
-    }
+    public Task OnSwipeUp() => Task.CompletedTask;
 
     private async Task OnNextTurn()
     {
@@ -169,10 +185,8 @@
         {
             IsSwiping = true;
             StateHasChanged();
-            await Task.Delay(200);
-            
+            await Task.Delay(150);
             await OnTurnChanged.InvokeAsync(CurrentTurnNumber + 1);
-            
             IsSwiping = false;
             StateHasChanged();
         }
@@ -184,17 +198,69 @@
         {
             IsSwiping = true;
             StateHasChanged();
-            await Task.Delay(200);
-            
+            await Task.Delay(150);
             await OnTurnChanged.InvokeAsync(CurrentTurnNumber - 1);
-            
             IsSwiping = false;
             StateHasChanged();
         }
     }
 
+    private async Task OnSliderChange(double value)
+    {
+        var turnNumber = (int)value;
+        if (turnNumber != CurrentTurnNumber && turnNumber >= 1 && turnNumber <= TotalTurns)
+        {
+            await OnTurnChanged.InvokeAsync(turnNumber);
+        }
+    }
+
+    private async Task JumpToTurn(int turn)
+    {
+        if (turn != CurrentTurnNumber)
+        {
+            await OnTurnChanged.InvokeAsync(turn);
+        }
+    }
+
+    private void ToggleAutoPlay()
+    {
+        _isAutoPlaying = !_isAutoPlaying;
+        
+        if (_isAutoPlaying)
+        {
+            _autoPlayTimer = new System.Timers.Timer(3000);
+            _autoPlayTimer.Elapsed += async (s, e) =>
+            {
+                if (CurrentTurnNumber < TotalTurns)
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        await OnTurnChanged.InvokeAsync(CurrentTurnNumber + 1);
+                        StateHasChanged();
+                    });
+                }
+                else
+                {
+                    _isAutoPlaying = false;
+                    _autoPlayTimer?.Stop();
+                    await InvokeAsync(StateHasChanged);
+                }
+            };
+            _autoPlayTimer.Start();
+        }
+        else
+        {
+            _autoPlayTimer?.Stop();
+            _autoPlayTimer?.Dispose();
+            _autoPlayTimer = null;
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
+        _autoPlayTimer?.Stop();
+        _autoPlayTimer?.Dispose();
+        
         try
         {
             await JSRuntime.InvokeVoidAsync("destroyGestures", $"#debate-visualizer-{_instanceId}");

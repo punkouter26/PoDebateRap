@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PoDebateRap.Shared.Models;
+using PoDebateRap.ServerApi.Factories;
 using System;
 using System.Text;
 using System.Threading;
@@ -33,17 +34,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         {
             _logger = logger;
             _serviceFactory = serviceFactory;
-            _currentState = new DebateState
-            {
-                Rapper1 = new Rapper(),
-                Rapper2 = new Rapper(),
-                Topic = new Topic(),
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty
-            };
+            _currentState = DebateStateFactory.CreateEmpty();
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
         }
 
@@ -57,17 +48,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
             _audioPlaybackCompletionSource?.TrySetResult(true); // Complete any pending audio playback
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
 
-            _currentState = new DebateState
-            {
-                Rapper1 = new Rapper(),
-                Rapper2 = new Rapper(),
-                Topic = new Topic(),
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty
-            };
+            _currentState = DebateStateFactory.CreateEmpty();
             _ = NotifyStateChangeAsync(); // Fire-and-forget: Notify UI of reset
         }
 
@@ -89,24 +70,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
         private void InitializeDebateState(Rapper rapper1, Rapper rapper2, Topic topic)
         {
-            _currentState = new DebateState
-            {
-                Rapper1 = rapper1,
-                Rapper2 = rapper2,
-                Topic = topic,
-                IsDebateInProgress = true,
-                CurrentTurn = 0,
-                TotalTurns = MaxDebateTurns,
-                DebateTranscript = new StringBuilder(),
-                IsRapper1Turn = true,
-                CurrentTurnText = $"Get ready! Topic: '{topic.Title}'. {rapper1.Name} (Pro) vs {rapper2.Name} (Con). {rapper1.Name} starts...",
-                IsGeneratingTurn = false,
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty
-            };
+            _currentState = DebateStateFactory.CreateForNewDebate(rapper1, rapper2, topic, MaxDebateTurns);
         }
 
         private async Task GenerateIntroductionAsync()

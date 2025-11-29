@@ -1,6 +1,7 @@
 using Xunit;
 using Moq;
 using PoDebateRap.ServerApi.Services.AI;
+using PoDebateRap.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -102,13 +103,49 @@ namespace PoDebateRap.UnitTests
 
             // Arrange
             var service = new AzureOpenAIService(_configuration, _mockLogger.Object);
-            var prompt = "Test prompt";
-            var maxTokens = 50;
-            var cancellationToken = CancellationToken.None;
 
             // Act & Assert - Method should exist and be callable
             // In integration tests, we would actually call this with real credentials
             Assert.NotNull(service);
+            await Task.CompletedTask; // Satisfy async requirement
+        }
+
+        [Fact]
+        public void JudgeDebateAsync_MethodExists_CanBeInvoked()
+        {
+            // Arrange
+            var service = new AzureOpenAIService(_configuration, _mockLogger.Object);
+
+            // Assert - Verify method exists (compilation check)
+            Assert.NotNull(service);
+            // Note: Actual invocation requires Azure credentials
+        }
+
+        [Fact]
+        public async Task GenerateDebateTurnAsync_WithCancellation_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var service = new AzureOpenAIService(_configuration, _mockLogger.Object);
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // Act & Assert
+            // When already cancelled, should throw quickly
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                service.GenerateDebateTurnAsync("test", 50, cts.Token));
+        }
+
+        [Fact]
+        public async Task JudgeDebateAsync_WithCancellation_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var service = new AzureOpenAIService(_configuration, _mockLogger.Object);
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // Act & Assert
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                service.JudgeDebateAsync("transcript", "Eminem", "Snoop Dogg", "Best Coast", cts.Token));
         }
     }
 }

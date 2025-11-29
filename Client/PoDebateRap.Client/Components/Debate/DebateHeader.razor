@@ -1,0 +1,44 @@
+@using PoDebateRap.Shared.Models
+
+<div class="debate-header">
+    <div class="header-status">
+        @if (IsDebateInProgress)
+        {
+            <span class="status-badge in-progress">🎤 Battle in Progress</span>
+        }
+        else if (IsDebateFinished)
+        {
+            <span class="status-badge finished">🏆 Battle Complete</span>
+        }
+        else
+        {
+            <span class="status-badge ready">⚡ Ready to Battle</span>
+        }
+    </div>
+    
+    @if (Topic?.Title is { Length: > 0 } topicTitle)
+    {
+        <div class="topic-display">
+            <span class="topic-label">Topic:</span>
+            <span class="topic-title">@topicTitle</span>
+        </div>
+    }
+    
+    <div class="turn-indicator">
+        @if (CurrentTurn > 0)
+        {
+            <span class="turn-text">Turn @CurrentTurn of @TotalTurns</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: @(TotalTurns > 0 ? (CurrentTurn * 100 / TotalTurns) : 0)%"></div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Topic? Topic { get; set; }
+    [Parameter] public bool IsDebateInProgress { get; set; }
+    [Parameter] public bool IsDebateFinished { get; set; }
+    [Parameter] public int CurrentTurn { get; set; }
+    [Parameter] public int TotalTurns { get; set; }
+}

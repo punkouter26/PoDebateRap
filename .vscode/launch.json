@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Server/PoDebateRap.ServerApi/bin/Debug/net9.0/PoDebateRap.ServerApi.dll",
+            "program": "${workspaceFolder}/Server/PoDebateRap.ServerApi/bin/Debug/net10.0/PoDebateRap.ServerApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Server/PoDebateRap.ServerApi",
             "stopAtEntry": false,

@@ -83,7 +83,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     clientAffinityEnabled: false
     siteConfig: {
-      netFrameworkVersion: 'v9.0'
+      netFrameworkVersion: 'v10.0'
       use32BitWorkerProcess: true  // Required for F1 tier
       alwaysOn: false              // Must be disabled for F1 tier
       http20Enabled: true

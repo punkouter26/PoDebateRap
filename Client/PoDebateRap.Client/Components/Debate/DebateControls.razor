@@ -1,0 +1,51 @@
+@using PoDebateRap.Shared.Models
+
+<div class="debate-controls">
+    @if (!IsDebateInProgress && !IsDebateFinished)
+    {
+        <button class="btn btn-start" @onclick="OnStart" disabled="@IsStartDisabled">
+            @if (IsStarting)
+            {
+                <span class="spinner"></span>
+                <span>Starting...</span>
+            }
+            else
+            {
+                <span class="btn-icon">🎤</span>
+                <span>Begin Debate</span>
+            }
+        </button>
+        
+        <button class="btn btn-quick" @onclick="OnQuickBattle" disabled="@IsQuickBattleDisabled">
+            <span class="btn-icon">⚡</span>
+            <span>Quick Battle</span>
+        </button>
+    }
+    else if (IsDebateInProgress)
+    {
+        <button class="btn btn-stop" @onclick="OnStop">
+            <span class="btn-icon">⏹️</span>
+            <span>Stop Debate</span>
+        </button>
+    }
+    else if (IsDebateFinished)
+    {
+        <button class="btn btn-new" @onclick="OnNewDebate">
+            <span class="btn-icon">🔄</span>
+            <span>New Debate</span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public bool IsDebateInProgress { get; set; }
+    [Parameter] public bool IsDebateFinished { get; set; }
+    [Parameter] public bool IsStartDisabled { get; set; }
+    [Parameter] public bool IsQuickBattleDisabled { get; set; }
+    [Parameter] public bool IsStarting { get; set; }
+    
+    [Parameter] public EventCallback OnStart { get; set; }
+    [Parameter] public EventCallback OnStop { get; set; }
+    [Parameter] public EventCallback OnQuickBattle { get; set; }
+    [Parameter] public EventCallback OnNewDebate { get; set; }
+}

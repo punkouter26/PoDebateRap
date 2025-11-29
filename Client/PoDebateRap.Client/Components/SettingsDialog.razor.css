@@ -1,0 +1,202 @@
+/* =====================================================
+   Settings Dialog Styles
+   Modern tabbed settings interface
+   ===================================================== */
+
+.settings-dialog {
+    display: flex;
+    flex-direction: column;
+    min-width: 500px;
+    max-width: 700px;
+    max-height: 80vh;
+}
+
+/* Tabs Styling */
+::deep .settings-tabs {
+    flex: 1;
+    overflow: hidden;
+}
+
+::deep .settings-tabs .rz-tabview-nav {
+    background: var(--rz-base-700, #2a2a2a);
+    border-right: 1px solid var(--rz-base-600, #444);
+    min-width: 140px;
+}
+
+::deep .settings-tabs .rz-tabview-nav-link {
+    padding: 1rem;
+    gap: 0.5rem;
+    justify-content: flex-start;
+}
+
+::deep .settings-tabs .rz-tabview-nav-link.rz-state-active {
+    background: var(--rz-warning, #FFD700);
+    color: var(--rz-base-900, #111);
+}
+
+::deep .settings-tabs .rz-tabview-panels {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+/* Settings Section */
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+::deep .section-title {
+    color: var(--rz-warning, #FFD700);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rz-base-600, #444);
+}
+
+/* Setting Item */
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rz-base-700, #333);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+::deep .setting-label {
+    flex: 1;
+    color: var(--rz-text-color, #eee);
+}
+
+::deep .setting-control {
+    min-width: 150px;
+}
+
+::deep .setting-slider {
+    width: 120px;
+}
+
+.volume-label,
+.delay-label {
+    min-width: 50px;
+    text-align: right;
+    color: var(--rz-text-secondary-color, #888);
+}
+
+/* Color Swatches */
+.color-options {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.color-swatch.selected {
+    border-color: white;
+    box-shadow: 0 0 0 2px var(--rz-base-600, #444), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* About Section */
+.about-section {
+    text-align: center;
+    padding: 1rem;
+}
+
+.app-logo {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+::deep .app-name {
+    color: var(--rz-warning, #FFD700);
+    margin-bottom: 0.25rem;
+}
+
+::deep .app-version {
+    color: var(--rz-text-tertiary-color, #666);
+    margin-bottom: 1.5rem;
+}
+
+::deep .app-description {
+    max-width: 400px;
+    margin: 0 auto 1.5rem;
+    color: var(--rz-text-secondary-color, #bbb);
+    line-height: 1.6;
+}
+
+.about-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+::deep .copyright {
+    color: var(--rz-text-tertiary-color, #666);
+}
+
+/* Dialog Actions */
+.dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--rz-base-700, #2a2a2a);
+    border-top: 1px solid var(--rz-base-600, #444);
+    margin: 0 -1.5rem -1.5rem;
+}
+
+.action-spacer {
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .settings-dialog {
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    ::deep .settings-tabs .rz-tabview-nav {
+        min-width: 60px;
+    }
+
+    ::deep .settings-tabs .rz-tabview-nav-link .rz-tabview-title {
+        display: none;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    ::deep .setting-control,
+    ::deep .setting-slider {
+        width: 100%;
+    }
+
+    .color-options {
+        flex-wrap: wrap;
+    }
+
+    .dialog-actions {
+        flex-wrap: wrap;
+    }
+}

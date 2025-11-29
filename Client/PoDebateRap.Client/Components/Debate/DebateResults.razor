@@ -1,0 +1,109 @@
+@using PoDebateRap.Shared.Models
+
+<div class="debate-results" id="debate-results">
+    <div class="results-header">
+        <h3>🏆 Debate Results</h3>
+    </div>
+    
+    <div class="results-body">
+        <p class="results-intro">
+            The debate on '<strong>@(Topic?.Title ?? "the topic")</strong>' between 
+            <strong>@(Rapper1Name ?? "Rapper 1")</strong> and 
+            <strong>@(Rapper2Name ?? "Rapper 2")</strong> has concluded.
+        </p>
+        
+        <div class="judge-decision">
+            <h4>Judge's Decision:</h4>
+            @{
+                var isValidWinner = !string.IsNullOrEmpty(WinnerName) && 
+                    WinnerName is not ("Draw" or "Undecided" or "Error Judging" or "Error Parsing" or "Stats Error");
+            }
+            @if (isValidWinner)
+            {
+                <p class="winner-announcement">
+                    <span class="winner-icon">👑</span>
+                    <strong>@WinnerName wins!</strong>
+                </p>
+            }
+            else
+            {
+                <p class="@GetAnnouncementClass()">
+                    @GetAnnouncementText()
+                </p>
+            }
+            
+            @if (!string.IsNullOrEmpty(JudgeReasoning))
+            {
+                <div class="judge-reasoning">
+                    <p>"@JudgeReasoning"</p>
+                </div>
+            }
+        </div>
+        
+        @if (Stats != null)
+        {
+            <div class="debate-stats">
+                <h5>Debate Stats (1-5)</h5>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>@(Rapper1Name ?? "Rapper 1")</th>
+                            <th>@(Rapper2Name ?? "Rapper 2")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Logic</td>
+                            <td>@Stats.Rapper1LogicScore</td>
+                            <td>@Stats.Rapper2LogicScore</td>
+                        </tr>
+                        <tr>
+                            <td>Sentiment</td>
+                            <td>@Stats.Rapper1SentimentScore</td>
+                            <td>@Stats.Rapper2SentimentScore</td>
+                        </tr>
+                        <tr>
+                            <td>Adherence</td>
+                            <td>@Stats.Rapper1AdherenceScore</td>
+                            <td>@Stats.Rapper2AdherenceScore</td>
+                        </tr>
+                        <tr>
+                            <td>Rebuttal</td>
+                            <td>@Stats.Rapper1RebuttalScore</td>
+                            <td>@Stats.Rapper2RebuttalScore</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>TOTAL</strong></td>
+                            <td><strong>@Stats.Rapper1TotalScore</strong></td>
+                            <td><strong>@Stats.Rapper2TotalScore</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Topic? Topic { get; set; }
+    [Parameter] public string? Rapper1Name { get; set; }
+    [Parameter] public string? Rapper2Name { get; set; }
+    [Parameter] public string? WinnerName { get; set; }
+    [Parameter] public string? JudgeReasoning { get; set; }
+    [Parameter] public DebateStats? Stats { get; set; }
+
+    private string GetAnnouncementClass() => WinnerName switch
+    {
+        "Draw" => "draw-announcement",
+        "Undecided" => "undecided-announcement",
+        _ => "error-announcement"
+    };
+
+    private string GetAnnouncementText() => WinnerName switch
+    {
+        "Draw" => "⚖️ It's a Draw!",
+        "Undecided" => "🤔 The judge was undecided.",
+        _ => "⚠️ There was an error determining the winner."
+    };
+}

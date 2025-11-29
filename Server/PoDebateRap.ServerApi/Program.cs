@@ -17,6 +17,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using Serilog;
 using Serilog.Events;
+using Azure.Identity;
 
 // Configure Serilog BEFORE creating the builder
 Log.Logger = new LoggerConfiguration()
@@ -35,6 +36,19 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Configure Azure Key Vault for secrets
+    var keyVaultName = builder.Configuration["Azure:KeyVault:Name"];
+    if (!string.IsNullOrEmpty(keyVaultName))
+    {
+        var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+        builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+        Log.Information("Azure Key Vault configured: {KeyVaultName}", keyVaultName);
+    }
+    else
+    {
+        Log.Warning("Azure Key Vault name not configured. Using local configuration only.");
+    }
+
     // Configure Serilog with Application Insights
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
@@ -47,12 +61,6 @@ try
         .WriteTo.ApplicationInsights(
             services.GetRequiredService<Microsoft.ApplicationInsights.TelemetryClient>(),
             TelemetryConverter.Traces));
-
-    // Configure User Secrets for Development
-    if (builder.Environment.IsDevelopment())
-    {
-        builder.Configuration.AddUserSecrets<Program>();
-    }
 
     // Add services to the container.
     builder.Services.AddSignalR();

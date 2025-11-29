@@ -1,0 +1,44 @@
+@using PoDebateRap.Shared.Models
+
+<div class="rapper-cards-container">
+    <div class="rapper-card @(IsRapper1Active ? "active" : "")">
+        <div class="rapper-avatar">
+            <span class="avatar-emoji">🎤</span>
+        </div>
+        <div class="rapper-info">
+            <span class="rapper-name">@(Rapper1?.Name ?? "Rapper 1")</span>
+            <span class="rapper-role pro">PRO</span>
+        </div>
+        @if (Rapper1Score.HasValue)
+        {
+            <div class="rapper-score">@Rapper1Score.Value</div>
+        }
+    </div>
+    
+    <div class="vs-divider">
+        <span class="vs-text">VS</span>
+    </div>
+    
+    <div class="rapper-card @(IsRapper2Active ? "active" : "")">
+        <div class="rapper-avatar">
+            <span class="avatar-emoji">🎧</span>
+        </div>
+        <div class="rapper-info">
+            <span class="rapper-name">@(Rapper2?.Name ?? "Rapper 2")</span>
+            <span class="rapper-role con">CON</span>
+        </div>
+        @if (Rapper2Score.HasValue)
+        {
+            <div class="rapper-score">@Rapper2Score.Value</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Rapper? Rapper1 { get; set; }
+    [Parameter] public Rapper? Rapper2 { get; set; }
+    [Parameter] public bool IsRapper1Active { get; set; }
+    [Parameter] public bool IsRapper2Active { get; set; }
+    [Parameter] public int? Rapper1Score { get; set; }
+    [Parameter] public int? Rapper2Score { get; set; }
+}

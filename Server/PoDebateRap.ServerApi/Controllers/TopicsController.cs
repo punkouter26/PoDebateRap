@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.News;
+using PoDebateRap.ServerApi.Extensions;
 using PoDebateRap.Shared.Models;
 using System.Linq;
 
@@ -22,7 +23,7 @@ namespace PoDebateRap.ServerApi.Controllers
         public async Task<ActionResult<IEnumerable<Topic>>> Get()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(10);
-            var topics = headlines.Select(h => new Topic { Title = h.Title ?? string.Empty, Category = "Current Events" }).ToList();
+            var topics = headlines.ToTopics().ToList();
             _logger.LogInformation("Retrieved {Count} topics from latest news headlines.", topics.Count);
             return Ok(topics);
         }
@@ -31,12 +32,14 @@ namespace PoDebateRap.ServerApi.Controllers
         public async Task<ActionResult<Topic>> GetLatest()
         {
             var headlines = await _newsService.GetTopHeadlinesAsync(1);
-            if (headlines.Any())
+            var latestTopic = headlines.ToLatestTopic();
+            
+            if (latestTopic is not null)
             {
-                var latestTopic = new Topic { Title = headlines.First().Title ?? string.Empty, Category = "Breaking News" };
                 _logger.LogInformation("Retrieved latest topic: {Title}", latestTopic.Title);
                 return Ok(latestTopic);
             }
+            
             _logger.LogWarning("No news headlines available for topic generation.");
             return NotFound("No current news topics available");
         }

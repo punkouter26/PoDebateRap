@@ -1,0 +1,62 @@
+@* DesktopDebateLayout - Split-pane layout for desktop with setup on left, debate on right *@
+@using PoDebateRap.Shared.Models
+
+<div class="desktop-debate-layout">
+    @if (ShowSplitter)
+    {
+        <RadzenSplitter Orientation="Orientation.Horizontal" class="debate-splitter">
+            <RadzenSplitterPane Size="40%" Min="300px" Max="50%" class="setup-pane">
+                <div class="pane-content">
+                    <RadzenText TextStyle="TextStyle.H5" class="pane-header">
+                        <RadzenIcon Icon="settings" /> Setup
+                    </RadzenText>
+                    @SetupContent
+                </div>
+            </RadzenSplitterPane>
+            
+            <RadzenSplitterPane class="debate-pane">
+                <div class="pane-content">
+                    <RadzenText TextStyle="TextStyle.H5" class="pane-header">
+                        <RadzenIcon Icon="record_voice_over" /> Debate
+                    </RadzenText>
+                    @DebateContent
+                </div>
+            </RadzenSplitterPane>
+        </RadzenSplitter>
+    }
+    else
+    {
+        <!-- Single column layout for mobile/tablet -->
+        <div class="single-column-layout">
+            @if (!IsDebateActive)
+            {
+                @SetupContent
+            }
+            else
+            {
+                @DebateContent
+                
+                <div class="mobile-toggle">
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                                  Icon="tune" 
+                                  Text="Show Setup"
+                                  Click="@ToggleMobileSetup"
+                                  class="toggle-setup-btn" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? SetupContent { get; set; }
+    [Parameter] public RenderFragment? DebateContent { get; set; }
+    [Parameter] public bool IsDebateActive { get; set; }
+    [Parameter] public bool ShowSplitter { get; set; } = true;
+    [Parameter] public EventCallback OnToggleMobileSetup { get; set; }
+
+    private async Task ToggleMobileSetup()
+    {
+        await OnToggleMobileSetup.InvokeAsync();
+    }
+}
