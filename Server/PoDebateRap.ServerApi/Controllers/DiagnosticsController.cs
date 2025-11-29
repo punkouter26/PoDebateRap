@@ -33,19 +33,5 @@ namespace PoDebateRap.ServerApi.Controllers
             var results = await _diagnosticsService.RunAllChecksAsync();
             return Ok(results);
         }
-
-        /// <summary>
-        /// Runs all diagnostic checks and returns detailed results.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use GET /api/Diagnostics instead.
-        /// </remarks>
-        [HttpGet("all")]
-        [Obsolete("Use GET /api/Diagnostics instead")]
-        [ProducesResponseType(typeof(List<DiagnosticResult>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<DiagnosticResult>>> GetAllDiagnosticsLegacy()
-        {
-            return await GetAllDiagnostics();
-        }
     }
 }

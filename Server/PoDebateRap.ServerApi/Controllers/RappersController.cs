@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.Data;
 using PoDebateRap.Shared.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -50,21 +48,6 @@ namespace PoDebateRap.ServerApi.Controllers
         public async Task<IActionResult> UpdateRapperRecord(string id, [FromBody] UpdateRecordRequest request)
         {
             await _rapperRepository.UpdateWinLossRecordAsync(request.WinnerName, request.LoserName);
-            return Ok();
-        }
-
-        /// <summary>
-        /// Updates the win/loss record for rappers after a battle.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use PATCH /api/Rappers/{id}/record instead.
-        /// </remarks>
-        [HttpPost("update-win-loss")]
-        [Obsolete("Use PATCH /api/Rappers/{id}/record instead")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateWinLossRecord([FromQuery] string winnerName, [FromQuery] string loserName)
-        {
-            await _rapperRepository.UpdateWinLossRecordAsync(winnerName, loserName);
             return Ok();
         }
     }

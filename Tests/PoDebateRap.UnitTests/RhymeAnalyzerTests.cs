@@ -1,6 +1,6 @@
 using FluentAssertions;
 using PoDebateRap.Shared.Models;
-using PoDebateRap.Shared.Services;
+using PoDebateRap.Shared.Analyzers;
 using Xunit;
 
 namespace PoDebateRap.UnitTests

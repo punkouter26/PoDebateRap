@@ -97,14 +97,6 @@
             <p class="turn-text">Turn @CurrentTurnNumber of @TotalTurns</p>
         </div>
     }
-
-    <!-- Swipe Hint for Mobile -->
-    @if (ShowNavigation)
-    {
-        <div class="swipe-hint">
-            <RadzenIcon Icon="swipe" /> Swipe left/right to navigate turns
-        </div>
-    }
 </div>
 
 @code {
@@ -143,16 +135,9 @@
     {
         if (firstRender && ShowNavigation)
         {
-            try
-            {
-                _dotNetRef = DotNetObjectReference.Create(this);
-                await JSRuntime.InvokeVoidAsync("initializeGestures", _dotNetRef, $"#debate-visualizer-{_instanceId}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing gestures: {ex.Message}");
-            }
+            _dotNetRef = DotNetObjectReference.Create(this);
         }
+        await Task.CompletedTask;
     }
 
     [JSInvokable]
@@ -260,15 +245,7 @@
     {
         _autoPlayTimer?.Stop();
         _autoPlayTimer?.Dispose();
-        
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("destroyGestures", $"#debate-visualizer-{_instanceId}");
-            _dotNetRef?.Dispose();
-        }
-        catch
-        {
-            // Ignore disposal errors
-        }
+        _dotNetRef?.Dispose();
+        await Task.CompletedTask;
     }
 }

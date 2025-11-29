@@ -194,6 +194,7 @@ local.settings.json
 __azurite_db_*.json
 __blobstorage__/
 __queuestorage__/
+__azurite_db_*.json
 AzuriteConfig/
 
 # Playwright test artifacts

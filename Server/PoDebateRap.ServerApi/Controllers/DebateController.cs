@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoDebateRap.ServerApi.Services.Orchestration;
 using PoDebateRap.Shared.Models;
-using System.Threading.Tasks;
 
 namespace PoDebateRap.ServerApi.Controllers
 {
@@ -39,21 +38,6 @@ namespace PoDebateRap.ServerApi.Controllers
         }
 
         /// <summary>
-        /// Initiates a new rap debate between two rappers.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use POST /api/Debate instead.
-        /// </remarks>
-        [HttpPost("start")]
-        [Obsolete("Use POST /api/Debate instead")]
-        [ProducesResponseType(typeof(DebateState), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<DebateState>> StartDebate([FromBody] StartDebateRequest request)
-        {
-            return await CreateDebate(request);
-        }
-
-        /// <summary>
         /// Retrieves the current state of the active debate.
         /// </summary>
         /// <returns>The current debate state including turn information and transcripts.</returns>
@@ -65,20 +49,6 @@ namespace PoDebateRap.ServerApi.Controllers
             _logger.LogInformation("GetCurrentDebate: Returning state. IsDebateInProgress: {InProg}, IsGeneratingTurn: {Gen}, CurrentTurnText: '{Text}'",
                 _orchestrator.CurrentState.IsDebateInProgress, _orchestrator.CurrentState.IsGeneratingTurn, _orchestrator.CurrentState.CurrentTurnText);
             return Ok(_orchestrator.CurrentState);
-        }
-
-        /// <summary>
-        /// Retrieves the current state of the active debate.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use GET /api/Debate/current instead.
-        /// </remarks>
-        [HttpGet("state")]
-        [Obsolete("Use GET /api/Debate/current instead")]
-        [ProducesResponseType(typeof(DebateState), StatusCodes.Status200OK)]
-        public ActionResult<DebateState> GetCurrentState()
-        {
-            return GetCurrentDebate();
         }
 
         /// <summary>
@@ -95,20 +65,6 @@ namespace PoDebateRap.ServerApi.Controllers
         }
 
         /// <summary>
-        /// Signals that audio playback has completed.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use PATCH /api/Debate/current/audio-status instead.
-        /// </remarks>
-        [HttpPost("signal-audio-complete")]
-        [Obsolete("Use PATCH /api/Debate/current/audio-status instead")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> SignalAudioPlaybackComplete()
-        {
-            return await UpdateAudioStatus();
-        }
-
-        /// <summary>
         /// Cancels and resets the current debate session.
         /// </summary>
         /// <returns>Acknowledgement of the reset.</returns>
@@ -119,21 +75,6 @@ namespace PoDebateRap.ServerApi.Controllers
         {
             _orchestrator.ResetDebate();
             return NoContent();
-        }
-
-        /// <summary>
-        /// Resets the current debate session.
-        /// </summary>
-        /// <remarks>
-        /// **Deprecated**: Use DELETE /api/Debate/current instead.
-        /// </remarks>
-        [HttpPost("reset")]
-        [Obsolete("Use DELETE /api/Debate/current instead")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult ResetDebate()
-        {
-            _orchestrator.ResetDebate();
-            return Ok();
         }
     }
 }
