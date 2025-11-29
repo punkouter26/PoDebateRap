@@ -1,0 +1,89 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject NotificationService NotificationService
+
+<RadzenComponents />
+
+<RadzenLayout>
+    <!-- Mobile Header with Drawer Toggle -->
+    <RadzenHeader>
+        <div class="header-container">
+            <div class="header-left">
+                <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light" Click="@ToggleSidebar" 
+                              class="sidebar-toggle d-lg-none" title="Toggle Menu" />
+                <a href="/" class="app-brand">
+                    <span class="brand-icon">🎤</span>
+                    <span class="brand-text">PoDebateRap</span>
+                </a>
+            </div>
+            
+            <nav class="header-nav d-none d-lg-flex">
+                <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">
+                    <RadzenIcon Icon="home" /> Home
+                </NavLink>
+                <NavLink href="leaderboard" class="nav-link">
+                    <RadzenIcon Icon="leaderboard" /> Leaderboard
+                </NavLink>
+            </nav>
+            
+            <div class="header-right">
+                <ThemeToggle />
+            </div>
+        </div>
+    </RadzenHeader>
+
+    <!-- Sidebar for Mobile -->
+    <RadzenSidebar @bind-Expanded="@_sidebarExpanded" class="mobile-sidebar">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Home" Icon="home" Path="/" Click="@NavigateAndClose" />
+            <RadzenPanelMenuItem Text="Leaderboard" Icon="leaderboard" Path="leaderboard" Click="@NavigateAndClose" />
+            <RadzenPanelMenuItem Text="Settings" Icon="settings" Click="@OpenSettings" />
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+
+    <!-- Main Body -->
+    <RadzenBody>
+        <div class="main-content">
+            @Body
+        </div>
+    </RadzenBody>
+
+    <!-- Footer -->
+    <RadzenFooter>
+        <div class="footer-content">
+            <span>PoDebateRap &copy; @DateTime.Now.Year</span>
+            <span class="footer-divider">•</span>
+            <span>AI-Powered Rap Battles</span>
+        </div>
+    </RadzenFooter>
+</RadzenLayout>
+
+<!-- Settings Dialog -->
+<RadzenDialog />
+
+<!-- Notification Container -->
+<RadzenNotification />
+
+@code {
+    private bool _sidebarExpanded = false;
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private void ToggleSidebar()
+    {
+        _sidebarExpanded = !_sidebarExpanded;
+    }
+    
+    private void NavigateAndClose()
+    {
+        _sidebarExpanded = false;
+    }
+    
+    private async Task OpenSettings()
+    {
+        _sidebarExpanded = false;
+        // Settings will be handled via DialogService
+        await Task.CompletedTask;
+    }
+}

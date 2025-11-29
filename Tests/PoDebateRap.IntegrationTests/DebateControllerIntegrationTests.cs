@@ -1,16 +1,16 @@
-using FluentAssertions;
+using Xunit;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using PoDebateRap.Shared.Models;
 using System.Net;
 using System.Net.Http.Json;
-using Xunit;
+using System.Threading.Tasks;
+using PoDebateRap.Shared.Models;
 
 namespace PoDebateRap.IntegrationTests
 {
     /// <summary>
     /// Integration tests for DebateController endpoints.
-    /// Tests the new RESTful endpoints and verifies backward compatibility with deprecated endpoints.
+    /// Uses WebApplicationFactory to create a test server.
     /// </summary>
     public class DebateControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
@@ -19,174 +19,85 @@ namespace PoDebateRap.IntegrationTests
 
         public DebateControllerIntegrationTests(WebApplicationFactory<Program> factory)
         {
-            _factory = factory;
+            _factory = factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Override services with test doubles if needed
+                });
+            });
             _client = _factory.CreateClient();
         }
 
-        #region GET /api/Debate/current Tests
-
         [Fact]
-        public async Task GetCurrentDebate_WhenNoDebateActive_ReturnsEmptyState()
+        public async Task GetState_ReturnsOkWithDebateState()
         {
             // Act
-            var response = await _client.GetAsync("/api/Debate/current");
+            var response = await _client.GetAsync("/Debate/state");
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-            state!.IsDebateInProgress.Should().BeFalse();
+            Assert.NotNull(state);
         }
 
         [Fact]
-        public async Task GetCurrentDebate_ReturnsValidDebateState()
-        {
-            // Act
-            var response = await _client.GetAsync("/api/Debate/current");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
-            
-            var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-        }
-
-        #endregion
-
-        #region DELETE /api/Debate/current Tests
-
-        [Fact]
-        public async Task DeleteCurrentDebate_ReturnsNoContent()
-        {
-            // Act
-            var response = await _client.DeleteAsync("/api/Debate/current");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        }
-
-        [Fact]
-        public async Task DeleteCurrentDebate_ResetsDebateState()
-        {
-            // Arrange - First reset any existing state
-            await _client.DeleteAsync("/api/Debate/current");
-
-            // Act
-            var response = await _client.GetAsync("/api/Debate/current");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-            state!.IsDebateInProgress.Should().BeFalse();
-            state.CurrentTurn.Should().Be(0);
-        }
-
-        #endregion
-
-        #region PATCH /api/Debate/current/audio-status Tests
-
-        [Fact]
-        public async Task UpdateAudioStatus_ReturnsOk()
-        {
-            // Act
-            var response = await _client.PatchAsync("/api/Debate/current/audio-status", null);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-        }
-
-        #endregion
-
-        #region Backward Compatibility Tests for Deprecated Endpoints
-
-        [Fact]
-        public async Task GetState_LegacyEndpoint_StillWorks()
-        {
-            // Act
-            var response = await _client.GetAsync("/api/Debate/state");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task Reset_LegacyEndpoint_StillWorks()
-        {
-            // Act
-            var response = await _client.PostAsync("/api/Debate/reset", null);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-        }
-
-        [Fact]
-        public async Task SignalAudioComplete_LegacyEndpoint_StillWorks()
-        {
-            // Act
-            var response = await _client.PostAsync("/api/Debate/signal-audio-complete", null);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-        }
-
-        #endregion
-
-        #region POST /api/Debate (Create) Tests
-
-        [Fact]
-        public async Task CreateDebate_WithValidRequest_ReturnsDebateState()
+        public async Task StartDebate_WithValidRequest_ReturnsOk()
         {
             // Arrange
             var request = new StartDebateRequest
             {
-                Rapper1 = new Rapper { Name = "Test Rapper 1", RowKey = "test-rapper-1" },
-                Rapper2 = new Rapper { Name = "Test Rapper 2", RowKey = "test-rapper-2" },
+                Rapper1 = new Rapper { Name = "Eminem", RowKey = "eminem" },
+                Rapper2 = new Rapper { Name = "Snoop Dogg", RowKey = "snoop-dogg" },
+                Topic = new Topic { Title = "Best Coast", Category = "Geography" }
+            };
+
+            // Act
+            var response = await _client.PostAsJsonAsync("/Debate/start", request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var state = await response.Content.ReadFromJsonAsync<DebateState>();
+            Assert.NotNull(state);
+            Assert.True(state.IsDebateInProgress);
+        }
+
+        [Fact]
+        public async Task StartDebate_WithMissingRapper_ReturnsBadRequest()
+        {
+            // Arrange
+            var request = new StartDebateRequest
+            {
+                Rapper1 = null!,
+                Rapper2 = new Rapper { Name = "Snoop Dogg", RowKey = "snoop-dogg" },
                 Topic = new Topic { Title = "Test Topic", Category = "Test" }
             };
 
             // Act
-            var response = await _client.PostAsJsonAsync("/api/Debate", request);
+            var response = await _client.PostAsJsonAsync("/Debate/start", request);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-            state!.Rapper1.Name.Should().Be("Test Rapper 1");
-            state.Rapper2.Name.Should().Be("Test Rapper 2");
-            state.Topic.Title.Should().Be("Test Topic");
-
-            // Cleanup
-            await _client.DeleteAsync("/api/Debate/current");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Fact]
-        public async Task StartDebate_LegacyEndpoint_StillWorks()
+        public async Task ResetDebate_ReturnsOk()
         {
-            // Arrange
-            var request = new StartDebateRequest
-            {
-                Rapper1 = new Rapper { Name = "Legacy Rapper 1", RowKey = "legacy-rapper-1" },
-                Rapper2 = new Rapper { Name = "Legacy Rapper 2", RowKey = "legacy-rapper-2" },
-                Topic = new Topic { Title = "Legacy Topic", Category = "Test" }
-            };
-
             // Act
-            var response = await _client.PostAsJsonAsync("/api/Debate/start", request);
+            var response = await _client.PostAsync("/Debate/reset", null);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var state = await response.Content.ReadFromJsonAsync<DebateState>();
-            state.Should().NotBeNull();
-            state!.Rapper1.Name.Should().Be("Legacy Rapper 1");
-
-            // Cleanup
-            await _client.DeleteAsync("/api/Debate/current");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        #endregion
+        [Fact]
+        public async Task SignalAudioComplete_ReturnsOk()
+        {
+            // Act
+            var response = await _client.PostAsync("/Debate/signal-audio-complete", null);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }

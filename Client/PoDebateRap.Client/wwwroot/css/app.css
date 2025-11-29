@@ -231,3 +231,196 @@ code {
     padding: 2px 4px;
     border-radius: 3px;
 }
+
+/* =====================================================
+   CSS Container Queries for Responsive Components
+   Modern container-based responsiveness
+   ===================================================== */
+
+/* Define container query contexts */
+.container-responsive {
+    container-type: inline-size;
+    container-name: responsive-container;
+}
+
+.debate-container {
+    container-type: inline-size;
+    container-name: debate;
+}
+
+.card-container {
+    container-type: inline-size;
+    container-name: card;
+}
+
+.sidebar-container {
+    container-type: inline-size;
+    container-name: sidebar;
+}
+
+/* Debate Component Container Queries */
+@container debate (max-width: 600px) {
+    .rapper-profiles {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .vs-separator {
+        padding: 0.5rem 0;
+    }
+
+    .playback-controls {
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .lyrics {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+}
+
+@container debate (min-width: 800px) {
+    .debate-visualizer {
+        padding: 2rem;
+    }
+
+    .lyrics {
+        font-size: 1.15rem;
+        line-height: 1.8;
+    }
+
+    .rapper-profile {
+        padding: 1.5rem;
+    }
+}
+
+/* Card Container Queries */
+@container card (max-width: 200px) {
+    .card-content {
+        padding: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+    }
+
+    .card-stats {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+@container card (min-width: 300px) {
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    .card-actions {
+        flex-direction: row;
+    }
+}
+
+/* Sidebar Container Queries */
+@container sidebar (max-width: 200px) {
+    .sidebar-nav-text {
+        display: none;
+    }
+
+    .sidebar-nav-icon {
+        margin-right: 0;
+    }
+}
+
+/* Generic Responsive Container Queries */
+@container responsive-container (max-width: 480px) {
+    .responsive-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .responsive-flex {
+        flex-direction: column;
+    }
+
+    .hide-on-compact {
+        display: none;
+    }
+}
+
+@container responsive-container (min-width: 481px) and (max-width: 768px) {
+    .responsive-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container responsive-container (min-width: 769px) {
+    .responsive-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .show-on-wide {
+        display: block;
+    }
+}
+
+/* Utility Classes for Container Queries */
+.cq-hide-compact {
+    display: block;
+}
+
+.cq-show-compact {
+    display: none;
+}
+
+@container (max-width: 480px) {
+    .cq-hide-compact {
+        display: none;
+    }
+
+    .cq-show-compact {
+        display: block;
+    }
+}
+
+/* Fluid Typography with Container Queries */
+@container (min-width: 320px) {
+    .fluid-heading {
+        font-size: clamp(1.25rem, 4cqi + 0.5rem, 2.5rem);
+    }
+
+    .fluid-text {
+        font-size: clamp(0.875rem, 2cqi + 0.5rem, 1.125rem);
+    }
+}
+
+/* Responsive Spacing with Container Queries */
+@container (max-width: 400px) {
+    .cq-padding {
+        padding: 0.75rem;
+    }
+
+    .cq-gap {
+        gap: 0.5rem;
+    }
+}
+
+@container (min-width: 401px) and (max-width: 800px) {
+    .cq-padding {
+        padding: 1.25rem;
+    }
+
+    .cq-gap {
+        gap: 1rem;
+    }
+}
+
+@container (min-width: 801px) {
+    .cq-padding {
+        padding: 2rem;
+    }
+
+    .cq-gap {
+        gap: 1.5rem;
+    }
+}
+

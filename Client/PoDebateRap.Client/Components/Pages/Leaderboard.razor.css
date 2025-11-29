@@ -1,124 +1,279 @@
+/* =====================================================
+   Leaderboard Page Styles - Radzen Edition
+   Modern DataGrid with stats cards and visual polish
+   ===================================================== */
+
 .leaderboard-container {
-    padding: 30px;
-    max-width: 950px;
-    margin: 30px auto;
-    background-color: #1e1e1e;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
-    color: #e0e0e0;
-    container-type: inline-size;
-    container-name: leaderboard;
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 1.5rem auto;
+    background: linear-gradient(145deg, var(--rz-base-800, #1e1e1e) 0%, var(--rz-base-900, #111) 100%);
+    border-radius: var(--rz-border-radius-3, 16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    color: var(--rz-text-color, #e0e0e0);
+    border: 1px solid var(--rz-base-600, #333);
 }
 
-/* Breadcrumb styling */
-::deep .breadcrumb-nav {
-    margin-bottom: 1.5rem;
-}
-
-::deep .breadcrumb-nav .rz-breadcrumb-item a {
-    color: #FFD700 !important;
-}
-
-::deep .breadcrumb-nav .rz-breadcrumb-item:last-child {
-    color: #bbb;
-}
-
+/* Header Section */
 .leaderboard-header-section {
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
-::deep .leaderboard-header {
-    color: #FFD700 !important;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: bold;
-    margin: 0;
+::deep .leaderboard-title {
+    color: var(--rz-warning, #FFD700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-::deep .leaderboard-subheader {
-    color: #bbb !important;
+::deep .leaderboard-subtitle {
+    color: var(--rz-text-secondary-color, #bbb);
 }
 
-::deep .btn-navigate-home {
+/* Actions Row */
+.leaderboard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+::deep .back-btn,
+::deep .refresh-btn {
+    border-radius: 8px;
+}
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem;
+}
+
+::deep .loading-text {
+    color: var(--rz-text-tertiary-color, #888);
+}
+
+/* Info Alert */
+::deep .info-alert {
+    border-radius: var(--rz-border-radius, 10px);
+}
+
+/* Stats Cards */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-/* Skeleton loading styles */
-.skeleton-container {
-    margin-top: 1.5rem;
-}
-
-::deep .skeleton-row {
-    background-color: #2a2a2a !important;
+::deep .stat-card {
+    background: var(--rz-base-700, #2a2a2a);
+    border: 1px solid var(--rz-base-600, #444);
+    border-radius: var(--rz-border-radius, 10px);
     padding: 1rem;
+    transition: all 0.3s ease;
 }
 
-/* DataGrid styling */
+::deep .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+::deep .stat-card.champion {
+    border-color: var(--rz-warning, #FFD700);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, var(--rz-base-700, #2a2a2a) 100%);
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+::deep .stat-icon-radzen {
+    font-size: 2rem;
+    color: var(--rz-warning, #FFD700);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .stat-value {
+    color: var(--rz-warning, #FFD700);
+    margin: 0;
+}
+
+/* DataGrid Styling */
 ::deep .leaderboard-grid {
-    background-color: transparent !important;
-    margin-top: 1.5rem;
+    background: var(--rz-base-800, #1e1e1e);
+    border-radius: var(--rz-border-radius, 10px);
+    overflow: hidden;
+    border: 1px solid var(--rz-base-600, #444);
 }
 
-::deep .leaderboard-grid .rz-datatable-thead th {
-    background-color: #333 !important;
-    color: #FFD700 !important;
-    font-weight: bold;
-    font-family: 'Montserrat', sans-serif;
-    border-bottom: 2px solid #FFD700;
+::deep .leaderboard-grid .rz-data-grid-header {
+    background: var(--rz-base-700, #2a2a2a);
 }
 
-::deep .leaderboard-grid .rz-datatable-data tr {
-    background-color: #2a2a2a;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+::deep .leaderboard-grid .rz-data-grid-header th {
+    color: var(--rz-warning, #FFD700);
+    font-weight: 600;
+    border-bottom: 2px solid var(--rz-warning, #FFD700);
 }
 
-::deep .leaderboard-grid .rz-datatable-data tr:nth-child(odd) {
-    background-color: #2f2f2f;
+::deep .leaderboard-grid .rz-data-row:hover {
+    background: rgba(255, 215, 0, 0.05);
 }
 
-::deep .leaderboard-grid .rz-datatable-data tr:hover {
-    background-color: #3a3a3a;
+::deep .leaderboard-grid .rz-data-row.top-rank {
+    background: rgba(255, 215, 0, 0.03);
 }
 
-/* Top 3 rank row styling */
-::deep .leaderboard-grid .rz-datatable-data tr.rank-1 {
-    background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent) !important;
+::deep .leaderboard-grid .rz-data-row.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
 }
 
-::deep .leaderboard-grid .rz-datatable-data tr.rank-2 {
-    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent) !important;
+::deep .leaderboard-grid .rz-data-row.rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.08) 0%, transparent 100%);
 }
 
-::deep .leaderboard-grid .rz-datatable-data tr.rank-3 {
-    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent) !important;
+::deep .leaderboard-grid .rz-data-row.rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.08) 0%, transparent 100%);
 }
 
-.rank-icon {
-    font-size: 1.3em;
+/* Rank Cell */
+.rank-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-::deep .rapper-name-cell {
-    color: #e0e0e0;
+.rank-medal {
+    font-size: 1.25rem;
+}
+
+/* Rapper Name Cell */
+.rapper-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rapper-avatar-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rz-warning, #FFD700) 0%, var(--rz-secondary, #CD7F32) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--rz-base-900, #111);
+    flex-shrink: 0;
+}
+
+::deep .rapper-name {
     font-weight: 500;
 }
 
+/* Stats Badges */
+::deep .stat-badge {
+    min-width: 32px;
+    justify-content: center;
+}
+
+/* Win Rate Cell */
+.win-rate-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 ::deep .win-rate-bar {
-    height: 20px;
-    min-width: 80px;
+    border-radius: 4px;
+    --rz-progressbar-color: var(--rz-warning, #FFD700);
+    --rz-progressbar-bg-color: var(--rz-base-600, #444);
 }
 
-::deep .win-rate-bar .rz-progressbar-value {
-    background: linear-gradient(90deg, #FFD700, #FFA500) !important;
+::deep .win-rate-text {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 500;
 }
 
-/* Container query for mobile */
-@container leaderboard (max-width: 600px) {
+/* Pager Styling */
+::deep .leaderboard-grid .rz-pager {
+    background: var(--rz-base-700, #2a2a2a);
+    border-top: 1px solid var(--rz-base-600, #444);
+    padding: 0.75rem;
+}
+
+/* Filter Styling */
+::deep .leaderboard-grid .rz-grid-filter {
+    background: var(--rz-base-700, #2a2a2a);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
     .leaderboard-container {
-        padding: 15px;
-        margin: 15px;
+        padding: 1rem;
+        margin: 1rem;
+        border-radius: 12px;
     }
-    
-    ::deep .leaderboard-grid .rz-datatable-data td {
-        padding: 0.5rem !important;
+
+    .leaderboard-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::deep .back-btn,
+    ::deep .refresh-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .rapper-avatar-mini {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .leaderboard-container {
+        padding: 0.75rem;
+        margin: 0.5rem;
+    }
+
+    ::deep .leaderboard-title {
+        font-size: 1.25rem;
+    }
+
+    .win-rate-cell {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    ::deep .win-rate-bar {
+        width: 100% !important;
     }
 }

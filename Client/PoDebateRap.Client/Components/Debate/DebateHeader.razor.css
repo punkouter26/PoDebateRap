@@ -1,0 +1,89 @@
+.debate-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.95));
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.header-status {
+    display: flex;
+    justify-content: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.in-progress {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    animation: pulse 2s infinite;
+}
+
+.status-badge.finished {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+}
+
+.status-badge.ready {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+}
+
+.topic-display {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.topic-label {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.topic-title {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffd700;
+    margin-top: 0.25rem;
+}
+
+.turn-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.turn-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #f59e0b);
+    transition: width 0.3s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}

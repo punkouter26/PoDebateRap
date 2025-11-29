@@ -1,104 +1,149 @@
 @page "/leaderboard"
 @using PoDebateRap.Shared.Models
-@using Radzen
-@using Radzen.Blazor
 @inject HttpClient Http
 @inject NavigationManager NavManager
 @inject ILogger<Leaderboard> Logger
 
-<PageTitle>Leaderboard | PoDebateRap</PageTitle>
+<PageTitle>PoDebateRap - Leaderboard</PageTitle>
 
 <div class="leaderboard-container">
-    <!-- Breadcrumb Navigation -->
-    <RadzenBreadCrumb class="breadcrumb-nav">
-        <RadzenBreadCrumbItem Path="/" Text="🏠 Home" />
-        <RadzenBreadCrumbItem Text="🏆 Leaderboard" />
-    </RadzenBreadCrumb>
+    <div class="leaderboard-header-section">
+        <RadzenText TextStyle="TextStyle.H4" class="leaderboard-title">
+            <RadzenIcon Icon="emoji_events" /> Leaderboard
+        </RadzenText>
+        <RadzenText TextStyle="TextStyle.Subtitle1" class="leaderboard-subtitle">
+            Top Rap Battle Champions
+        </RadzenText>
+    </div>
 
-    <RadzenStack Gap="1rem" class="leaderboard-header-section">
-        <RadzenText TextStyle="TextStyle.H3" class="leaderboard-header">🏆 Leaderboard</RadzenText>
-        <RadzenText TextStyle="TextStyle.Subtitle1" class="leaderboard-subheader">Top Rap Battle Champions</RadzenText>
-    </RadzenStack>
-
-    <RadzenButton Icon="arrow_back" 
-                  Text="Return to Debates" 
-                  ButtonStyle="ButtonStyle.Secondary" 
-                  Click="@NavigateHome"
-                  class="btn-navigate-home" />
+    <div class="leaderboard-actions">
+        <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                      Icon="arrow_back" 
+                      Text="Return to Debates"
+                      Click="@NavigateHome"
+                      class="back-btn" />
+        
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" 
+                      Icon="refresh" 
+                      Text="Refresh"
+                      Click="@RefreshLeaderboard"
+                      IsBusy="@IsLoading"
+                      class="refresh-btn" />
+    </div>
 
     @if (IsLoading)
     {
-        <!-- Skeleton loading state -->
-        <RadzenStack Gap="0.5rem" class="skeleton-container">
-            @for (int i = 0; i < 5; i++)
-            {
-                <RadzenCard class="skeleton-row">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                        <RadzenSkeleton Shape="SkeletonShape.Circle" style="width: 40px; height: 40px;" />
-                        <RadzenSkeleton style="width: 150px; height: 20px;" />
-                        <RadzenSkeleton style="width: 60px; height: 20px;" />
-                        <RadzenSkeleton style="width: 60px; height: 20px;" />
-                        <RadzenSkeleton style="width: 80px; height: 20px;" />
-                        <RadzenSkeleton style="width: 70px; height: 20px;" />
-                    </RadzenStack>
-                </RadzenCard>
-            }
-        </RadzenStack>
+        <div class="loading-container">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            <RadzenText TextStyle="TextStyle.Body1" class="loading-text">Loading leaderboard...</RadzenText>
+        </div>
     }
     else if (LeaderboardEntries == null || !LeaderboardEntries.Any())
     {
-        <RadzenAlert AlertStyle="AlertStyle.Info" Shade="Shade.Dark" AllowClose="false">
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                <RadzenIcon Icon="info" />
-                <span>No leaderboard data available yet. Start some debates!</span>
-            </RadzenStack>
+        <RadzenAlert AlertStyle="AlertStyle.Info" Shade="Shade.Dark" AllowClose="false" class="info-alert">
+            <RadzenIcon Icon="info" /> No leaderboard data available yet. Start some debates!
         </RadzenAlert>
     }
     else
     {
-        <RadzenDataGrid Data="@LeaderboardEntries" 
-                        TItem="RapperLeaderboardEntry"
-                        AllowSorting="true"
-                        AllowFiltering="false"
-                        PageSize="10"
+        <!-- Stats Summary Cards -->
+        <div class="stats-cards">
+            <RadzenCard class="stat-card champion">
+                <div class="stat-content">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-info">
+                        <RadzenText TextStyle="TextStyle.H5" class="stat-value">@GetChampionName()</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">Current Champion</RadzenText>
+                    </div>
+                </div>
+            </RadzenCard>
+            
+            <RadzenCard class="stat-card">
+                <div class="stat-content">
+                    <RadzenIcon Icon="sports_mma" class="stat-icon-radzen" />
+                    <div class="stat-info">
+                        <RadzenText TextStyle="TextStyle.H5" class="stat-value">@GetTotalDebates()</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">Total Battles</RadzenText>
+                    </div>
+                </div>
+            </RadzenCard>
+            
+            <RadzenCard class="stat-card">
+                <div class="stat-content">
+                    <RadzenIcon Icon="trending_up" class="stat-icon-radzen" />
+                    <div class="stat-info">
+                        <RadzenText TextStyle="TextStyle.H5" class="stat-value">@GetBestWinRate()</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">Best Win Rate</RadzenText>
+                    </div>
+                </div>
+            </RadzenCard>
+        </div>
+
+        <!-- RadzenDataGrid with sorting and filtering -->
+        <RadzenDataGrid Data="@LeaderboardEntries" TItem="RapperLeaderboardEntry"
+                        AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        AllowSorting="true" AllowPaging="true" PageSize="10"
+                        PagerHorizontalAlign="HorizontalAlign.Center"
+                        ShowPagingSummary="true" PagingSummaryFormat="Showing {0} to {1} of {2} rappers"
                         class="leaderboard-grid"
-                        RowRender="@RowRender">
+                        RowRender="@OnRowRender"
+                        ColumnWidth="120px">
+            
             <Columns>
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Rank" Title="Rank" Width="80px" Sortable="false">
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Rank" Title="Rank" Width="80px" 
+                                      Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
                     <Template Context="entry">
-                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <div class="rank-cell">
                             @if (entry.Rank <= 3)
                             {
-                                <span class="rank-icon">@GetRankIcon(entry.Rank)</span>
+                                <span class="rank-medal">@GetRankIcon(entry.Rank)</span>
                             }
-                            <RadzenBadge BadgeStyle="@GetRankBadgeStyle(entry.Rank)" IsPill="true" Text="@entry.Rank.ToString()" />
-                        </RadzenStack>
+                            <RadzenBadge BadgeStyle="@GetRankBadgeStyle(entry.Rank)" Text="@entry.Rank.ToString()" />
+                        </div>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Name" Title="Rapper" Width="200px">
+
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Name" Title="Rapper" Width="180px"
+                                      Sortable="true" Filterable="true">
                     <Template Context="entry">
-                        <RadzenText TextStyle="TextStyle.Body1" class="rapper-name-cell">@entry.Name</RadzenText>
+                        <div class="rapper-name-cell">
+                            <div class="rapper-avatar-mini">@GetInitial(entry.Name)</div>
+                            <RadzenText TextStyle="TextStyle.Body1" class="rapper-name">@entry.Name</RadzenText>
+                        </div>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Wins" Title="Wins" Width="80px" TextAlign="TextAlign.Center">
+
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Wins" Title="Wins" Width="90px"
+                                      Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
                     <Template Context="entry">
-                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@entry.Wins.ToString()" />
+                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@entry.Wins.ToString()" class="stat-badge" />
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Losses" Title="Losses" Width="80px" TextAlign="TextAlign.Center">
+
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="Losses" Title="Losses" Width="90px"
+                                      Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
                     <Template Context="entry">
-                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@entry.Losses.ToString()" />
+                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@entry.Losses.ToString()" class="stat-badge" />
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="TotalDebates" Title="Total" Width="80px" TextAlign="TextAlign.Center" />
-                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="WinPercentage" Title="Win %" Width="100px" TextAlign="TextAlign.Center">
+
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="TotalDebates" Title="Battles" Width="100px"
+                                      Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
                     <Template Context="entry">
-                        <RadzenProgressBar Value="@(entry.WinPercentage * 100)" 
-                                           ShowValue="true" 
-                                           Mode="ProgressBarMode.Determinate"
-                                           class="win-rate-bar">
-                            <Template>@entry.WinPercentage.ToString("P0")</Template>
-                        </RadzenProgressBar>
+                        <RadzenText TextStyle="TextStyle.Body2">@entry.TotalDebates</RadzenText>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="RapperLeaderboardEntry" Property="WinPercentage" Title="Win %" Width="140px"
+                                      Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
+                    <Template Context="entry">
+                        <div class="win-rate-cell">
+                            <RadzenProgressBar Value="@(entry.WinPercentage * 100)" ShowValue="false" 
+                                               class="win-rate-bar" Style="height: 8px; width: 60px;" />
+                            <RadzenText TextStyle="TextStyle.Body2" class="win-rate-text">
+                                @entry.WinPercentage.ToString("P0")
+                            </RadzenText>
+                        </div>
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -113,7 +158,14 @@
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("Leaderboard page initializing.");
+        await LoadLeaderboard();
+    }
+
+    private async Task LoadLeaderboard()
+    {
         IsLoading = true;
+        StateHasChanged();
+        
         try
         {
             var rappers = await Http.GetFromJsonAsync<List<Rapper>>("Rappers");
@@ -136,7 +188,13 @@
         finally
         {
             IsLoading = false;
+            StateHasChanged();
         }
+    }
+
+    private async Task RefreshLeaderboard()
+    {
+        await LoadLeaderboard();
     }
 
     private void CalculateLeaderboard(List<Rapper> rappers)
@@ -153,7 +211,6 @@
             .OrderByDescending(e => e.WinPercentage)
             .ThenByDescending(e => e.Wins)
             .ThenBy(e => e.Losses)
-            .Take(10)
             .Select((entry, index) =>
             {
                 entry.Rank = index + 1;
@@ -167,21 +224,21 @@
         NavManager.NavigateTo("/");
     }
 
-    private void RowRender(RowRenderEventArgs<RapperLeaderboardEntry> args)
-    {
-        // Add special styling for top 3 rows
-        if (args.Data.Rank <= 3)
-        {
-            args.Attributes.Add("class", $"rank-{args.Data.Rank}");
-        }
-    }
+    private string GetChampionName() => LeaderboardEntries?.FirstOrDefault()?.Name ?? "N/A";
+    
+    private int GetTotalDebates() => LeaderboardEntries?.Sum(e => e.TotalDebates) / 2 ?? 0;
+    
+    private string GetBestWinRate() => LeaderboardEntries?.FirstOrDefault()?.WinPercentage.ToString("P0") ?? "0%";
+
+    private string GetInitial(string name) => 
+        string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
 
     private BadgeStyle GetRankBadgeStyle(int rank) => rank switch
     {
-        1 => BadgeStyle.Warning,  // Gold
-        2 => BadgeStyle.Light,    // Silver
-        3 => BadgeStyle.Info,     // Bronze-ish
-        _ => BadgeStyle.Secondary
+        1 => BadgeStyle.Warning,
+        2 => BadgeStyle.Light,
+        3 => BadgeStyle.Secondary,
+        _ => BadgeStyle.Info
     };
 
     private string GetRankIcon(int rank) => rank switch
@@ -191,6 +248,14 @@
         3 => "🥉",
         _ => ""
     };
+
+    private void OnRowRender(RowRenderEventArgs<RapperLeaderboardEntry> args)
+    {
+        if (args.Data.Rank <= 3)
+        {
+            args.Attributes.Add("class", $"top-rank rank-{args.Data.Rank}");
+        }
+    }
 
     private class RapperLeaderboardEntry
     {

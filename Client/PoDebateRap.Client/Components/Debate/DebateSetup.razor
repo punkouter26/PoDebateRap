@@ -1,85 +1,283 @@
 @using PoDebateRap.Shared.Models
 
-<div class="setup-section">
-    <!-- Topic Input Section - Now Primary -->
-    <div class="topic-input-section-primary">
-        <label for="debateTopicInput" class="topic-label">What should they debate?</label>
-        <div class="topic-input-wrapper">
-            <input type="text" id="debateTopicInput" 
-                   placeholder="@TopicPlaceholder"
-                   value="@DebateTopicInput" 
-                   @oninput="HandleTopicInput"
-                   maxlength="150" 
-                   disabled="@IsDisabled"
-                   class="topic-input-large" />
-        </div>
-        @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
-        {
-            <div class="text-warning mt-1"><small>@InitialTopicFetchError</small></div>
-        }
+<RadzenCard class="setup-section-card">
+    <!-- Quick Battle Button -->
+    <div class="quick-battle-container">
+        <RadzenButton ButtonStyle="ButtonStyle.Warning" 
+                      Size="ButtonSize.Large"
+                      Icon="bolt"
+                      Text="@(IsLoading || IsFetchingTopic ? "Loading..." : "Quick Battle")"
+                      IsBusy="@(IsLoading || IsFetchingTopic)"
+                      Disabled="@IsQuickBattleDisabled()"
+                      Click="@HandleQuickBattle"
+                      class="quick-battle-btn" />
+        <p class="quick-battle-hint">Random rappers, instant debate!</p>
     </div>
 
-    <!-- Quick Battle Button - Main Action -->
-    <div class="quick-battle-container-primary">
+    <!-- Divider -->
+    <div class="setup-divider">
+        <RadzenText TextStyle="TextStyle.Overline" class="divider-text">OR CUSTOMIZE</RadzenText>
+    </div>
+
+    <!-- Visual Rapper Selection with RadzenDataList -->
+    <div class="rapper-selection-section">
+        <div class="selection-group">
+            <RadzenText TextStyle="TextStyle.Subtitle1" class="selection-label">
+                <RadzenIcon Icon="person" /> Select Rapper 1
+            </RadzenText>
+            
+            @if (Rappers != null && Rappers.Any())
+            {
+                <RadzenDataList WrapItems="true" AllowPaging="false" 
+                                Data="@(Rappers.OrderBy(r => r.Name))" 
+                                TItem="Rapper" class="rapper-data-list">
+                    <Template Context="rapper">
+                        <RadzenCard class="@GetRapperCardClass(rapper, 1)" 
+                                    @onclick="@(() => SelectRapper1(rapper))">
+                            <div class="rapper-card-content">
+                                @if (SelectedRapper1Name == rapper.Name)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" 
+                                                 class="selection-badge" Text="Rapper 1" />
+                                }
+                                
+                                <div class="rapper-avatar-circle">@GetInitial(rapper.Name)</div>
+                                
+                                <RadzenText TextStyle="TextStyle.Subtitle1" class="rapper-name">
+                                    @rapper.Name
+                                </RadzenText>
+                                
+                                @if (rapper.TotalDebates > 0)
+                                {
+                                    <div class="rapper-stats">
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@($"{rapper.Wins}W")" />
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@($"{rapper.Losses}L")" />
+                                    </div>
+                                    <RadzenText TextStyle="TextStyle.Caption" class="win-rate">
+                                        @GetWinRate(rapper)% Win Rate
+                                    </RadzenText>
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Undefeated" class="undefeated-badge" />
+                                }
+                            </div>
+                        </RadzenCard>
+                    </Template>
+                </RadzenDataList>
+            }
+            else
+            {
+                <div class="loading-cards">
+                    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                    <RadzenText TextStyle="TextStyle.Caption">Loading rappers...</RadzenText>
+                </div>
+            }
+        </div>
+
+        <!-- VS Separator -->
+        <div class="vs-separator-large">
+            <RadzenBadge BadgeStyle="BadgeStyle.Warning" class="vs-badge">VS</RadzenBadge>
+        </div>
+
+        <div class="selection-group">
+            <RadzenText TextStyle="TextStyle.Subtitle1" class="selection-label">
+                <RadzenIcon Icon="person" /> Select Rapper 2
+            </RadzenText>
+            
+            @if (Rappers != null && Rappers.Any())
+            {
+                <RadzenDataList WrapItems="true" AllowPaging="false" 
+                                Data="@(Rappers.OrderBy(r => r.Name))" 
+                                TItem="Rapper" class="rapper-data-list">
+                    <Template Context="rapper">
+                        <RadzenCard class="@GetRapperCardClass(rapper, 2)" 
+                                    @onclick="@(() => SelectRapper2(rapper))">
+                            <div class="rapper-card-content">
+                                @if (SelectedRapper2Name == rapper.Name)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Info" 
+                                                 class="selection-badge" Text="Rapper 2" />
+                                }
+                                
+                                <div class="rapper-avatar-circle">@GetInitial(rapper.Name)</div>
+                                
+                                <RadzenText TextStyle="TextStyle.Subtitle1" class="rapper-name">
+                                    @rapper.Name
+                                </RadzenText>
+                                
+                                @if (rapper.TotalDebates > 0)
+                                {
+                                    <div class="rapper-stats">
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@($"{rapper.Wins}W")" />
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@($"{rapper.Losses}L")" />
+                                    </div>
+                                    <RadzenText TextStyle="TextStyle.Caption" class="win-rate">
+                                        @GetWinRate(rapper)% Win Rate
+                                    </RadzenText>
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Undefeated" class="undefeated-badge" />
+                                }
+                            </div>
+                        </RadzenCard>
+                    </Template>
+                </RadzenDataList>
+            }
+            else
+            {
+                <div class="loading-cards">
+                    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                    <RadzenText TextStyle="TextStyle.Caption">Loading rappers...</RadzenText>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Topic Input Section -->
+    <div class="topic-input-section">
+        <RadzenFormField Text="Debate Topic" Variant="Variant.Outlined" class="topic-field">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@_topicValue" 
+                               Placeholder="@TopicPlaceholder"
+                               MaxLength="150" 
+                               Disabled="@IsDisabled"
+                               Change="@HandleTopicChange"
+                               class="topic-input" />
+            </ChildContent>
+            <Helper>
+                @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" class="topic-error">@InitialTopicFetchError</RadzenText>
+                }
+            </Helper>
+        </RadzenFormField>
+    </div>
+
+    <!-- Begin/Stop Debate Button -->
+    <div class="action-buttons-section">
         @if (!IsDebateInProgress)
         {
-            <button class="btn-quick-battle-large" @onclick="HandleQuickBattle" disabled="@(IsQuickBattleDisabled())">
-                @if (IsLoading || IsFetchingTopic)
-                {
-                    <span class="spinner"></span>
-                    <span>Loading...</span>
-                }
-                else if (IsStarting)
-                {
-                    <span class="spinner"></span>
-                    <span>Starting Battle...</span>
-                }
-                else
-                {
-                    <span class="quick-icon">⚡</span>
-                    <span>START BATTLE</span>
-                }
-            </button>
-            <p class="quick-battle-hint">Two random legendary rappers will face off!</p>
+            <RadzenButton ButtonStyle="ButtonStyle.Primary"
+                          Size="ButtonSize.Large"
+                          Icon="play_arrow"
+                          Text="@GetStartButtonText()"
+                          IsBusy="@IsLoading"
+                          Disabled="@IsStartDisabled"
+                          Click="@HandleBeginClick"
+                          class="start-debate-btn" />
         }
         else
         {
-            <!-- Show Stop Button -->
-            <button class="btn-danger-large" @onclick="OnStopDebate" disabled="@IsVoting">
-                @if (IsStarting)
-                {
-                    <span class="spinner"></span>
-                    <span>Generating...</span>
-                }
-                else
-                {
-                    <span>⏹️ STOP DEBATE</span>
-                }
-            </button>
+            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                          Size="ButtonSize.Large"
+                          Icon="stop"
+                          Text="@(IsStarting ? "Generating..." : "STOP DEBATE")"
+                          IsBusy="@IsStarting"
+                          Disabled="@IsVoting"
+                          Click="@OnStopDebate"
+                          class="stop-debate-btn" />
         }
     </div>
-</div>
+</RadzenCard>
 
 @code {
+    private string? _topicValue;
+
+    protected override void OnParametersSet()
+    {
+        _topicValue = DebateTopicInput;
+    }
+
+    private void SelectRapper1(Rapper rapper)
+    {
+        if (!IsDisabled && SelectedRapper2Name != rapper.Name)
+        {
+            SelectedRapper1Name = rapper.Name;
+            _ = SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
+        }
+    }
+
+    private void SelectRapper2(Rapper rapper)
+    {
+        if (!IsDisabled && SelectedRapper1Name != rapper.Name)
+        {
+            SelectedRapper2Name = rapper.Name;
+            _ = SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
+        }
+    }
+
+    private string GetRapperCardClass(Rapper rapper, int selectionNumber)
+    {
+        var classes = new List<string> { "rapper-card-radzen" };
+        
+        bool isSelected = selectionNumber == 1 
+            ? SelectedRapper1Name == rapper.Name 
+            : SelectedRapper2Name == rapper.Name;
+        
+        bool isDisabledByOther = selectionNumber == 1 
+            ? SelectedRapper2Name == rapper.Name 
+            : SelectedRapper1Name == rapper.Name;
+
+        if (isSelected) classes.Add("selected");
+        if (IsDisabled || isDisabledByOther) classes.Add("disabled");
+        
+        return string.Join(" ", classes);
+    }
+
+    private string GetInitial(string? name) =>
+        string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
+
+    private int GetWinRate(Rapper rapper) =>
+        rapper.TotalDebates == 0 ? 0 : (int)Math.Round((double)rapper.Wins / rapper.TotalDebates * 100);
+
+    private string GetStartButtonText()
+    {
+        if (IsStarting) return "Starting...";
+        if (IsFetchingTopic) return "Fetching Topic...";
+        if (IsLoading) return "Loading...";
+        return "Begin Debate";
+    }
+
     [Parameter] public List<Rapper>? Rappers { get; set; }
     
-    // Keep these for compatibility but they're now set automatically
     private string? _selectedRapper1Name;
+#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
     [Parameter] 
     public string? SelectedRapper1Name 
     { 
         get => _selectedRapper1Name;
-        set => _selectedRapper1Name = value;
+        set
+        {
+            if (_selectedRapper1Name != value)
+            {
+                _selectedRapper1Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper1 changed to: '{value}'");
+                _ = OnRapper1Changed();
+            }
+        }
     }
+#pragma warning restore BL0007
     [Parameter] public EventCallback<string> SelectedRapper1NameChanged { get; set; }
     
     private string? _selectedRapper2Name;
+#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
     [Parameter] 
     public string? SelectedRapper2Name 
     { 
         get => _selectedRapper2Name;
-        set => _selectedRapper2Name = value;
+        set
+        {
+            if (_selectedRapper2Name != value)
+            {
+                _selectedRapper2Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper2 changed to: '{value}'");
+                _ = OnRapper2Changed();
+            }
+        }
     }
+#pragma warning restore BL0007
     [Parameter] public EventCallback<string> SelectedRapper2NameChanged { get; set; }
     [Parameter] public string? DebateTopicInput { get; set; }
     [Parameter] public EventCallback<string> DebateTopicInputChanged { get; set; }
@@ -91,21 +289,43 @@
     [Parameter] public bool IsVoting { get; set; }
     [Parameter] public bool IsStartDisabled { get; set; }
     [Parameter] public string? InitialTopicFetchError { get; set; }
-    [Parameter] public string TopicPlaceholder { get; set; } = "e.g., Is AI good for humanity?";
+    [Parameter] public string TopicPlaceholder { get; set; } = "Enter debate topic...";
     [Parameter] public EventCallback OnStartDebate { get; set; }
     [Parameter] public EventCallback OnStopDebate { get; set; }
     [Parameter] public EventCallback OnQuickBattle { get; set; }
 
-    private async Task HandleTopicInput(ChangeEventArgs e)
+    private async Task OnRapper1Changed()
     {
-        var newValue = e.Value?.ToString();
-        DebateTopicInput = newValue;
+        Console.WriteLine($"[DebateSetup] OnRapper1Changed invoking parent callback with: '{SelectedRapper1Name}'");
+        await SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
+    }
+
+    private async Task OnRapper2Changed()
+    {
+        Console.WriteLine($"[DebateSetup] OnRapper2Changed invoking parent callback with: '{SelectedRapper2Name}'");
+        await SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
+    }
+
+    private async Task HandleTopicChange(string value)
+    {
+        Console.WriteLine($"[DebateSetup] HandleTopicChange called. Old value: '{DebateTopicInput}', New value: '{value}'");
+        DebateTopicInput = value;
+        Console.WriteLine($"[DebateSetup] Invoking parent callback with: '{DebateTopicInput}'");
         await DebateTopicInputChanged.InvokeAsync(DebateTopicInput);
+        Console.WriteLine($"[DebateSetup] Parent callback completed");
+    }
+
+    private async Task HandleBeginClick()
+    {
+        if (!IsStartDisabled)
+        {
+            await OnStartDebate.InvokeAsync();
+        }
     }
 
     private bool IsQuickBattleDisabled()
     {
-        return IsLoading || IsFetchingTopic || IsDisabled || IsStarting || Rappers == null || Rappers.Count < 2 || string.IsNullOrWhiteSpace(DebateTopicInput);
+        return IsLoading || IsFetchingTopic || IsDisabled || Rappers == null || Rappers.Count < 2 || string.IsNullOrWhiteSpace(DebateTopicInput);
     }
 
     private async Task HandleQuickBattle()

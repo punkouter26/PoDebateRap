@@ -1,0 +1,115 @@
+.rapper-cards-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.rapper-card {
+    flex: 1;
+    max-width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 16px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.rapper-card.active {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.rapper-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.avatar-emoji {
+    font-size: 2rem;
+}
+
+.rapper-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.rapper-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+}
+
+.rapper-role {
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rapper-role.pro {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.rapper-role.con {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.rapper-score {
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffd700;
+}
+
+.vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+}
+
+.vs-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #cd7f32;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 480px) {
+    .rapper-card {
+        max-width: 140px;
+        padding: 0.75rem;
+    }
+    
+    .rapper-avatar {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .avatar-emoji {
+        font-size: 1.5rem;
+    }
+    
+    .rapper-name {
+        font-size: 0.875rem;
+    }
+}

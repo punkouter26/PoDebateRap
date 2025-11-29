@@ -1,0 +1,259 @@
+@inject DialogService DialogService
+
+<div class="settings-dialog">
+    <RadzenTabs TabPosition="TabPosition.Left" class="settings-tabs">
+        <Tabs>
+            <!-- Appearance Tab -->
+            <RadzenTabsItem Text="Appearance" Icon="palette">
+                <div class="settings-section">
+                    <RadzenText TextStyle="TextStyle.H6" class="section-title">Theme</RadzenText>
+                    
+                    <div class="setting-item">
+                        <RadzenLabel Text="Color Theme" class="setting-label" />
+                        <RadzenDropDown @bind-Value="@_selectedTheme" 
+                                        Data="@_themes" 
+                                        TextProperty="Name" 
+                                        ValueProperty="Value"
+                                        Change="@OnThemeChange"
+                                        class="setting-control" />
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Accent Color" class="setting-label" />
+                        <div class="color-options">
+                            @foreach (var color in _accentColors)
+                            {
+                                <div class="color-swatch @(color.Value == _selectedAccentColor ? "selected" : "")"
+                                     style="background-color: @color.Hex;"
+                                     @onclick="@(() => SelectAccentColor(color.Value))"
+                                     title="@color.Name">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Audio Tab -->
+            <RadzenTabsItem Text="Audio" Icon="volume_up">
+                <div class="settings-section">
+                    <RadzenText TextStyle="TextStyle.H6" class="section-title">Playback Settings</RadzenText>
+                    
+                    <div class="setting-item">
+                        <RadzenLabel Text="Enable Text-to-Speech" class="setting-label" />
+                        <RadzenSwitch @bind-Value="@_enableTTS" class="setting-control" />
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="TTS Volume" class="setting-label" />
+                        <RadzenSlider @bind-Value="@_ttsVolume" Min="0" Max="100" Step="10" 
+                                      class="setting-slider" Disabled="@(!_enableTTS)" />
+                        <RadzenText TextStyle="TextStyle.Caption" class="volume-label">@_ttsVolume%</RadzenText>
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Speech Rate" class="setting-label" />
+                        <RadzenDropDown @bind-Value="@_speechRate" 
+                                        Data="@_speechRates"
+                                        TextProperty="Name"
+                                        ValueProperty="Value"
+                                        class="setting-control"
+                                        Disabled="@(!_enableTTS)" />
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Auto-play Debates" class="setting-label" />
+                        <RadzenSwitch @bind-Value="@_autoPlayDebates" class="setting-control" />
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Debate Tab -->
+            <RadzenTabsItem Text="Debate" Icon="record_voice_over">
+                <div class="settings-section">
+                    <RadzenText TextStyle="TextStyle.H6" class="section-title">Debate Preferences</RadzenText>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Default Turns per Debate" class="setting-label" />
+                        <RadzenNumeric @bind-Value="@_defaultTurns" Min="4" Max="20" Step="2" 
+                                       class="setting-control" />
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Turn Delay (seconds)" class="setting-label" />
+                        <RadzenSlider @bind-Value="@_turnDelay" Min="1" Max="10" Step="0.5" 
+                                      class="setting-slider" />
+                        <RadzenText TextStyle="TextStyle.Caption" class="delay-label">@_turnDelay.ToString("F1")s</RadzenText>
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Show Rapper Stats" class="setting-label" />
+                        <RadzenSwitch @bind-Value="@_showRapperStats" class="setting-control" />
+                    </div>
+
+                    <div class="setting-item">
+                        <RadzenLabel Text="Enable Haptic Feedback" class="setting-label" />
+                        <RadzenSwitch @bind-Value="@_enableHaptics" class="setting-control" />
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- About Tab -->
+            <RadzenTabsItem Text="About" Icon="info">
+                <div class="settings-section about-section">
+                    <div class="app-logo">🎤⚔️</div>
+                    <RadzenText TextStyle="TextStyle.H5" class="app-name">PoDebateRap</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption" class="app-version">Version 1.0.0</RadzenText>
+                    
+                    <RadzenText TextStyle="TextStyle.Body2" class="app-description">
+                        AI-powered rap battle debates featuring your favorite artists.
+                        Built with .NET 10 and Blazor WebAssembly.
+                    </RadzenText>
+
+                    <div class="about-links">
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                      Icon="code" Text="Source Code"
+                                      Click="@(() => OpenLink("https://github.com/punkouter24/PoDebateRap"))" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                      Icon="bug_report" Text="Report Bug"
+                                      Click="@(() => OpenLink("https://github.com/punkouter24/PoDebateRap/issues"))" />
+                    </div>
+
+                    <RadzenText TextStyle="TextStyle.Caption" class="copyright">
+                        © 2025 PunkoOuter. All rights reserved.
+                    </RadzenText>
+                </div>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+
+    <!-- Dialog Actions -->
+    <div class="dialog-actions">
+        <RadzenButton ButtonStyle="ButtonStyle.Light" 
+                      Text="Reset to Defaults" 
+                      Icon="restore"
+                      Click="@ResetToDefaults" />
+        <div class="action-spacer"></div>
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" 
+                      Text="Cancel" 
+                      Click="@Cancel" />
+        <RadzenButton ButtonStyle="ButtonStyle.Primary" 
+                      Text="Save Settings" 
+                      Icon="save"
+                      Click="@SaveSettings" />
+    </div>
+</div>
+
+@code {
+    // Theme settings
+    private string _selectedTheme = "dark";
+    private string _selectedAccentColor = "gold";
+    
+    private readonly List<ThemeOption> _themes = new()
+    {
+        new("Dark Mode", "dark"),
+        new("Light Mode", "light"),
+        new("System Default", "system")
+    };
+
+    private readonly List<AccentColor> _accentColors = new()
+    {
+        new("Gold", "gold", "#FFD700"),
+        new("Orange", "orange", "#FFA500"),
+        new("Bronze", "bronze", "#CD7F32"),
+        new("Blue", "blue", "#2196F3"),
+        new("Green", "green", "#4CAF50"),
+        new("Purple", "purple", "#9C27B0")
+    };
+
+    // Audio settings
+    private bool _enableTTS = true;
+    private double _ttsVolume = 80;
+    private string _speechRate = "normal";
+    
+    private readonly List<SpeechRateOption> _speechRates = new()
+    {
+        new("Slow", "slow"),
+        new("Normal", "normal"),
+        new("Fast", "fast")
+    };
+
+    // Debate settings
+    private bool _autoPlayDebates = false;
+    private int _defaultTurns = 10;
+    private double _turnDelay = 3;
+    private bool _showRapperStats = true;
+    private bool _enableHaptics = true;
+
+    private void OnThemeChange(object value)
+    {
+        // Theme change will be applied on save
+    }
+
+    private void SelectAccentColor(string color)
+    {
+        _selectedAccentColor = color;
+    }
+
+    private void OpenLink(string url)
+    {
+        // Would use JSInterop to open link in new tab
+    }
+
+    private void ResetToDefaults()
+    {
+        _selectedTheme = "dark";
+        _selectedAccentColor = "gold";
+        _enableTTS = true;
+        _ttsVolume = 80;
+        _speechRate = "normal";
+        _autoPlayDebates = false;
+        _defaultTurns = 10;
+        _turnDelay = 3;
+        _showRapperStats = true;
+        _enableHaptics = true;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+
+    private void SaveSettings()
+    {
+        var settings = new AppSettings
+        {
+            Theme = _selectedTheme,
+            AccentColor = _selectedAccentColor,
+            EnableTTS = _enableTTS,
+            TTSVolume = _ttsVolume,
+            SpeechRate = _speechRate,
+            AutoPlayDebates = _autoPlayDebates,
+            DefaultTurns = _defaultTurns,
+            TurnDelay = _turnDelay,
+            ShowRapperStats = _showRapperStats,
+            EnableHaptics = _enableHaptics
+        };
+        
+        DialogService.Close(settings);
+    }
+
+    // Helper classes
+    private record ThemeOption(string Name, string Value);
+    private record AccentColor(string Name, string Value, string Hex);
+    private record SpeechRateOption(string Name, string Value);
+
+    public class AppSettings
+    {
+        public string Theme { get; set; } = "dark";
+        public string AccentColor { get; set; } = "gold";
+        public bool EnableTTS { get; set; } = true;
+        public double TTSVolume { get; set; } = 80;
+        public string SpeechRate { get; set; } = "normal";
+        public bool AutoPlayDebates { get; set; } = false;
+        public int DefaultTurns { get; set; } = 10;
+        public double TurnDelay { get; set; } = 3;
+        public bool ShowRapperStats { get; set; } = true;
+        public bool EnableHaptics { get; set; } = true;
+    }
+}

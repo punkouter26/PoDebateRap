@@ -1,0 +1,130 @@
+.debate-results {
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 16px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.results-header {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(205, 127, 50, 0.2));
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.results-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #ffd700;
+}
+
+.results-body {
+    padding: 1.5rem;
+}
+
+.results-intro {
+    text-align: center;
+    color: #9ca3af;
+    margin-bottom: 1.5rem;
+}
+
+.results-intro strong {
+    color: #fff;
+}
+
+.judge-decision {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.judge-decision h4 {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.winner-announcement {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    color: #ffd700;
+    margin: 0;
+}
+
+.winner-icon {
+    font-size: 2rem;
+}
+
+.draw-announcement {
+    font-size: 1.25rem;
+    color: #6366f1;
+}
+
+.undecided-announcement {
+    font-size: 1.25rem;
+    color: #f59e0b;
+}
+
+.error-announcement {
+    font-size: 1.25rem;
+    color: #ef4444;
+}
+
+.judge-reasoning {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-style: italic;
+    color: #d1d5db;
+}
+
+.debate-stats {
+    margin-top: 1.5rem;
+}
+
+.debate-stats h5 {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-table th {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-table td {
+    color: #e5e5e5;
+}
+
+.stats-table td:first-child {
+    text-align: left;
+    color: #9ca3af;
+}
+
+.total-row td {
+    border-top: 2px solid rgba(255, 215, 0, 0.3);
+    color: #ffd700 !important;
+}

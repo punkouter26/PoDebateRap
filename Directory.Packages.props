@@ -1,80 +1,51 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-  
-  <!-- Azure SDK Packages -->
+
   <ItemGroup>
+    <!-- Azure SDK Packages -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.Core" Version="1.49.0" />
     <PackageVersion Include="Azure.Data.Tables" Version="12.11.0" />
     <PackageVersion Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageVersion Include="Azure.Identity" Version="1.17.0" />
-  </ItemGroup>
 
-  <!-- ASP.NET Core Packages (.NET 10) -->
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-preview.7.25380.108" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-preview.7.25380.108" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-preview.7.25380.108" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-preview.7.25380.108" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Common" Version="10.0.0-preview.7.25380.108" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.0-preview.7.25380.108" />
-  </ItemGroup>
+    <!-- ASP.NET Core Packages -->
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-preview.6.25306.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-preview.6.25306.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-preview.6.25306.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-preview.6.25306.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Common" Version="10.0.0-preview.6.25306.5" />
 
-  <!-- Application Insights & Telemetry -->
-  <ItemGroup>
+    <!-- Microsoft Extensions -->
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.0-preview.6.25306.5" />
+
+    <!-- Azure Cognitive Services -->
+    <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.46.0" />
+
+    <!-- Application Insights -->
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-    <PackageVersion Include="OpenTelemetry" Version="1.11.2" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
-  </ItemGroup>
 
-  <!-- Logging -->
-  <ItemGroup>
+    <!-- Validation -->
+    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
+
+    <!-- API Documentation -->
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+
+    <!-- Logging -->
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
-  </ItemGroup>
 
-  <!-- Validation -->
-  <ItemGroup>
-    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
-  </ItemGroup>
-
-  <!-- Cognitive Services -->
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.46.0" />
-  </ItemGroup>
-
-  <!-- Swagger / OpenAPI -->
-  <ItemGroup>
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.0.0" />
-  </ItemGroup>
-
-  <!-- UI Components -->
-  <ItemGroup>
+    <!-- UI Components -->
     <PackageVersion Include="Radzen.Blazor" Version="8.1.6" />
-  </ItemGroup>
 
-  <!-- Testing Packages -->
-  <ItemGroup>
+    <!-- Testing Packages -->
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0-preview.6.25306.5" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="bunit" Version="2.0.82-preview" />
-    <PackageVersion Include="FluentAssertions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0-preview.7.25380.108" />
-  </ItemGroup>
-
-  <!-- Code Coverage -->
-  <ItemGroup>
-    <PackageVersion Include="dotnet-coverage" Version="17.15.0" />
-    <PackageVersion Include="ReportGenerator" Version="5.4.7" />
   </ItemGroup>
 </Project>

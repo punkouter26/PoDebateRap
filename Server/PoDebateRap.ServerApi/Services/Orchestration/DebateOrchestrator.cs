@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PoDebateRap.Shared.Models;
-using PoDebateRap.Shared.Analyzers;
+using PoDebateRap.ServerApi.Factories;
 using System;
 using System.Text;
 using System.Threading;
@@ -16,7 +16,6 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
     {
         private readonly ILogger<DebateOrchestrator> _logger;
         private readonly IDebateServiceFactory _serviceFactory;
-        private readonly IDebatePromptBuilder _promptBuilder;
 
         private DebateState _currentState;
         public DebateState CurrentState => _currentState;
@@ -26,36 +25,16 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
         private CancellationTokenSource? _debateCancellationTokenSource;
         private TaskCompletionSource<bool> _audioPlaybackCompletionSource;
 
-        private const int MaxDebateTurns = 6; // Total turns for the debate (3 per rapper)
+        private const int MaxDebateTurns = 10; // Total turns for the debate
         private const int MaxTokensPerTurn = 200; // Max tokens for AI generated rap
         private const string Rapper1Voice = "en-US-GuyNeural"; // Example voice for Rapper 1
         private const string Rapper2Voice = "en-US-JennyNeural"; // Example voice for Rapper 2
 
-        // Track verses for rhyme analytics
-        private List<string> _rapper1Verses = new();
-        private List<string> _rapper2Verses = new();
-
         public DebateOrchestrator(ILogger<DebateOrchestrator> logger, IDebateServiceFactory serviceFactory)
-            : this(logger, serviceFactory, new DebatePromptBuilder())
-        {
-        }
-
-        public DebateOrchestrator(ILogger<DebateOrchestrator> logger, IDebateServiceFactory serviceFactory, IDebatePromptBuilder promptBuilder)
         {
             _logger = logger;
             _serviceFactory = serviceFactory;
-            _promptBuilder = promptBuilder;
-            _currentState = new DebateState
-            {
-                Rapper1 = new Rapper(),
-                Rapper2 = new Rapper(),
-                Topic = new Topic(),
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty
-            };
+            _currentState = DebateStateFactory.CreateEmpty();
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
         }
 
@@ -69,23 +48,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
             _audioPlaybackCompletionSource?.TrySetResult(true); // Complete any pending audio playback
             _audioPlaybackCompletionSource = new TaskCompletionSource<bool>();
 
-            // Reset verse tracking for analytics
-            _rapper1Verses.Clear();
-            _rapper2Verses.Clear();
-
-            _currentState = new DebateState
-            {
-                Rapper1 = new Rapper(),
-                Rapper2 = new Rapper(),
-                Topic = new Topic(),
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty,
-                RhymeAnalytics = null,
-                CurrentTurnAnalytics = null
-            };
+            _currentState = DebateStateFactory.CreateEmpty();
             _ = NotifyStateChangeAsync(); // Fire-and-forget: Notify UI of reset
         }
 
@@ -107,30 +70,7 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
         private void InitializeDebateState(Rapper rapper1, Rapper rapper2, Topic topic)
         {
-            // Reset verse tracking for new debate
-            _rapper1Verses.Clear();
-            _rapper2Verses.Clear();
-
-            _currentState = new DebateState
-            {
-                Rapper1 = rapper1,
-                Rapper2 = rapper2,
-                Topic = topic,
-                IsDebateInProgress = true,
-                CurrentTurn = 0,
-                TotalTurns = MaxDebateTurns,
-                DebateTranscript = new StringBuilder(),
-                IsRapper1Turn = true,
-                CurrentTurnText = $"Get ready! Topic: '{topic.Title}'. {rapper1.Name} (Pro) vs {rapper2.Name} (Con). {rapper1.Name} starts...",
-                IsGeneratingTurn = false,
-                CurrentTurnAudio = Array.Empty<byte>(),
-                WinnerName = string.Empty,
-                JudgeReasoning = string.Empty,
-                Stats = new DebateStats(),
-                ErrorMessage = string.Empty,
-                RhymeAnalytics = null,
-                CurrentTurnAnalytics = null
-            };
+            _currentState = DebateStateFactory.CreateForNewDebate(rapper1, rapper2, topic, MaxDebateTurns);
         }
 
         private async Task GenerateIntroductionAsync()
@@ -215,54 +155,21 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
         private async Task GenerateTurnTextAsync(IAzureOpenAIService aiService, string currentRapper, string opponent, string role, CancellationToken cancellationToken)
         {
-            // Extract opponent's last verse for direct response using the prompt builder
-            var opponentLastVerse = _promptBuilder.ExtractOpponentLastVerse(
-                _currentState.DebateTranscript, 
-                opponent, 
-                currentRapper);
-
-            // Build the prompt using the dedicated prompt builder
-            var prompt = _promptBuilder.BuildTurnPrompt(
-                currentRapper,
-                opponent,
-                role,
-                _currentState.Topic.Title,
-                _currentState.CurrentTurn,
-                MaxDebateTurns,
-                opponentLastVerse);
+            string prompt = $"You are {currentRapper} debating {opponent} on the topic '{_currentState.Topic.Title}'. " +
+                            $"Your role is {role}. This is turn {_currentState.CurrentTurn} of {MaxDebateTurns}. " +
+                            $"Current transcript:\n{_currentState.DebateTranscript.ToString()}\n" +
+                            $"Your rap:";
 
             try
             {
                 _currentState.CurrentTurnText = await aiService.GenerateDebateTurnAsync(prompt, MaxTokensPerTurn, cancellationToken);
                 _currentState.DebateTranscript.AppendLine($"{currentRapper} (Turn {_currentState.CurrentTurn}):\n{_currentState.CurrentTurnText}\n");
-
-                // Track verse for rhyme analytics and compute turn analytics
-                if (_currentState.IsRapper1Turn)
-                {
-                    _rapper1Verses.Add(_currentState.CurrentTurnText);
-                }
-                else
-                {
-                    _rapper2Verses.Add(_currentState.CurrentTurnText);
-                }
-
-                // Compute turn analytics for crowd reactions
-                _currentState.CurrentTurnAnalytics = RhymeAnalyzer.AnalyzeTurn(
-                    _currentState.CurrentTurnText,
-                    _currentState.CurrentTurn,
-                    _currentState.IsRapper1Turn);
-                
-                _logger.LogInformation("Turn {Turn} analytics: Score={Score}, Reaction={Reaction}", 
-                    _currentState.CurrentTurn, 
-                    _currentState.CurrentTurnAnalytics.OverallScore,
-                    _currentState.CurrentTurnAnalytics.GetReactionType());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating turn {Turn} text.", _currentState.CurrentTurn);
                 _currentState.CurrentTurnText = $"Error generating rap for {currentRapper}.";
                 _currentState.ErrorMessage = ex.Message;
-                _currentState.CurrentTurnAnalytics = null;
             }
         }
 
@@ -301,36 +208,9 @@ namespace PoDebateRap.ServerApi.Services.Orchestration
 
             await JudgeDebateAsync(cancellationToken);
 
-            // Compute final rhyme analytics for both rappers
-            ComputeFinalRhymeAnalytics();
-
             _currentState.IsDebateFinished = true;
             _currentState.IsGeneratingTurn = false;
             await NotifyStateChangeAsync();
-        }
-
-        private void ComputeFinalRhymeAnalytics()
-        {
-            try
-            {
-                var rapper1Metrics = RhymeAnalyzer.CombineVerses(_rapper1Verses);
-                var rapper2Metrics = RhymeAnalyzer.CombineVerses(_rapper2Verses);
-
-                _currentState.RhymeAnalytics = new RhymeAnalytics
-                {
-                    Rapper1Metrics = rapper1Metrics,
-                    Rapper2Metrics = rapper2Metrics
-                };
-
-                _logger.LogInformation("Computed final rhyme analytics: R1 Rhyme={R1Rhyme}%, R2 Rhyme={R2Rhyme}%",
-                    rapper1Metrics.RhymeDensity,
-                    rapper2Metrics.RhymeDensity);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error computing final rhyme analytics.");
-                _currentState.RhymeAnalytics = RhymeAnalytics.Empty;
-            }
         }
 
         private async Task JudgeDebateAsync(CancellationToken cancellationToken)
