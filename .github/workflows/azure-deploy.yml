@@ -31,9 +31,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire-cli
-
       - name: Login to Azure (Federated Credentials)
         uses: azure/login@v2
         with:
