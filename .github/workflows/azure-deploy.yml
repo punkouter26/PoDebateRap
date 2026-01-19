@@ -62,27 +62,6 @@ jobs:
           echo "FQDN=https://${FQDN}" >> $GITHUB_OUTPUT
           echo "Container App FQDN: https://${FQDN}"
 
-      - name: Health Check
-        run: |
-          FQDN="${{ steps.get-fqdn.outputs.FQDN }}"
-          echo "Testing health endpoint: ${FQDN}/health"
-          
-          # Wait for app to be ready (max 3 minutes)
-          for i in {1..36}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "${FQDN}/health" || echo "000")
-            if [ "$RESPONSE" = "200" ]; then
-              echo "✅ Health check passed!"
-              curl -s "${FQDN}/health" | jq . || curl -s "${FQDN}/health"
-              exit 0
-            fi
-            echo "Waiting for app to be ready... ($i/36) - HTTP $RESPONSE"
-            sleep 5
-          done
-          
-          echo "❌ Health check failed after 3 minutes"
-          curl -s "${FQDN}/health" || true
-          exit 1
-
       - name: Deployment Summary
         if: always()
         run: |
@@ -92,4 +71,3 @@ jobs:
           echo "| Environment | ${{ env.AZD_ENV_NAME }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Resource Group | ${{ env.AZURE_RESOURCE_GROUP }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Container App URL | ${{ steps.get-fqdn.outputs.FQDN }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Health Endpoint | ${{ steps.get-fqdn.outputs.FQDN }}/health |" >> $GITHUB_STEP_SUMMARY

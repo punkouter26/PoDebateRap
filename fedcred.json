@@ -1,0 +1,6 @@
+{
+    "name": "PoDebateRap-master",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:punkouter26/PoDebateRap:ref:refs/heads/master",
+    "audiences": ["api://AzureADTokenExchange"]
+}

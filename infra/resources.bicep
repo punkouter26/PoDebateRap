@@ -121,6 +121,10 @@ resource webContainerApp 'Microsoft.App/containerApps@2023-05-01' = {
               secretRef: 'storage-connection'
             }
             {
+              name: 'Azure__StorageConnectionString'
+              secretRef: 'storage-connection'
+            }
+            {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               value: 'InstrumentationKey=0dd09920-6fad-4ebf-a399-e7440a0eabd5;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/'
             }
