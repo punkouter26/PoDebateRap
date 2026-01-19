@@ -1,6 +1,6 @@
 using Xunit;
 using Moq;
-using PoDebateRap.ServerApi.Services.AI;
+using PoDebateRap.Web.Services.AI;
 using PoDebateRap.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

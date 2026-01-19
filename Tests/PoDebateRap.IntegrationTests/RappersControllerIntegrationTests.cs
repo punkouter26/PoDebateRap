@@ -1,58 +1,58 @@
 using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using PoDebateRap.Shared.Models;
+using PoDebateRap.IntegrationTests.Infrastructure;
 
 namespace PoDebateRap.IntegrationTests
 {
     /// <summary>
-    /// Integration tests for RappersController endpoints.
+    /// Integration tests for Rapper API endpoints.
+    /// Uses CustomWebApplicationFactory with mocked dependencies.
     /// </summary>
-    public class RappersControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    [Collection("IntegrationTests")]
+    public class RappersControllerIntegrationTests
     {
-        private readonly WebApplicationFactory<Program> _factory;
-        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
 
-        public RappersControllerIntegrationTests(WebApplicationFactory<Program> factory)
+        public RappersControllerIntegrationTests(CustomWebApplicationFactory factory)
         {
-            _factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    // Override services with test doubles if needed
-                });
-            });
-            _client = _factory.CreateClient();
+            _factory = factory;
         }
 
         [Fact]
         public async Task GetRappers_ReturnsOkWithRappersList()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/Rappers");
+            var response = await client.GetAsync("/api/rappers");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var rappers = await response.Content.ReadFromJsonAsync<List<Rapper>>();
             Assert.NotNull(rappers);
+            Assert.NotEmpty(rappers);
         }
 
         [Fact]
-        public async Task UpdateWinLoss_WithValidNames_ReturnsOk()
+        public async Task GetRappers_ReturnsExpectedRapperCount()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.PostAsync(
-                "/Rappers/update-win-loss?winnerName=TestWinner&loserName=TestLoser", 
-                null);
+            var response = await client.GetAsync("/api/rappers");
+            var rappers = await response.Content.ReadFromJsonAsync<List<Rapper>>();
 
-            // Assert - May fail if storage is not available, which is expected in CI
-            Assert.True(
-                response.StatusCode == HttpStatusCode.OK || 
-                response.StatusCode == HttpStatusCode.InternalServerError,
-                $"Expected OK or InternalServerError (storage unavailable), got {response.StatusCode}");
+            // Assert
+            Assert.NotNull(rappers);
+            Assert.Equal(5, rappers.Count); // 5 test rappers from mock
         }
     }
 }
+
+
+

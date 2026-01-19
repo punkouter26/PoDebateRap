@@ -4,7 +4,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
-using PoDebateRap.ServerApi.Services.Telemetry;
+using PoDebateRap.Web.Services.Telemetry;
 using System;
 
 namespace PoDebateRap.UnitTests

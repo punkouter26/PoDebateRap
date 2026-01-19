@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Server\PoDebateRap.ServerApi\PoDebateRap.ServerApi.csproj" />
-    <ProjectReference Include="..\..\Shared\PoDebateRap.Shared.csproj" />
+    <ProjectReference Include="..\..\src\PoDebateRap.Web\PoDebateRap.Web.csproj" />
+    <ProjectReference Include="..\..\src\PoDebateRap.Shared\PoDebateRap.Shared.csproj" />
   </ItemGroup>
 
 </Project>

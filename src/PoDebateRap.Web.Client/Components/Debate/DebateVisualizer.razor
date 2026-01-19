@@ -1,0 +1,251 @@
+@using PoDebateRap.Shared.Models
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="debate-visualizer" id="debate-visualizer-@_instanceId">
+    <!-- Rapper Profiles with Progress -->
+    <div class="rapper-profiles">
+        <!-- Rapper 1 Profile Area -->
+        <div class="rapper-profile @(IsRapper1Active ? "active-border" : "")">
+            <div class="rapper-avatar">@GetInitial(Rapper1?.Name)</div>
+            <h5>@(Rapper1?.Name ?? "Rapper 1")</h5>
+            <RadzenBadge BadgeStyle="@(IsRapper1Active ? BadgeStyle.Warning : BadgeStyle.Light)" 
+                         Text="@(IsRapper1Active ? "🎤 Speaking" : "Waiting")" 
+                         class="rapper-status" />
+        </div>
+
+        <!-- VS Separator with Circular Progress -->
+        <div class="vs-separator">
+            <RadzenProgressBarCircular Value="@ProgressValue" 
+                                       ShowValue="true" 
+                                       Mode="ProgressBarMode.Determinate"
+                                       class="debate-progress-circle">
+                <Template>
+                    <div class="progress-content">
+                        <span class="turn-display">@CurrentTurnNumber</span>
+                        <span class="turn-total">/ @TotalTurns</span>
+                    </div>
+                </Template>
+            </RadzenProgressBarCircular>
+        </div>
+
+        <!-- Rapper 2 Profile Area -->
+        <div class="rapper-profile @(IsRapper2Active ? "active-border" : "")">
+            <div class="rapper-avatar">@GetInitial(Rapper2?.Name)</div>
+            <h5>@(Rapper2?.Name ?? "Rapper 2")</h5>
+            <RadzenBadge BadgeStyle="@(IsRapper2Active ? BadgeStyle.Warning : BadgeStyle.Light)" 
+                         Text="@(IsRapper2Active ? "🎤 Speaking" : "Waiting")" 
+                         class="rapper-status" />
+        </div>
+    </div>
+
+    <!-- Debate Text Display Area -->
+    <div class="debate-text-area @(IsSwiping ? "swiping" : "")">
+        @if (ShowNavigation && CurrentTurnNumber > 1)
+        {
+            <RadzenButton Icon="chevron_left" ButtonStyle="ButtonStyle.Light" 
+                          Click="@OnPreviousTurn" class="turn-nav-btn turn-nav-prev"
+                          title="Previous Turn" />
+        }
+        
+        <div class="lyrics-container">
+            <pre class="lyrics @(IsNewLyrics ? "fade-in" : "")">@CurrentTurnText</pre>
+        </div>
+        
+        @if (ShowNavigation && CurrentTurnNumber < TotalTurns)
+        {
+            <RadzenButton Icon="chevron_right" ButtonStyle="ButtonStyle.Light" 
+                          Click="@OnNextTurn" class="turn-nav-btn turn-nav-next"
+                          title="Next Turn" />
+        }
+    </div>
+
+    <!-- Playback Controls -->
+    @if (ShowNavigation)
+    {
+        <div class="playback-controls">
+            <div class="turn-slider-container">
+                <RadzenSlider @bind-Value="@_sliderValue" 
+                              Min="1" Max="@TotalTurns" Step="1"
+                              Change="@((double val) => OnSliderChange(val))"
+                              class="turn-slider" />
+                <div class="slider-labels">
+                    <span>Turn 1</span>
+                    <span>Turn @TotalTurns</span>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <RadzenButton Icon="skip_previous" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => JumpToTurn(1))" Disabled="@(CurrentTurnNumber <= 1)"
+                              title="Go to Start" />
+                <RadzenButton Icon="@(_isAutoPlaying ? "pause" : "play_arrow")" 
+                              ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Medium"
+                              Click="@ToggleAutoPlay" title="@(_isAutoPlaying ? "Pause" : "Auto-Play")" />
+                <RadzenButton Icon="skip_next" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => JumpToTurn(TotalTurns))" Disabled="@(CurrentTurnNumber >= TotalTurns)"
+                              title="Go to End" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Linear Progress Bar for Live Debate -->
+        <div class="progress-indicator">
+            <RadzenProgressBar Value="@ProgressValue" ShowValue="false" 
+                               Mode="ProgressBarMode.Determinate" class="live-progress" />
+            <p class="turn-text">Turn @CurrentTurnNumber of @TotalTurns</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Rapper? Rapper1 { get; set; }
+    [Parameter] public Rapper? Rapper2 { get; set; }
+    [Parameter] public string CurrentTurnText { get; set; } = "The debate hasn't started yet...";
+    [Parameter] public bool IsRapper1Active { get; set; } = false;
+    [Parameter] public bool IsRapper2Active { get; set; } = false;
+    [Parameter] public int CurrentTurnNumber { get; set; } = 0;
+    [Parameter] public int TotalTurns { get; set; } = 10;
+    [Parameter] public bool ShowNavigation { get; set; } = false;
+    [Parameter] public EventCallback<int> OnTurnChanged { get; set; }
+
+    private string _previousText = string.Empty;
+    private bool IsNewLyrics => CurrentTurnText != _previousText;
+    private bool IsSwiping = false;
+    private string _instanceId = Guid.NewGuid().ToString("N");
+    private DotNetObjectReference<DebateVisualizer>? _dotNetRef;
+    private double _sliderValue = 1;
+    private bool _isAutoPlaying = false;
+    private System.Timers.Timer? _autoPlayTimer;
+
+    private double ProgressValue => TotalTurns > 0 ? (double)CurrentTurnNumber / TotalTurns * 100 : 0;
+
+    private static string GetInitial(string? name) => 
+        string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _previousText = CurrentTurnText;
+        _sliderValue = CurrentTurnNumber > 0 ? CurrentTurnNumber : 1;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ShowNavigation)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+        await Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public async Task OnSwipeLeft()
+    {
+        if (CurrentTurnNumber < TotalTurns)
+        {
+            await OnNextTurn();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSwipeRight()
+    {
+        if (CurrentTurnNumber > 1)
+        {
+            await OnPreviousTurn();
+        }
+    }
+
+    [JSInvokable]
+    public Task OnSwipeDown() => Task.CompletedTask;
+
+    [JSInvokable]
+    public Task OnSwipeUp() => Task.CompletedTask;
+
+    private async Task OnNextTurn()
+    {
+        if (CurrentTurnNumber < TotalTurns)
+        {
+            IsSwiping = true;
+            StateHasChanged();
+            await Task.Delay(150);
+            await OnTurnChanged.InvokeAsync(CurrentTurnNumber + 1);
+            IsSwiping = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnPreviousTurn()
+    {
+        if (CurrentTurnNumber > 1)
+        {
+            IsSwiping = true;
+            StateHasChanged();
+            await Task.Delay(150);
+            await OnTurnChanged.InvokeAsync(CurrentTurnNumber - 1);
+            IsSwiping = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSliderChange(double value)
+    {
+        var turnNumber = (int)value;
+        if (turnNumber != CurrentTurnNumber && turnNumber >= 1 && turnNumber <= TotalTurns)
+        {
+            await OnTurnChanged.InvokeAsync(turnNumber);
+        }
+    }
+
+    private async Task JumpToTurn(int turn)
+    {
+        if (turn != CurrentTurnNumber)
+        {
+            await OnTurnChanged.InvokeAsync(turn);
+        }
+    }
+
+    private void ToggleAutoPlay()
+    {
+        _isAutoPlaying = !_isAutoPlaying;
+        
+        if (_isAutoPlaying)
+        {
+            _autoPlayTimer = new System.Timers.Timer(3000);
+            _autoPlayTimer.Elapsed += async (s, e) =>
+            {
+                if (CurrentTurnNumber < TotalTurns)
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        await OnTurnChanged.InvokeAsync(CurrentTurnNumber + 1);
+                        StateHasChanged();
+                    });
+                }
+                else
+                {
+                    _isAutoPlaying = false;
+                    _autoPlayTimer?.Stop();
+                    await InvokeAsync(StateHasChanged);
+                }
+            };
+            _autoPlayTimer.Start();
+        }
+        else
+        {
+            _autoPlayTimer?.Stop();
+            _autoPlayTimer?.Dispose();
+            _autoPlayTimer = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _autoPlayTimer?.Stop();
+        _autoPlayTimer?.Dispose();
+        _dotNetRef?.Dispose();
+        await Task.CompletedTask;
+    }
+}

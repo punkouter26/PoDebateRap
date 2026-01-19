@@ -1,4 +1,4 @@
-name: Deploy PoDebateRap to Azure
+name: Deploy PoDebateRap to Azure Container Apps
 
 on:
   push:
@@ -13,14 +13,13 @@ permissions:
 
 env:
   DOTNET_VERSION: '10.0.x'
-  AZURE_WEBAPP_NAME: PoDebateRap
-  AZURE_RESOURCE_GROUP: PoDebateRap
-  AZURE_WEBAPP_PACKAGE_PATH: './publish'
+  AZD_ENV_NAME: 'prod'
+  AZURE_RESOURCE_GROUP: 'PoDebateRap'
+  AZURE_SUBSCRIPTION_ID: 'bbb8dfbe-9169-432f-9b7a-fbf861b51037'
 
 jobs:
-  build-and-deploy:
+  build-test:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,36 +35,81 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-      
+      - name: Run Unit Tests
+        run: dotnet test Tests/PoDebateRap.UnitTests/PoDebateRap.UnitTests.csproj --configuration Release --no-build --verbosity normal
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-test
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Aspire CLI
+        run: dotnet tool install -g aspire-cli
+
       - name: Login to Azure (Federated Credentials)
         uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Azure Developer CLI (azd)
+        uses: Azure/setup-azd@v1
+
+      - name: Login to azd
+        run: azd auth login --client-id ${{ vars.AZURE_CLIENT_ID }} --federated-credential-provider github --tenant-id ${{ vars.AZURE_TENANT_ID }}
+
+      - name: Provision and Deploy with azd
+        run: |
+          azd config set defaults.subscription ${{ env.AZURE_SUBSCRIPTION_ID }}
+          azd up --environment ${{ env.AZD_ENV_NAME }} --no-prompt
+        env:
+          AZURE_ENV_NAME: ${{ env.AZD_ENV_NAME }}
+
+      - name: Get Container App FQDN
+        id: get-fqdn
+        run: |
+          FQDN=$(az containerapp show --name ca-podebaterap-web --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "FQDN=https://${FQDN}" >> $GITHUB_OUTPUT
+          echo "Container App FQDN: https://${FQDN}"
 
       - name: Health Check
         run: |
-          echo "Testing health endpoint: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health"
+          FQDN="${{ steps.get-fqdn.outputs.FQDN }}"
+          echo "Testing health endpoint: ${FQDN}/health"
           
-          # Wait for app to be ready (max 2 minutes)
-          for i in {1..24}; do
-            if curl -f -s "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health" > /dev/null; then
+          # Wait for app to be ready (max 3 minutes)
+          for i in {1..36}; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "${FQDN}/health" || echo "000")
+            if [ "$RESPONSE" = "200" ]; then
               echo "✅ Health check passed!"
+              curl -s "${FQDN}/health" | jq . || curl -s "${FQDN}/health"
               exit 0
             fi
-            echo "Waiting for app to be ready... ($i/24)"
+            echo "Waiting for app to be ready... ($i/36) - HTTP $RESPONSE"
             sleep 5
           done
           
-          echo "❌ Health check failed after 2 minutes"
-          curl -s "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/api/health" || true
+          echo "❌ Health check failed after 3 minutes"
+          curl -s "${FQDN}/health" || true
           exit 1
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ env.AZD_ENV_NAME }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource Group | ${{ env.AZURE_RESOURCE_GROUP }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container App URL | ${{ steps.get-fqdn.outputs.FQDN }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Endpoint | ${{ steps.get-fqdn.outputs.FQDN }}/health |" >> $GITHUB_STEP_SUMMARY

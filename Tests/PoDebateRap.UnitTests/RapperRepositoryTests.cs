@@ -1,7 +1,7 @@
 using Moq;
 using Xunit;
 using PoDebateRap.Shared.Models;
-using PoDebateRap.ServerApi.Services.Data; // Add this using directive
+using PoDebateRap.Web.Services.Data; // Add this using directive
 using Microsoft.Extensions.Logging; // Required for ILogger
 
 namespace PoDebateRap.Tests;

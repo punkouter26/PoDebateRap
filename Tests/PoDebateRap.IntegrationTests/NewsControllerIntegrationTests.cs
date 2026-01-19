@@ -1,41 +1,50 @@
 using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using PoDebateRap.Shared.Models;
+using PoDebateRap.IntegrationTests.Infrastructure;
 
 namespace PoDebateRap.IntegrationTests
 {
     /// <summary>
-    /// Integration tests for NewsController endpoints.
+    /// Integration tests for News API endpoints.
+    /// Uses CustomWebApplicationFactory with mocked dependencies.
     /// </summary>
-    public class NewsControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    [Collection("IntegrationTests")]
+    public class NewsControllerIntegrationTests
     {
-        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
 
-        public NewsControllerIntegrationTests(WebApplicationFactory<Program> factory)
+        public NewsControllerIntegrationTests(CustomWebApplicationFactory factory)
         {
-            _client = factory.CreateClient();
+            _factory = factory;
         }
 
         [Fact]
         public async Task GetHeadlines_ReturnsOkWithHeadlinesList()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/News/headlines");
+            var response = await client.GetAsync("/api/news/headlines");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var headlines = await response.Content.ReadFromJsonAsync<List<NewsHeadline>>();
             Assert.NotNull(headlines);
+            Assert.NotEmpty(headlines);
         }
 
         [Fact]
         public async Task GetTopics_ReturnsOkWithTopicsList()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/News/topics");
+            var response = await client.GetAsync("/api/news/topics");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -44,16 +53,21 @@ namespace PoDebateRap.IntegrationTests
         }
 
         [Fact]
-        public async Task GetLatestTopic_ReturnsOkOrNotFound()
+        public async Task GetLatestTopic_ReturnsOkWithTopic()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/News/topics/latest");
+            var response = await client.GetAsync("/api/news/topics/latest");
 
             // Assert
-            Assert.True(
-                response.StatusCode == HttpStatusCode.OK || 
-                response.StatusCode == HttpStatusCode.NotFound,
-                $"Expected OK or NotFound, got {response.StatusCode}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var topic = await response.Content.ReadFromJsonAsync<Topic>();
+            Assert.NotNull(topic);
         }
     }
 }
+
+
+

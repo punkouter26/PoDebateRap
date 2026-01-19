@@ -1,0 +1,116 @@
+@page "/leaderboard"
+@rendermode InteractiveServer
+@using PoDebateRap.Shared.Models
+@inject HttpClient Http
+@inject ILogger<Leaderboard> Logger
+
+<PageTitle>PoDebateRap - Leaderboard</PageTitle>
+
+<div class="leaderboard-container">
+    <h2 class="leaderboard-title">🏆 Rapper Leaderboard</h2>
+
+    @if (_isLoading)
+    {
+        <div class="loading-spinner">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            <p>Loading leaderboard...</p>
+        </div>
+    }
+    else if (_errorMessage is not null)
+    {
+        <div class="error-message">
+            <p>⚠️ @_errorMessage</p>
+            <button @onclick="LoadLeaderboard" class="retry-button">Retry</button>
+        </div>
+    }
+    else if (_rappers is { Count: > 0 })
+    {
+        <div class="leaderboard-grid">
+            @foreach (var (rapper, index) in _rappers.Select((r, i) => (r, i)))
+            {
+                <div class="leaderboard-card @GetRankClass(index)">
+                    <div class="rank-badge">@GetRankBadge(index)</div>
+                    <div class="rapper-info">
+                        <h3>@rapper.Name</h3>
+                        <p class="rapper-debates">@rapper.TotalDebates debates</p>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-value">@rapper.Wins</span>
+                            <span class="stat-label">Wins</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">@rapper.Losses</span>
+                            <span class="stat-label">Losses</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">@CalculateWinRate(rapper)%</span>
+                            <span class="stat-label">Win Rate</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>No rappers found. Start a debate to get started!</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Rapper>? _rappers;
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLeaderboard();
+    }
+
+    private async Task LoadLeaderboard()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            _rappers = await Http.GetFromJsonAsync<List<Rapper>>("api/rappers");
+            _rappers = _rappers?.OrderByDescending(r => r.Wins).ThenBy(r => r.Losses).ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading leaderboard");
+            _errorMessage = "Failed to load leaderboard. Please try again.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private static string GetRankClass(int index) => index switch
+    {
+        0 => "gold",
+        1 => "silver",
+        2 => "bronze",
+        _ => ""
+    };
+
+    private static string GetRankBadge(int index) => index switch
+    {
+        0 => "🥇",
+        1 => "🥈",
+        2 => "🥉",
+        _ => $"#{index + 1}"
+    };
+
+    private static int CalculateWinRate(Rapper rapper)
+    {
+        var total = rapper.Wins + rapper.Losses;
+        return total > 0 ? (int)Math.Round(rapper.Wins * 100.0 / total) : 0;
+    }
+}

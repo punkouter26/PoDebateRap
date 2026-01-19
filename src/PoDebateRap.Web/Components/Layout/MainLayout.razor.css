@@ -1,0 +1,97 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--background-color, #1a1a2e);
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--header-background, #16213e);
+    border-bottom: 1px solid var(--border-color, #333);
+}
+
+.app-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color, #f77f00);
+}
+
+.header-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-link {
+    color: var(--text-color, #eee);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+    background: var(--hover-background, rgba(255, 255, 255, 0.1));
+}
+
+.nav-link.active {
+    background: var(--primary-color, #f77f00);
+    color: #fff;
+}
+
+.nav-icon {
+    margin-right: 0.25rem;
+}
+
+.content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+#blazor-error-ui {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    bottom: 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    display: none;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    padding: 1rem;
+    text-align: center;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+.not-found-container {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.not-found-container h1 {
+    font-size: 3rem;
+    color: var(--primary-color, #f77f00);
+}
+
+.btn-primary {
+    background: var(--primary-color, #f77f00);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 1rem;
+}

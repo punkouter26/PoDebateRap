@@ -1,35 +1,32 @@
 using Xunit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using PoDebateRap.ServerApi.Services.AI;
+using System.Threading.Tasks;
+using PoDebateRap.IntegrationTests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using PoDebateRap.Web.Services.AI;
 
 namespace PoDebateRap.IntegrationTests
 {
     /// <summary>
     /// Integration tests for AzureOpenAIService (verse generation only).
+    /// Uses CustomWebApplicationFactory with mocked OpenAI service.
     /// Speech synthesis tests are in TextToSpeechServiceIntegrationTests.
     /// </summary>
+    [Collection("IntegrationTests")]
     public class AzureOpenAIServiceIntegrationTests
     {
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<AzureOpenAIService> _logger;
+        private readonly CustomWebApplicationFactory _factory;
 
-        public AzureOpenAIServiceIntegrationTests()
+        public AzureOpenAIServiceIntegrationTests(CustomWebApplicationFactory factory)
         {
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.test.json", optional: true)
-                .AddUserSecrets<AzureOpenAIServiceIntegrationTests>()
-                .AddEnvironmentVariables()
-                .Build();
-
-            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<AzureOpenAIService>();
+            _factory = factory;
         }
 
         [Fact]
         public async Task GenerateDebateTurnAsync_ReturnsResponse_WhenApiCallIsSuccessful()
         {
             // Arrange
-            var service = new AzureOpenAIService(_configuration, _logger);
+            using var scope = _factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IAzureOpenAIService>();
             var prompt = "Test prompt for debate turn generation.";
             var maxTokens = 50;
 
@@ -40,5 +37,28 @@ namespace PoDebateRap.IntegrationTests
             Assert.False(string.IsNullOrEmpty(response));
             Assert.True(response.Length > 0);
         }
+
+        [Fact]
+        public async Task JudgeDebateAsync_ReturnsJudgement()
+        {
+            // Arrange
+            using var scope = _factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IAzureOpenAIService>();
+            var debateTranscript = "Rapper1 argued about technology, Rapper2 countered with politics.";
+            var rapper1Name = "Eminem";
+            var rapper2Name = "Snoop Dogg";
+            var topic = "Technology vs Nature";
+
+            // Act
+            var result = await service.JudgeDebateAsync(debateTranscript, rapper1Name, rapper2Name, topic, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.WinnerName);
+            Assert.NotNull(result.Reasoning);
+        }
     }
 }
+
+
+

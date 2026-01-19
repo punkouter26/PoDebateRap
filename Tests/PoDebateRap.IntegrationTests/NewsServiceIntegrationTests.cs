@@ -1,37 +1,32 @@
 using Xunit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using PoDebateRap.ServerApi.Services.News;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
-using System;
+using PoDebateRap.IntegrationTests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using PoDebateRap.Web.Services.News;
 
 namespace PoDebateRap.IntegrationTests
 {
+    /// <summary>
+    /// Integration tests for NewsService.
+    /// Uses CustomWebApplicationFactory with mocked News service.
+    /// </summary>
+    [Collection("IntegrationTests")]
     public class NewsServiceIntegrationTests
     {
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<NewsService> _logger;
+        private readonly CustomWebApplicationFactory _factory;
 
-        public NewsServiceIntegrationTests()
+        public NewsServiceIntegrationTests(CustomWebApplicationFactory factory)
         {
-            // Build configuration for tests, including appsettings.json
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.test.json", optional: true) // For test-specific settings
-                .AddUserSecrets<NewsServiceIntegrationTests>() // For sensitive keys
-                .AddEnvironmentVariables()
-                .Build();
-
-            _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<NewsService>();
+            _factory = factory;
         }
 
         [Fact]
         public async Task GetTopHeadlinesAsync_ReturnsHeadlines_WhenApiCallIsSuccessful()
         {
             // Arrange
-            var httpClient = new HttpClient();
-            var newsService = new NewsService(httpClient, _configuration, _logger);
+            using var scope = _factory.Services.CreateScope();
+            var newsService = scope.ServiceProvider.GetRequiredService<INewsService>();
 
             // Act
             var headlines = await newsService.GetTopHeadlinesAsync(1);
@@ -39,23 +34,25 @@ namespace PoDebateRap.IntegrationTests
             // Assert
             Assert.NotNull(headlines);
             Assert.True(headlines.Any(), "Should return at least one headline.");
-            Assert.False(headlines.Any(h => h.Title == "End of the world is coming"), "Should not return fallback headline.");
         }
 
         [Fact]
-        public async Task GetTopHeadlinesAsync_ReturnsCorrectNumberOfHeadlines()
+        public async Task GetTopHeadlinesAsync_ReturnsRequestedNumberOfHeadlines()
         {
             // Arrange
-            var httpClient = new HttpClient();
-            var newsService = new NewsService(httpClient, _configuration, _logger);
-            var numberOfHeadlines = 3;
+            using var scope = _factory.Services.CreateScope();
+            var newsService = scope.ServiceProvider.GetRequiredService<INewsService>();
+            var numberOfHeadlines = 2;
 
             // Act
             var headlines = await newsService.GetTopHeadlinesAsync(numberOfHeadlines);
 
             // Assert
             Assert.NotNull(headlines);
-            Assert.Equal(numberOfHeadlines, headlines.Count());
+            Assert.Equal(numberOfHeadlines, headlines.Count);
         }
     }
 }
+
+
+

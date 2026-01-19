@@ -1,47 +1,59 @@
 using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using PoDebateRap.Shared.Models;
+using PoDebateRap.IntegrationTests.Infrastructure;
 
 namespace PoDebateRap.IntegrationTests
 {
     /// <summary>
-    /// Integration tests for TopicsController endpoints.
+    /// Integration tests for Topics API endpoints.
+    /// Uses CustomWebApplicationFactory with mocked dependencies.
     /// </summary>
-    public class TopicsControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    [Collection("IntegrationTests")]
+    public class TopicsControllerIntegrationTests
     {
-        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
 
-        public TopicsControllerIntegrationTests(WebApplicationFactory<Program> factory)
+        public TopicsControllerIntegrationTests(CustomWebApplicationFactory factory)
         {
-            _client = factory.CreateClient();
+            _factory = factory;
         }
 
         [Fact]
         public async Task GetTopics_ReturnsOkWithTopicsList()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/Topics");
+            var response = await client.GetAsync("/api/topics");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var topics = await response.Content.ReadFromJsonAsync<List<Topic>>();
             Assert.NotNull(topics);
+            Assert.NotEmpty(topics);
         }
 
         [Fact]
-        public async Task GetLatestTopic_ReturnsOkOrNotFound()
+        public async Task GetLatestTopic_ReturnsOkWithTopic()
         {
+            // Arrange
+            using var client = _factory.CreateClient();
+            
             // Act
-            var response = await _client.GetAsync("/Topics/latest");
+            var response = await client.GetAsync("/api/topics/latest");
 
-            // Assert - Either we get a topic or there are none available
-            Assert.True(
-                response.StatusCode == HttpStatusCode.OK || 
-                response.StatusCode == HttpStatusCode.NotFound,
-                $"Expected OK or NotFound, got {response.StatusCode}");
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var topic = await response.Content.ReadFromJsonAsync<Topic>();
+            Assert.NotNull(topic);
+            Assert.NotNull(topic.Title);
         }
     }
 }
+
+
+

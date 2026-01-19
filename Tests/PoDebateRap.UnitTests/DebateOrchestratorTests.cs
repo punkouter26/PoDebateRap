@@ -1,10 +1,10 @@
 using Xunit;
 using Moq;
-using PoDebateRap.ServerApi.Services.Orchestration;
-using PoDebateRap.ServerApi.Services.AI;
-using PoDebateRap.ServerApi.Services.Speech;
-using PoDebateRap.ServerApi.Services.Data;
-using PoDebateRap.ServerApi.Services.Factories;
+using PoDebateRap.Web.Services.Orchestration;
+using PoDebateRap.Web.Services.AI;
+using PoDebateRap.Web.Services.Speech;
+using PoDebateRap.Web.Services.Data;
+using PoDebateRap.Web.Services.Factories;
 using PoDebateRap.Shared.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -140,7 +140,7 @@ namespace PoDebateRap.UnitTests
             Assert.Equal("Eminem", orchestrator.CurrentState.Rapper1.Name);
             Assert.Equal("Snoop Dogg", orchestrator.CurrentState.Rapper2.Name);
             Assert.True(orchestrator.CurrentState.IsRapper1Turn);
-            Assert.Equal(6, orchestrator.CurrentState.TotalTurns);  // Updated from 10 to 6 for quick battle flow
+            Assert.Equal(10, orchestrator.CurrentState.TotalTurns);  // Default total turns from DebateStateFactory
         }
 
         #region JudgeDebateAsync Tests
@@ -304,7 +304,7 @@ namespace PoDebateRap.UnitTests
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[]?)null);
+                .ReturnsAsync((byte[]?)(null!));
 
             var orchestrator = new DebateOrchestrator(_mockLogger.Object, _mockServiceFactory.Object);
             var rapper1 = new Rapper("Null Test");

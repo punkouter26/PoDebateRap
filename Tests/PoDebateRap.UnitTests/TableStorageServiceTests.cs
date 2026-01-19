@@ -2,7 +2,7 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PoDebateRap.ServerApi.Services.Data;
+using PoDebateRap.Web.Services.Data;
 using Azure.Data.Tables;
 using System.Threading.Tasks;
 
@@ -48,10 +48,11 @@ namespace PoDebateRap.UnitTests
             Assert.NotNull(service);
         }
 
-        [Fact]
+        [Fact(Skip = "Integration test - requires Azurite. Move to IntegrationTests.")]
         public async Task GetTableClientAsync_ReturnsValidClient()
         {
-            // Arrange
+            // This test requires Azurite running at 127.0.0.1:10002
+            // It should be moved to integration tests with Testcontainers
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -60,19 +61,8 @@ namespace PoDebateRap.UnitTests
                 .Build();
             var service = new TableStorageService(config, _mockLogger.Object);
 
-            // Act - This will try to create the table in Azurite
-            // In unit tests without Azurite running, this may throw
-            // For true unit tests, we would mock the TableServiceClient
-            try
-            {
-                var client = await service.GetTableClientAsync("TestTable");
-                Assert.NotNull(client);
-            }
-            catch (Azure.RequestFailedException)
-            {
-                // Expected when Azurite is not running
-                Assert.True(true, "Azurite not running - skipping integration aspect");
-            }
+            var client = await service.GetTableClientAsync("TestTable");
+            Assert.NotNull(client);
         }
     }
 

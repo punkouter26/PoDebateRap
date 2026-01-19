@@ -7,6 +7,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   
+  // Global setup to start Azurite before tests
+  globalSetup: require.resolve('./global-setup'),
+  globalTeardown: require.resolve('./global-teardown'),
+  
   // Maximum time one test can run
   timeout: 60 * 1000,
   
@@ -28,7 +32,7 @@ export default defineConfig({
   
   use: {
     // Base URL for the application
-    baseURL: 'http://localhost:5000',
+    baseURL: 'https://localhost:7189',
     
     // Collect trace on failure
     trace: 'on-first-retry',
@@ -65,11 +69,12 @@ export default defineConfig({
 
   // Web server configuration
   webServer: {
-    command: 'dotnet run --project ../../Server/PoDebateRap.ServerApi/PoDebateRap.ServerApi.csproj',
-    url: 'http://localhost:5000',
-    reuseExistingServer: !process.env.CI,
+    command: 'dotnet run --project ../../src/PoDebateRap.Web/PoDebateRap.Web.csproj --launch-profile https',
+    url: 'https://localhost:7189',
+    reuseExistingServer: true,
     timeout: 120 * 1000,
-    stdout: 'ignore',
+    stdout: 'pipe',
     stderr: 'pipe',
+    ignoreHTTPSErrors: true,
   },
 });

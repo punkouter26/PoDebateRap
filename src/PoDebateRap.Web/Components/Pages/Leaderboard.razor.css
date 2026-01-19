@@ -1,0 +1,119 @@
+.leaderboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.leaderboard-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--primary-color, #f77f00);
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.retry-button {
+    background: var(--primary-color, #f77f00);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.leaderboard-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.leaderboard-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--surface-color, #16213e);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #333);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.leaderboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard-card.gold {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #16213e 0%, rgba(255, 215, 0, 0.1) 100%);
+}
+
+.leaderboard-card.silver {
+    border-color: #c0c0c0;
+    background: linear-gradient(135deg, #16213e 0%, rgba(192, 192, 192, 0.1) 100%);
+}
+
+.leaderboard-card.bronze {
+    border-color: #cd7f32;
+    background: linear-gradient(135deg, #16213e 0%, rgba(205, 127, 50, 0.1) 100%);
+}
+
+.rank-badge {
+    font-size: 1.5rem;
+    min-width: 3rem;
+    text-align: center;
+}
+
+.rapper-info {
+    flex: 1;
+}
+
+.rapper-info h3 {
+    margin: 0;
+    color: var(--text-color, #eee);
+}
+
+.rapper-style {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted, #888);
+}
+
+.stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--primary-color, #f77f00);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted, #888);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted, #888);
+}

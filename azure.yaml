@@ -1,19 +1,34 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+# Azure Developer CLI (azd) configuration
+# This file describes the app architecture and deployment configuration
+# Deploy with: azd up
 
-name: PoDebateRap
+name: podebaterap
+
 metadata:
-  template: PoDebateRap@0.0.1-beta
+  template: azd-aspire-starter
 
-services:
-  api:
-    project: ./Server/PoDebateRap.ServerApi
-    language: dotnet
-    host: appservice
-
+# Aspire-based deployment - azd generates infra from the AppHost
 infra:
   provider: bicep
   path: infra
-  module: main
 
-pipeline:
-  provider: github
+# Services are auto-discovered from Aspire AppHost
+services:
+  web:
+    project: ./src/PoDebateRap.Web
+    language: dotnet
+    host: containerapp
+    
+# Azure configuration
+azure:
+  # Use existing resources from PoShared resource group
+  resourceGroup: PoDebateRap
+  
+hooks:
+  # Pre-provision hook to set subscription
+  preprovision:
+    shell: pwsh
+    run: |
+      Write-Host "Using subscription: Punkouter26 (bbb8dfbe-9169-432f-9b7a-fbf861b51037)"
+      Write-Host "Resource group: PoDebateRap"
+      Write-Host "Shared resources from: PoShared"

@@ -1,0 +1,260 @@
+@using PoDebateRap.Shared.Models
+
+<RadzenCard class="setup-section-card">
+    <!-- Quick Battle Button -->
+    <div class="quick-battle-container">
+        <RadzenButton ButtonStyle="ButtonStyle.Warning" 
+                      Size="ButtonSize.Large"
+                      Icon="bolt"
+                      Text="@(IsLoading || IsFetchingTopic ? "Loading..." : "Quick Battle")"
+                      IsBusy="@(IsLoading || IsFetchingTopic)"
+                      Disabled="@IsQuickBattleDisabled()"
+                      Click="@HandleQuickBattle"
+                      class="quick-battle-btn" />
+        <p class="quick-battle-hint">Random rappers, instant debate!</p>
+    </div>
+
+    <!-- Divider -->
+    <div class="setup-divider">
+        <RadzenText TextStyle="TextStyle.Overline" class="divider-text">OR CUSTOMIZE</RadzenText>
+    </div>
+
+    <!-- Rapper Selection with Dropdowns -->
+    <div class="rapper-selection-section dropdown-style">
+        <div class="selection-row">
+            <div class="selection-group">
+                <RadzenFormField Text="Select Rapper 1" Variant="Variant.Outlined" class="rapper-dropdown-field">
+                    <ChildContent>
+                        <RadzenDropDown TValue="string"
+                                        @bind-Value="@SelectedRapper1Name"
+                                        Data="@Rapper1Options"
+                                        TextProperty="Name"
+                                        ValueProperty="Name"
+                                        Placeholder="Choose a rapper..."
+                                        Disabled="@(IsDisabled || Rappers == null || !Rappers.Any())"
+                                        Change="@(args => OnRapper1DropdownChanged(args))"
+                                        AllowClear="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        AllowFiltering="true"
+                                        class="rapper-dropdown" />
+                    </ChildContent>
+                </RadzenFormField>
+            </div>
+
+            <!-- VS Separator -->
+            <div class="vs-separator-inline">
+                <RadzenBadge BadgeStyle="BadgeStyle.Warning" class="vs-badge">VS</RadzenBadge>
+            </div>
+
+            <div class="selection-group">
+                <RadzenFormField Text="Select Rapper 2" Variant="Variant.Outlined" class="rapper-dropdown-field">
+                    <ChildContent>
+                        <RadzenDropDown TValue="string"
+                                        @bind-Value="@SelectedRapper2Name"
+                                        Data="@Rapper2Options"
+                                        TextProperty="Name"
+                                        ValueProperty="Name"
+                                        Placeholder="Choose a rapper..."
+                                        Disabled="@(IsDisabled || Rappers == null || !Rappers.Any())"
+                                        Change="@(args => OnRapper2DropdownChanged(args))"
+                                        AllowClear="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        AllowFiltering="true"
+                                        class="rapper-dropdown" />
+                    </ChildContent>
+                </RadzenFormField>
+            </div>
+        </div>
+        
+        @if (Rappers == null || !Rappers.Any())
+        {
+            <div class="loading-indicator">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                <RadzenText TextStyle="TextStyle.Caption">Loading rappers...</RadzenText>
+            </div>
+        }
+    </div>
+
+    <!-- Topic Input Section -->
+    <div class="topic-input-section">
+        <RadzenFormField Text="Debate Topic" Variant="Variant.Outlined" class="topic-field">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@_topicValue" 
+                               Placeholder="@TopicPlaceholder"
+                               MaxLength="150" 
+                               Disabled="@IsDisabled"
+                               Change="@HandleTopicChange"
+                               class="topic-input" />
+            </ChildContent>
+            <Helper>
+                @if (!string.IsNullOrEmpty(InitialTopicFetchError) && string.IsNullOrWhiteSpace(DebateTopicInput))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" class="topic-error">@InitialTopicFetchError</RadzenText>
+                }
+            </Helper>
+        </RadzenFormField>
+    </div>
+
+    <!-- Begin/Stop Debate Button -->
+    <div class="action-buttons-section">
+        @if (!IsDebateInProgress)
+        {
+            <RadzenButton ButtonStyle="ButtonStyle.Primary"
+                          Size="ButtonSize.Large"
+                          Icon="play_arrow"
+                          Text="@GetStartButtonText()"
+                          IsBusy="@IsLoading"
+                          Disabled="@IsStartDisabled"
+                          Click="@HandleBeginClick"
+                          class="start-debate-btn" />
+        }
+        else
+        {
+            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                          Size="ButtonSize.Large"
+                          Icon="stop"
+                          Text="@(IsStarting ? "Generating..." : "STOP DEBATE")"
+                          IsBusy="@IsStarting"
+                          Disabled="@IsVoting"
+                          Click="@OnStopDebate"
+                          class="stop-debate-btn" />
+        }
+    </div>
+</RadzenCard>
+
+@code {
+    private string? _topicValue;
+
+    protected override void OnParametersSet()
+    {
+        _topicValue = DebateTopicInput;
+    }
+
+    // Computed properties for dropdown data - filters out the other selected rapper
+    private IEnumerable<Rapper> Rapper1Options => 
+        Rappers?.Where(r => r.Name != SelectedRapper2Name).OrderBy(r => r.Name) ?? Enumerable.Empty<Rapper>();
+    
+    private IEnumerable<Rapper> Rapper2Options => 
+        Rappers?.Where(r => r.Name != SelectedRapper1Name).OrderBy(r => r.Name) ?? Enumerable.Empty<Rapper>();
+
+    private async Task OnRapper1DropdownChanged(object args)
+    {
+        var value = args?.ToString();
+        Console.WriteLine($"[DebateSetup] Rapper1 dropdown changed to: '{value}'");
+        await SelectedRapper1NameChanged.InvokeAsync(value);
+    }
+
+    private async Task OnRapper2DropdownChanged(object args)
+    {
+        var value = args?.ToString();
+        Console.WriteLine($"[DebateSetup] Rapper2 dropdown changed to: '{value}'");
+        await SelectedRapper2NameChanged.InvokeAsync(value);
+    }
+
+    private string GetInitial(string? name) =>
+        string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
+
+    private string GetStartButtonText()
+    {
+        if (IsStarting) return "Starting...";
+        if (IsFetchingTopic) return "Fetching Topic...";
+        if (IsLoading) return "Loading...";
+        return "Begin Debate";
+    }
+
+    [Parameter] public List<Rapper>? Rappers { get; set; }
+    
+    private string? _selectedRapper1Name;
+#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
+    [Parameter] 
+    public string? SelectedRapper1Name 
+    { 
+        get => _selectedRapper1Name;
+        set
+        {
+            if (_selectedRapper1Name != value)
+            {
+                _selectedRapper1Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper1 changed to: '{value}'");
+                _ = OnRapper1Changed();
+            }
+        }
+    }
+#pragma warning restore BL0007
+    [Parameter] public EventCallback<string> SelectedRapper1NameChanged { get; set; }
+    
+    private string? _selectedRapper2Name;
+#pragma warning disable BL0007 // Component parameter has custom setter for two-way binding
+    [Parameter] 
+    public string? SelectedRapper2Name 
+    { 
+        get => _selectedRapper2Name;
+        set
+        {
+            if (_selectedRapper2Name != value)
+            {
+                _selectedRapper2Name = value;
+                Console.WriteLine($"[DebateSetup] Rapper2 changed to: '{value}'");
+                _ = OnRapper2Changed();
+            }
+        }
+    }
+#pragma warning restore BL0007
+    [Parameter] public EventCallback<string> SelectedRapper2NameChanged { get; set; }
+    [Parameter] public string? DebateTopicInput { get; set; }
+    [Parameter] public EventCallback<string> DebateTopicInputChanged { get; set; }
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool IsStarting { get; set; }
+    [Parameter] public bool IsFetchingTopic { get; set; }
+    [Parameter] public bool IsDebateInProgress { get; set; }
+    [Parameter] public bool IsVoting { get; set; }
+    [Parameter] public bool IsStartDisabled { get; set; }
+    [Parameter] public string? InitialTopicFetchError { get; set; }
+    [Parameter] public string TopicPlaceholder { get; set; } = "Enter debate topic...";
+    [Parameter] public EventCallback OnStartDebate { get; set; }
+    [Parameter] public EventCallback OnStopDebate { get; set; }
+    [Parameter] public EventCallback OnQuickBattle { get; set; }
+
+    private async Task OnRapper1Changed()
+    {
+        Console.WriteLine($"[DebateSetup] OnRapper1Changed invoking parent callback with: '{SelectedRapper1Name}'");
+        await SelectedRapper1NameChanged.InvokeAsync(SelectedRapper1Name);
+    }
+
+    private async Task OnRapper2Changed()
+    {
+        Console.WriteLine($"[DebateSetup] OnRapper2Changed invoking parent callback with: '{SelectedRapper2Name}'");
+        await SelectedRapper2NameChanged.InvokeAsync(SelectedRapper2Name);
+    }
+
+    private async Task HandleTopicChange(string value)
+    {
+        Console.WriteLine($"[DebateSetup] HandleTopicChange called. Old value: '{DebateTopicInput}', New value: '{value}'");
+        DebateTopicInput = value;
+        Console.WriteLine($"[DebateSetup] Invoking parent callback with: '{DebateTopicInput}'");
+        await DebateTopicInputChanged.InvokeAsync(DebateTopicInput);
+        Console.WriteLine($"[DebateSetup] Parent callback completed");
+    }
+
+    private async Task HandleBeginClick()
+    {
+        if (!IsStartDisabled)
+        {
+            await OnStartDebate.InvokeAsync();
+        }
+    }
+
+    private bool IsQuickBattleDisabled()
+    {
+        return IsLoading || IsFetchingTopic || IsDisabled || Rappers == null || Rappers.Count < 2 || string.IsNullOrWhiteSpace(DebateTopicInput);
+    }
+
+    private async Task HandleQuickBattle()
+    {
+        if (!IsQuickBattleDisabled())
+        {
+            await OnQuickBattle.InvokeAsync();
+        }
+    }
+}

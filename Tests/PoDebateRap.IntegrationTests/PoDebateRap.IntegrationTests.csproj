@@ -14,6 +14,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -32,8 +33,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Server\PoDebateRap.ServerApi\PoDebateRap.ServerApi.csproj" />
-    <ProjectReference Include="..\..\Shared\PoDebateRap.Shared.csproj" />
+    <ProjectReference Include="..\..\src\PoDebateRap.Web\PoDebateRap.Web.csproj" />
+    <ProjectReference Include="..\..\src\PoDebateRap.Shared\PoDebateRap.Shared.csproj" />
   </ItemGroup>
 
 </Project>

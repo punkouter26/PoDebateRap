@@ -10,7 +10,7 @@
     "test:desktop": "playwright test --grep @desktop",
     "test:mobile": "playwright test --grep @mobile",
     "test:report": "playwright show-report",
-    "codegen": "playwright codegen http://localhost:5000"
+    "codegen": "playwright codegen http://localhost:5189"
   },
   "keywords": [
     "playwright",

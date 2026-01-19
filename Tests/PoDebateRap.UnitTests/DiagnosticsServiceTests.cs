@@ -2,7 +2,7 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using PoDebateRap.ServerApi.Services.Diagnostics;
+using PoDebateRap.Web.Services.Diagnostics;
 using PoDebateRap.Shared.Models;
 using System.Threading;
 using System.Threading.Tasks;

@@ -2,7 +2,7 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PoDebateRap.ServerApi.Services.Speech;
+using PoDebateRap.Web.Services.Speech;
 using System.Threading;
 using System.Threading.Tasks;
 

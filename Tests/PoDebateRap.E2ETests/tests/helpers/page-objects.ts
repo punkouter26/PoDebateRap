@@ -17,15 +17,15 @@ export class DebateSetupPage {
   }
 
   get topicInput() {
-    return this.page.locator('input#debateTopicInput, input[placeholder*="topic"]');
+    return this.page.locator('input.topic-input, .topic-input input, input[placeholder*="topic" i]').first();
   }
 
   get startBattleButton() {
-    return this.page.locator('button:has-text("START BATTLE")');
+    return this.page.locator('button:has-text("START"), button:has-text("Quick Battle"), .start-debate-btn, .quick-battle-btn').first();
   }
 
   get stopDebateButton() {
-    return this.page.locator('button:has-text("STOP DEBATE")');
+    return this.page.locator('button:has-text("STOP"), .stop-debate-btn').first();
   }
 
   get quickBattleHint() {

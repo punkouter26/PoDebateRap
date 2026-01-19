@@ -1,0 +1,450 @@
+/* =====================================================
+   DebateSetup Component Styles - Radzen Edition
+   Modern UI with RadzenCard, RadzenDataList integration
+   ===================================================== */
+
+/* Main Setup Card */
+::deep .setup-section-card {
+    background: linear-gradient(145deg, var(--rz-base-800, rgba(30, 30, 30, 0.95)) 0%, var(--rz-base-900, rgba(15, 15, 15, 0.98)) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    border-radius: var(--rz-border-radius-3, 16px);
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   Quick Battle Section
+   ======================================== */
+
+.quick-battle-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+::deep .quick-battle-btn {
+    min-width: 250px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::deep .quick-battle-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+}
+
+.quick-battle-hint {
+    color: var(--rz-text-tertiary-color, rgba(255, 215, 0, 0.6));
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-style: italic;
+}
+
+/* ========================================
+   Divider
+   ======================================== */
+
+.setup-divider {
+    text-align: center;
+    position: relative;
+    margin: 1.5rem 0;
+    padding: 0.5rem 0;
+}
+
+.setup-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(205, 127, 50, 0.4), transparent);
+}
+
+::deep .divider-text {
+    background: var(--rz-base-800, #1e1e1e);
+    padding: 0 1rem;
+    position: relative;
+    z-index: 1;
+    color: var(--rz-secondary, #CD7F32);
+    letter-spacing: 2px;
+}
+
+/* ========================================
+   Rapper Selection Section
+   ======================================== */
+
+.rapper-selection-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.selection-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+::deep .selection-label {
+    color: var(--rz-warning, #FFD700);
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* RadzenDataList Wrapper */
+::deep .rapper-data-list {
+    background: transparent !important;
+}
+
+::deep .rapper-data-list .rz-datalist-data {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+/* Individual Rapper Cards */
+::deep .rapper-card-radzen {
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--rz-base-700, #2a2a2a);
+    border: 2px solid var(--rz-base-600, #444);
+    border-radius: var(--rz-border-radius, 10px);
+    position: relative;
+    overflow: hidden;
+}
+
+::deep .rapper-card-radzen:hover:not(.disabled) {
+    transform: translateY(-4px);
+    border-color: var(--rz-warning, #FFD700);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
+}
+
+::deep .rapper-card-radzen.selected {
+    border-color: var(--rz-warning, #FFD700);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, var(--rz-base-700, #2a2a2a) 100%);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+::deep .rapper-card-radzen.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.rapper-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+::deep .selection-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.7rem;
+}
+
+.rapper-avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rz-warning, #FFD700) 0%, var(--rz-secondary, #CD7F32) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--rz-base-900, #111);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+::deep .rapper-name {
+    margin: 0;
+    color: var(--rz-text-color, #eee);
+    font-weight: 600;
+}
+
+.rapper-stats {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+::deep .win-rate {
+    color: var(--rz-text-tertiary-color, #888);
+}
+
+::deep .undefeated-badge {
+    margin-top: 0.5rem;
+}
+
+.loading-cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    color: var(--rz-text-tertiary-color, #888);
+}
+
+/* ========================================
+   VS Separator
+   ======================================== */
+
+.vs-separator-large {
+    text-align: center;
+    padding: 1rem 0;
+    position: relative;
+}
+
+.vs-separator-large::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(205, 127, 50, 0.4), transparent);
+}
+
+::deep .vs-badge {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   Topic Input Section
+   ======================================== */
+
+.topic-input-section {
+    margin-bottom: 1.5rem;
+}
+
+::deep .topic-field {
+    width: 100%;
+}
+
+::deep .topic-field .rz-form-field-content {
+    border-color: var(--rz-warning, #FFD700) !important;
+}
+
+::deep .topic-input {
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+}
+
+::deep .topic-error {
+    color: var(--rz-danger, #f44336);
+}
+
+/* ========================================
+   Action Buttons
+   ======================================== */
+
+.action-buttons-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+::deep .start-debate-btn {
+    min-width: 200px;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(255, 165, 0, 0.3);
+}
+
+::deep .start-debate-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 165, 0, 0.4);
+}
+
+::deep .stop-debate-btn {
+    min-width: 200px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    border-radius: 10px;
+}
+
+/* ========================================
+   Dropdown Style Rapper Selection
+   ======================================== */
+
+.rapper-selection-section.dropdown-style {
+    margin-bottom: 1.5rem;
+}
+
+.selection-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.rapper-selection-section.dropdown-style .selection-group {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+::deep .rapper-dropdown-field {
+    width: 100%;
+}
+
+::deep .rapper-dropdown {
+    width: 100%;
+    min-width: 180px;
+}
+
+::deep .rapper-dropdown .rz-dropdown {
+    background: var(--rz-base-700, #2a2a2a);
+    border-color: var(--rz-base-600, #444);
+}
+
+::deep .rapper-dropdown .rz-dropdown:hover,
+::deep .rapper-dropdown .rz-dropdown:focus-within {
+    border-color: var(--rz-warning, #FFD700);
+}
+
+.dropdown-item-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+
+.dropdown-item-content .rapper-initial {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rz-warning, #FFD700) 0%, var(--rz-secondary, #CD7F32) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--rz-base-900, #111);
+    flex-shrink: 0;
+}
+
+.dropdown-item-content .rapper-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--rz-text-color, #eee);
+}
+
+.dropdown-item-content .rapper-record {
+    font-size: 0.8rem;
+    color: var(--rz-text-tertiary-color, #888);
+}
+
+.dropdown-item-content .rapper-record.undefeated {
+    color: var(--rz-success, #4caf50);
+    font-style: italic;
+}
+
+.vs-separator-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+}
+
+.vs-separator-inline .vs-badge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    color: var(--rz-text-tertiary-color, #888);
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+    ::deep .setup-section-card {
+        padding: 1.5rem;
+    }
+
+    ::deep .rapper-data-list .rz-datalist-data {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    ::deep .quick-battle-btn {
+        min-width: 200px;
+        font-size: 1rem;
+    }
+
+    .rapper-avatar-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .selection-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .rapper-selection-section.dropdown-style .selection-group {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .vs-separator-inline {
+        padding: 0.5rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    ::deep .setup-section-card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    ::deep .rapper-data-list .rz-datalist-data {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    ::deep .rapper-card-radzen {
+        padding: 0.75rem;
+    }
+
+    ::deep .vs-badge {
+        font-size: 1.25rem;
+        padding: 0.5rem 1rem;
+    }
+}
