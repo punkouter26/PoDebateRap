@@ -72,6 +72,16 @@ resource webContainerApp 'Microsoft.App/containerApps@2023-05-01' = {
           keyVaultUrl: 'https://kv-poshared.vault.azure.net/secrets/PoDebateRap-StorageConnection'
           identity: sharedManagedIdentity.id
         }
+        {
+          name: 'openai-apikey'
+          keyVaultUrl: 'https://kv-poshared.vault.azure.net/secrets/AzureOpenAI-ApiKey'
+          identity: sharedManagedIdentity.id
+        }
+        {
+          name: 'speech-key'
+          keyVaultUrl: 'https://kv-poshared.vault.azure.net/secrets/AzureSpeech-SubscriptionKey'
+          identity: sharedManagedIdentity.id
+        }
       ]
     }
     template: {
@@ -101,12 +111,20 @@ resource webContainerApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: 'gpt-4o'
             }
             {
+              name: 'Azure__OpenAI__ApiKey'
+              secretRef: 'openai-apikey'
+            }
+            {
               name: 'Azure__Speech__Endpoint'
               value: 'https://pofoxnews-shared-speech.cognitiveservices.azure.com/'
             }
             {
               name: 'Azure__Speech__Region'
               value: 'eastus'
+            }
+            {
+              name: 'Azure__Speech__SubscriptionKey'
+              secretRef: 'speech-key'
             }
             {
               name: 'Azure__Storage__AccountName'
