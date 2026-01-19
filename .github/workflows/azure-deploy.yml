@@ -46,9 +46,14 @@ jobs:
       - name: Provision and Deploy with azd
         run: |
           azd config set defaults.subscription ${{ env.AZURE_SUBSCRIPTION_ID }}
-          azd up --environment ${{ env.AZD_ENV_NAME }} --no-prompt
+          azd env new ${{ env.AZD_ENV_NAME }} --subscription ${{ env.AZURE_SUBSCRIPTION_ID }} --location eastus || true
+          azd env set AZURE_ENV_NAME ${{ env.AZD_ENV_NAME }}
+          azd env set AZURE_LOCATION eastus
+          azd env set AZURE_SUBSCRIPTION_ID ${{ env.AZURE_SUBSCRIPTION_ID }}
+          azd up --no-prompt
         env:
           AZURE_ENV_NAME: ${{ env.AZD_ENV_NAME }}
+          AZD_INITIAL_ENVIRONMENT_CONFIG: '{"infra":{"parameters":{"environmentName":"${{ env.AZD_ENV_NAME }}"}}}'
 
       - name: Get Container App FQDN
         id: get-fqdn
