@@ -42,7 +42,7 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: Install Azure Developer CLI (azd)
-        uses: Azure/setup-azd@v1
+        run: curl -fsSL https://aka.ms/install-azd.sh | bash
 
       - name: Login to azd
         run: azd auth login --client-id ${{ vars.AZURE_CLIENT_ID }} --federated-credential-provider github --tenant-id ${{ vars.AZURE_TENANT_ID }}
